@@ -1,5 +1,3 @@
-// clear; cd $HOME/Downloads/microbar/; gcc -Wall -Wextra -pedantic microbar.c getParameters.c readConfig.c eventLoop.c $(pkg-config --cflags --libs x11) -o output/microbar; "$HOME/Downloads/microbar/output/microbar" -c "$HOME/Downloads/microbar/output/microbar.config"
-
 #include <stdio.h>
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
