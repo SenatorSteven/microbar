@@ -1,6 +1,5 @@
 # microbar
 A simplistic bar for the X Window System.
-<br\>
 ## ...But what is microbar?
 
 #### :~$ microbar --help
