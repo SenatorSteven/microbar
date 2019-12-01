@@ -1,13 +1,11 @@
 # microbar
 A direct xorg micro(management)bar.
-<br/>
 #### :~$ microbar --help
 <pre>
 microbar: usage: microbar [parameters]
    [-h], [--help]     display this message
    [-c], [--config]   specify path to config, necessary
 </pre>
-<br/>
 #### :~$ microbar --config --help
 <pre>
 microbar: usage: microbar --config "/path/to/file/"
