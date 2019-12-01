@@ -797,7 +797,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "borderColor = #00000000\n");
 			fprintf(config, "backgroundColor = #FF000000\n");
 			fprintf(config, "globalMenuBackgroundColor = #FF000000\n");
-			fprintf(config, "hideKey Mod4 + 116\n");
+			fprintf(config, "hideKey = Mod4 + 116\n");
 			fprintf(config, "menu{\n");
 			fprintf(config, "	x = 0\n");
 			fprintf(config, "	y = 0\n");
