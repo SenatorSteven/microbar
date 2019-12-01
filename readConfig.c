@@ -1208,4 +1208,3 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 	}
 	return value;
 }*/
-
