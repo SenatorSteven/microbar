@@ -7,4 +7,3 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 unsigned int readConfigTextCommands(Display *const display, const char *const pathArray, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, int *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray);
 
 #endif
-
