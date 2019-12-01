@@ -1,5 +1,5 @@
 # microbar
-A direct xorg micro(management)bar.
+A verbose xorg micro(management)bar.
 #### :~$ microbar --help
 <pre>
 microbar: usage: microbar [parameters]
