@@ -387,4 +387,3 @@ static unsigned int isCommandExit(const char *const commandArray){
 		commandArray[5] == '\0'
 	);
 }
-
