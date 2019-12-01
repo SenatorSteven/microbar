@@ -3,7 +3,7 @@ A direct xorg micro(management)bar.
 
 :~$ microbar --help
 microbar: usage: microbar [parameters]
-   [-h], [--help]     display this message
+[-h], [--help]     display this message
    [-c], [--config]   specify path to config, necessary
 
 :~$ microbar --config --help
