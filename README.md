@@ -15,7 +15,7 @@ Well, if the comment alone does not provide enough information, microbar is a si
 - custom bar size, position and coloring
 - execution of one-time commands e.g. "firefox"
 - execution of text-returning commands e.g. "date"
-- ability to directly restart after a configuration edit
+- ability to quickly restart after a configuration edit
 
 
 
