@@ -1,3 +1,5 @@
 #!/bin/bash
-mkdir output
+if [ ! -d "output" ]; then
+	mkdir output
+fi
 gcc -Wall -Wextra -pedantic microbar.c getParameters.c readConfig.c eventLoop.c $(pkg-config --cflags --libs x11) -o output/microbar
