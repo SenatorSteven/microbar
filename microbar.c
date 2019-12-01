@@ -223,4 +223,3 @@ static void cleanupWindows(Display *const display, const Window *const topLevelW
 	XDestroyWindow(display, dereferencedTopLevelWindow);
 	return;
 }
-
