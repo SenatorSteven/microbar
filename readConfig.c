@@ -628,7 +628,9 @@ unsigned int readConfigTextCommands(Display *const display, const char *const pa
 								hasReadVariable ^= BoxPosition;
 							}else{
 								*textColor = 0x00000000;
-								hasReadVariable ^= GlobalTextColorPosition;
+								if(hasReadVariable & GlobalTextColorPosition){
+									hasReadVariable ^= GlobalTextColorPosition;
+								}
 								hasReadVariable ^= MenuPosition;
 							}
 							continue;
