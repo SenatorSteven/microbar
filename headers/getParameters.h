@@ -4,4 +4,3 @@
 unsigned int getParameters(const int *const argumentCount, const char *const *const argumentVector, const char **configPath);
 
 #endif
-
