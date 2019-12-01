@@ -789,7 +789,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 163\n");
+			fprintf(config, "lines = 160\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -861,7 +861,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
-			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
+			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n\n");
 			fclose(config);
 			config = fopen(pathArray, "r");
 		}
