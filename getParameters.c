@@ -89,4 +89,3 @@ static unsigned int isArgumentConfig(const char *const argumentArray){
 		)
 	);
 }
-
