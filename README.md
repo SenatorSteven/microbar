@@ -4,13 +4,16 @@ A basic information bar for the X Window System.
 
 
 ## ...But what is microbar?
-Well, if the comment alone does not provide enough information, microbar is a very simple information provider. It is very easy to customize as the default config is extremely verbose and the help menu has enough information and then some.
+Well, if the comment alone does not provide enough information, microbar is a simple, fast and highly customizable information provider and command runner.
 
 ![microbar]()
 
 
 
 ## Features:
+- an extremely verbose and helpful default configuration
+- execution of one-time commands e.g. "firefox"
+- execution of text-returning commands e.g. "date"
 
 
 
