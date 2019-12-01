@@ -4,4 +4,3 @@
 void eventLoop(Display *const display, const Window *const topLevelWindow, const char *const pathArray, unsigned int *const mode);
 
 #endif
-
