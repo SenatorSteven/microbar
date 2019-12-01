@@ -1,5 +1,5 @@
 # microbar
-A verbose X micro(management)bar.
+A simplistic bar for the X Window System.
 #### :~$ microbar --help
 <pre>
 microbar: usage: microbar [parameters]
