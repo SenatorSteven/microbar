@@ -716,6 +716,7 @@ static FILE *getConfigFile(const char *const pathArray){
 	FILE *config = fopen(pathArray, "r");
 	if(!config){
 		if((config = fopen(pathArray, "w"))){
+			
 			fprintf(config, "# configuration file for\n\n");
 			fprintf(config, "# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fprintf(config, "#                                                                                               #\n");
@@ -732,15 +733,17 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# rules #\n");
 			fprintf(config, "# # # # #\n\n");
 			fprintf(config, "# this file needs to be user-specified when launched\n");
-			fprintf(config, "# comments are signified by a \'#\' at the beginning of the line\n");
-			fprintf(config, "# one variable per line\n");
+			fprintf(config, "# max line character length is 200\n");
+			fprintf(config, "# comments are signified by a '#' at the beginning of the line\n");
+			fprintf(config, "# one variable per line, followed by '=' and it's value\n");
 			fprintf(config, "# all spaces and tabs are ignored\n");
+			fprintf(config, "# all variables are valued 0 or undefined by default unless stated otherwise\n");
 			fprintf(config, "# colors are in argb format\n");
-			fprintf(config, "# all variables, including argb values and macros, can be written with random capitalization\n");
-			fprintf(config, "# argb does not require a \'#\' before the value\n");
+			fprintf(config, "# all variables, argb values and macros can be written with random capitalization\n");
+			fprintf(config, "# argb do not require a '#' before the value\n");
 			fprintf(config, "# text requires the same quote character before and after it\n");
-			fprintf(config, "# text quotation is variable, the first character after \'=\' is the quote character\n");
-			fprintf(config, "# if (y < ScreenHeight / 2) the bar is setup on top otherwise on bottom\n\n\n\n");
+			fprintf(config, "# text quotation is variable, the first character after '=' is the quote character\n");
+			fprintf(config, "# if (y < height of screen / 2) the bar is placed on top otherwise on bottom\n\n\n\n");
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
@@ -753,21 +756,24 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# variable definition #\n");
 			fprintf(config, "# # # # # # # # # # # #\n\n");
 			fprintf(config, "# lines: config lines to be read\n");
-			fprintf(config, "# x: x axis placement of object\n");
-			fprintf(config, "# y: y axis placement of object\n");
-			fprintf(config, "# width: size of object\'s width, excluding border\n");
-			fprintf(config, "# height: size of object\'s height, excluding border\n");
-			fprintf(config, "# border: size of object\'s border\n");
-			fprintf(config, "# borderColor: color of object\'s border\n");
-			fprintf(config, "# backgroundColor: color of object\'s background\n");
+			fprintf(config, "# x: x axis position of object\n");
+			fprintf(config, "# y: y axis position of object\n");
+			fprintf(config, "# width: size of object's width, excluding border\n");
+			fprintf(config, "# height: size of object's height, excluding border\n");
+			fprintf(config, "# border: size of object's border\n");
+			fprintf(config, "# borderColor: color of object's border\n");
+			fprintf(config, "# backgroundColor: color of object's background\n");
 			fprintf(config, "# globalMenuBorderColor: color of all menus' border\n");
 			fprintf(config, "# globalMenuBackgroundColor: color of all menus' background\n");
+			fprintf(config, "# globalBoxBorderColor: color of all boxes' border\n");
+			fprintf(config, "# globalBoxBackgroundColor: color of all boxes' background\n");
+			fprintf(config, "# globalTextColor: color of all boxes' text\n");
 			fprintf(config, "# hideKey: combination of keycode and modifiers to hide the bar\n");
-			fprintf(config, "# text: label of object\n");
-			fprintf(config, "# textColor: color of object\'s text\n");
-			fprintf(config, "# command: command executed on object interaction (followed by control operator \'&\')\n");
-			fprintf(config, "# drawableCommand: command returning text output executed on object interaction\n");
-			fprintf(config, "# button: mouse button used for object interaction\n");
+			fprintf(config, "# text: text label of box\n");
+			fprintf(config, "# textColor: color of box's text\n");
+			fprintf(config, "# command: command executed on interaction with box (followed by control operator '&')\n");
+			fprintf(config, "# drawableCommand: command returning text output executed on interaction with box\n");
+			fprintf(config, "# button: mouse button used for interaction with box\n");
 			fprintf(config, "# menu: informationless interactionless object, residing in global object\n");
 			fprintf(config, "# box: information object, residing in menu object\n");
 			fprintf(config, "# ParentWidth: size of parent object's width\n");
@@ -775,7 +781,6 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# # # # #\n");
 			fprintf(config, "# extra #\n");
 			fprintf(config, "# # # # #\n\n");
-			fprintf(config, "# decimals, argb: default values are 0 unless stated otherwise\n");
 			fprintf(config, "# lines: default 100\n");
 			fprintf(config, "# hideKey: modifiers: Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# text: requires quotation\n");
@@ -783,7 +788,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 163\n");
+			fprintf(config, "lines = 165\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -822,7 +827,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "	border = 0\n");
 			fprintf(config, "	borderColor = #00000000\n");
 			fprintf(config, "	box{\n");
-			fprintf(config, "		x = 200 - 200\n");
+			fprintf(config, "		x = ParentWidth - 200\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 74\n");
 			fprintf(config, "		height = 17\n");
@@ -835,7 +840,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	box{\n");
-			fprintf(config, "		x = 200 - 123\n");
+			fprintf(config, "		x = ParentWidth - 123\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 86\n");
 			fprintf(config, "		height = 17\n");
@@ -848,7 +853,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	box{\n");
-			fprintf(config, "		x = 200 - 34\n");
+			fprintf(config, "		x = ParentWidth - 34\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 32\n");
 			fprintf(config, "		height = 17\n");
