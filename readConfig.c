@@ -717,17 +717,17 @@ static FILE *getConfigFile(const char *const pathArray){
 	if(!config){
 		if((config = fopen(pathArray, "w"))){
 			fprintf(config, "# configuration file for\n\n");
-			fprintf(config, "# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "#                                                                                                   #\n");
-			fprintf(config, "#     # # #     # # # # #   # # # # #   #       #   # # # # #   # # # #       # # #     # # # #     #\n");
-			fprintf(config, "#   #       #       #       #           #       #   #           #       #   #       #   #       #   #\n");
-			fprintf(config, "#   #               #       #           #       #   #           #       #   #       #   #       #   #\n");
-			fprintf(config, "#     # # #         #       # # # # #   #       #   # # # # #   # # # #     # # # # #   # # # #     #\n");
-			fprintf(config, "#           #       #       #             #   #     #           #       #   #       #   #   #       #\n");
-			fprintf(config, "#   #       #       #       #             #   #     #           #       #   #       #   #     #     #\n");
-			fprintf(config, "#     # # #         #       # # # # #       #       # # # # #   # # # #     #       #   #       #   #\n");
-			fprintf(config, "#                                                                                                   #\n");
-			fprintf(config, "# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n\n\n\n");
+			fprintf(config, "# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
+			fprintf(config, "#                                                                                               #\n");
+			fprintf(config, "#   #           #   #     # # #     # # # #       # # #     # # # #       # # #     # # # #     #\n");
+			fprintf(config, "#   # #       # #   #   #       #   #       #   #       #   #       #   #       #   #       #   #\n");
+			fprintf(config, "#   #   #   #   #   #   #           #       #   #       #   #       #   #       #   #       #   #\n");
+			fprintf(config, "#   #     #     #   #   #           # # # #     #       #   # # # #     # # # # #   # # # #     #\n");
+			fprintf(config, "#   #     #     #   #   #           #   #       #       #   #       #   #       #   #   #       #\n");
+			fprintf(config, "#   #     #     #   #   #       #   #     #     #       #   #       #   #       #   #     #     #\n");
+			fprintf(config, "#   #     #     #   #     # # #     #       #     # # #     # # # #     #       #   #       #   #\n");
+			fprintf(config, "#                                                                                               #\n");
+			fprintf(config, "# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n\n\n\n");
 			fprintf(config, "# # # # #\n");
 			fprintf(config, "# rules #\n");
 			fprintf(config, "# # # # #\n\n");
@@ -745,10 +745,10 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
 			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalMenuBorderColor, globalMenuBackgroundColor, hideKey, menu{}\n");
-			fprintf(config, "# menu object: x, y, width, height, border, borderColor, backgroundColor, box{}\n");
+			fprintf(config, "# menu object: x, y, width, height, border, borderColor, backgroundColor, globalBoxBorderColor, globalBoxBackgroundColor, globalTextColor, box{}\n");
 			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, text, textColor, command, drawableCommand, button\n");
 			fprintf(config, "# decimal operands: +, -, *, /\n");
-			fprintf(config, "# decimal macros: ScreenWidth, ScreenHeight\n\n\n\n");
+			fprintf(config, "# decimal macros: ParentWidth, ParentHeight\n\n\n\n");
 			fprintf(config, "# # # # # # # # # # # #\n");
 			fprintf(config, "# variable definition #\n");
 			fprintf(config, "# # # # # # # # # # # #\n\n");
@@ -769,7 +769,9 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# drawableCommand: command returning text output executed on object interaction\n");
 			fprintf(config, "# button: mouse button used for object interaction\n");
 			fprintf(config, "# menu: informationless interactionless object, residing in global object\n");
-			fprintf(config, "# box: information object, residing in menu object\n\n\n\n");
+			fprintf(config, "# box: information object, residing in menu object\n");
+			fprintf(config, "# ParentWidth: size of parent object's width\n");
+			fprintf(config, "# ParentHeight: size of parent object's height\n\n\n\n");
 			fprintf(config, "# # # # #\n");
 			fprintf(config, "# extra #\n");
 			fprintf(config, "# # # # #\n\n");
@@ -780,11 +782,11 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# command: requires quotation\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
-			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
+			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fprintf(config, "lines = 163\n");
 			fprintf(config, "x = 0\n");
-			fprintf(config, "y = ScreenHeight - 19\n");
-			fprintf(config, "width = ScreenWidth\n");
+			fprintf(config, "y = ParentHeight - 19\n");
+			fprintf(config, "width = ParentWidth\n");
 			fprintf(config, "height = 19\n");
 			fprintf(config, "border = 0\n");
 			fprintf(config, "borderColor = #00000000\n");
@@ -813,7 +815,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
 			fprintf(config, "menu{\n");
-			fprintf(config, "	x = ScreenWidth - 200\n");
+			fprintf(config, "	x = ParentWidth - 200\n");
 			fprintf(config, "	y = 0\n");
 			fprintf(config, "	width = 200\n");
 			fprintf(config, "	height = 19\n");
@@ -859,7 +861,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
-			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
+			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fclose(config);
 			config = fopen(pathArray, "r");
 		}
