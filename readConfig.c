@@ -836,7 +836,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		height = 17\n");
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"date\"\n");
-			fprintf(config, "		drawableCommand = \"date \'+D%d/M%m/Y%y\'\"\n");
+			fprintf(config, "		drawableCommand = \"date \'+D%%d/M%%m/Y%%y\'\"\n");
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	box{\n");
@@ -846,7 +846,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		height = 17\n");
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"time\"\n");
-			fprintf(config, "		drawableCommand = \"date \'+%H:%M:%S %Z\'\"\n");
+			fprintf(config, "		drawableCommand = \"date \'+%%H:%%M:%%S %%Z\'\"\n");
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	box{\n");
