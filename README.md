@@ -24,7 +24,7 @@ Well, if the comment alone does not provide enough information, microbar is a si
 CPU usage is everything and when some information is needed only once every little while, it is effectively useless. Microbar completely lacks the use of a sleep function so nothing ever gets updated. Ever. When the user demands the full power of the CPU, the user shall have it. When the user needs to know something as trivial as time, the user shall know it. It's up to the user, and the user only.
 <br>
 <br>
-Somebody could argue that the CPU power being used in updating the bar is as trivial as the information obtained from it. As this is the philosophical part of the equation, we can 
+Somebody could argue that the CPU power being used in updating the bar is as trivial as the information obtained from it. As this is the philosophical part of the equation, this applies not. The user controls the programs, not the opposite.
 
 
 
