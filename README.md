@@ -13,8 +13,8 @@ Well, if the comment alone does not provide enough information, microbar is a si
 ## Features:
 - an extremely verbose and helpful default configuration
 - fully customizable bar, sections and buttons
-- execution of one-time commands e.g. "firefox"
-- execution of text-returning commands e.g. "date"
+- ability to execute one-time commands e.g. "firefox"
+- ability to execute text-returning commands e.g. "date"
 - ability to quickly restart after a configuration edit
 
 
