@@ -334,7 +334,7 @@ static void onExpose(Display *const display, const Window *const topLevelWindow,
 		GC gc = XCreateGC(display, *topLevelWindow, None, None);
 		const unsigned int dereferencedTextMaxWordLength = *textMaxWordLength;
 		unsigned int wordBeginning = 0;
-		XFontStruct *font = XLoadQueryFont(display, "fixed"); // XFontStruct *font = XLoadQueryFont(display, "-misc-fixed-medium-r-normal--11-*-*-*-*-*-iso8859-16");
+		XFontStruct *font = XLoadQueryFont(display, "fixed");
 		unsigned int actualWordLength;
 		int direction;
 		XCharStruct charStruct;
