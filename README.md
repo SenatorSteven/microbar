@@ -23,7 +23,7 @@ Well, if the comment alone does not provide enough information, microbar is a si
 
 #### :~$ microbar --help
 <pre>
-microbar: usage: microbar [parameters]
+microbar: usage: microbar [parameters] or microbar [parameter] [--help]
    [-h], [--help]     display this message
    [-c], [--config]   specify path to config, necessary
 </pre>
