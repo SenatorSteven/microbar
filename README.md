@@ -30,7 +30,7 @@ Somebody could argue that the CPU power being used in updating the bar is as tri
 
 ## Trivia
 
-"Microbar" comes from the words "micromanagement" and, of course, "bar". It is a bar that needs quite a lot of management on a micro, small, level to get it to look and work the exact way the user wants. It requires simple mathematical operations knowledge, shell commands knowledge and at last a handful of screenshots to get it to look and work perfectly.
+"Microbar" comes from the words "micromanagement" and, of course, "bar". It is a bar that needs quite a lot of management on a micro, small, level to get it to look and work the exact way the user wants. It requires simple mathematical operations knowledge, shell commands knowledge and at least a handful of screenshots to get it to look and work perfectly.
 
 
 
