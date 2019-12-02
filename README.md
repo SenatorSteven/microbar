@@ -12,10 +12,15 @@ Well, if the comment alone does not provide enough information, microbar is a si
 
 ## Features:
 - an extremely verbose and helpful default configuration
-- fully customizable bar, sections and buttons
-- ability to execute one-time commands e.g. "firefox"
-- ability to execute text-returning commands e.g. "date"
-- ability to quickly restart after a configuration edit
+- a fully customizable bar, sections and buttons
+- the ability to execute one-time commands e.g. "firefox"
+- the ability to execute text-returning commands e.g. "date"
+- the ability to quickly restart after a configuration edit
+
+
+
+## Philosophy
+Microbar does not utilize any version of the sleep function.
 
 
 
