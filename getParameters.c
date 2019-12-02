@@ -20,7 +20,9 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 						currentArgument++;
 						if(isArgumentHelp(argumentVector[currentArgument])){
 							hasReadVariable |= ExitPosition;
-							fprintf(stdout, "\nmicrobar: usage: microbar --config \"/path/to/file/\"\n   # if the specified file doesn't exist, it will be created and it will\n   contain the hardcoded default configuration\n   # the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n\n");
+							fprintf(stdout, "microbar: usage: microbar --config \"/path/to/file/\"\n");
+							fprintf(stdout, "   # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n");
+							fprintf(stdout, "   # the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n");
 							break;
 						}else{
 							*configPath = (char *)argumentVector[currentArgument];
@@ -29,7 +31,7 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 						}
 					}else{
 						hasReadVariable |= ExitPosition;
-						fprintf(stderr, "\nmicrobar: no config value specified\n\n");
+						fprintf(stderr, "microbar: no config value specified\n");
 						break;
 					}
 				}
@@ -37,19 +39,21 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 			if(!(hasReadVariable & HelpPosition)){
 				if(isArgumentHelp(argumentVector[currentArgument])){
 					hasReadVariable |= HelpPosition;
-					fprintf(stdout, "\nmicrobar: usage: microbar [parameters]\n   [-h], [--help]     display this message\n   [-c], [--config]   specify path to config, necessary\n\n");
+					fprintf(stdout, "microbar: usage: microbar [parameters] or microbar [parameter] [--help]\n");
+					fprintf(stdout, "   [-h], [--help]     display this message\n");
+					fprintf(stdout, "   [-c], [--config]   specify path to config, necessary\n");
 					break;
 				}
 			}
 			hasReadVariable |= ExitPosition;
-			fprintf(stderr, "\nmicrobar: \"%s\" is not recognized as program parameter, check help? [-h]\n\n", argumentVector[currentArgument]);
+			fprintf(stderr, "microbar: \"%s\" is not recognized as program parameter, check help? [-h]\n", argumentVector[currentArgument]);
 			break;
 		}
 		if(hasReadVariable & ConfigPosition && !(hasReadVariable & HelpPosition) && !(hasReadVariable & ExitPosition)){
 			value = 1;
 		}
 	}else{
-		fprintf(stderr, "\nmicrobar: no config parameter specified\n\n");
+		fprintf(stderr, "microbar: no config parameter specified\n");
 	}
 	return value;
 }
