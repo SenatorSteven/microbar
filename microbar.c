@@ -20,7 +20,9 @@ int main(const int argumentCount, const char *const *const argumentVector){
 		Display *display;
 		Window window;
 		while(mode == ModeContinue || mode == ModeRestart){
-			mode = ModeContinue;
+			if(mode == ModeRestart){
+				mode = ModeContinue;
+			}
 			if((display = XOpenDisplay(NULL))){
 				if(createWindows(display, configPath, &window)){
 					setTopLevelWindowProperties(display, &window);
@@ -31,6 +33,9 @@ int main(const int argumentCount, const char *const *const argumentVector){
 					fprintf(stderr, "microbar: could not create windows\n");
 				}
 				XCloseDisplay(display);
+			}else{
+				mode = ModeExit;
+				fprintf(stderr, "microbar: could not connect to server\n");
 			}
 		}
 	}
