@@ -34,8 +34,8 @@ int main(const int argumentCount, const char *const *const argumentVector){
 				}
 				XCloseDisplay(display);
 			}else{
-				mode = ModeExit;
 				fprintf(stderr, "microbar: could not connect to server\n");
+				break;
 			}
 		}
 	}
