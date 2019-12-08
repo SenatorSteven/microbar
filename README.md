@@ -11,7 +11,7 @@ Well, if the comment alone does not provide enough information, microbar is a si
 
 
 ## Features:
-- the lack of the sleep function
+- the lack of a sleep function
 - multi-monitor support
 - an extremely verbose and helpful default configuration
 - a fully customizable bar, sections and buttons
