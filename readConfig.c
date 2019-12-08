@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xrandr.h>
 
 #define DefaultCharactersCount /*------------*/ ((unsigned int)200)
 #define DefaultLinesCount /*-----------------*/ ((unsigned int)100)
@@ -37,15 +38,15 @@
 static FILE *getConfigFile(const char *const pathArray);
 static unsigned int pushSpaces(const char *const lineArray, unsigned int *const element);
 static unsigned int isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
-static unsigned int getUnsignedDecimalNumber(Display *const display, const Window *const window, const char *const lineArray, unsigned int *const element);
-static int getDecimalNumber(Display *const display, const Window *const window, const char *const lineArray, unsigned int *const element);
+static unsigned int getUnsignedDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const char *const lineArray, unsigned int *const element);
+static int getDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const char *const lineArray, unsigned int *const element);
 static int getARGB(const char *const lineArray, unsigned int *const element);
-static void getKeys(Display *const display, const Window *const window, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
+static void getKeys(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
 static char *getText(const char *const lineArray, unsigned int *const element);
 static char *getCommand(const char *const lineArray, unsigned int *const element);
 // static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
-unsigned int readConfigTopLevelWindow(Display *const display, const char *const pathArray, const Window *const parentWindow, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalMenuBorderColor, int *const globalMenuBackgroundColor, unsigned int *const menuAmount){
+unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalMenuBorderColor, int *const globalMenuBackgroundColor, unsigned int *const menuAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -76,7 +77,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									maxLinesCount = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									maxLinesCount = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= LinesPosition;
 								}
 								continue;
@@ -87,7 +88,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -98,7 +99,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*y = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*y = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= YPosition;
 								}
 								continue;
@@ -109,7 +110,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*width = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*width = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= WidthPosition;
 								}
 								continue;
@@ -120,19 +121,8 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*height = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*height = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= HeightPosition;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & BorderPosition)){
-							if(isVariable("Border", line, &element) && !isVariable("BorderColor", line, &element)){
-								pushSpaces(line, &element);
-								if(isVariable("=", line, &element)){
-									pushSpaces(line, &element);
-									*border = getUnsignedDecimalNumber(display, parentWindow, line, &element);
-									hasReadVariable |= BorderPosition;
 								}
 								continue;
 							}
@@ -144,6 +134,17 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 									pushSpaces(line, &element);
 									*borderColor = getARGB(line, &element);
 									hasReadVariable |= BorderColorPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderPosition)){
+							if(isVariable("Border", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*border = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= BorderPosition;
 								}
 								continue;
 							}
@@ -188,7 +189,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 									pushSpaces(line, &element);
 									unsigned int key;
 									int masks;
-									getKeys(display, parentWindow, line, &element, &key, &masks);
+									getKeys(display, currentMonitor, parentWindow, line, &element, &key, &masks);
 									XGrabKey(display, key, masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
 								}
 								hasReadVariable |= HideKeyPosition;
@@ -232,7 +233,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const char *const 
 	}
 	return value;
 }
-unsigned int readConfigMenuWindow(Display *const display, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalBoxBorderColor, int *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+unsigned int readConfigMenuWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalBoxBorderColor, int *const globalBoxBackgroundColor, unsigned int *const boxAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -264,7 +265,7 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									maxLinesCount = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									maxLinesCount = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= LinesPosition;
 								}
 								continue;
@@ -287,7 +288,7 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -298,7 +299,7 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*y = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*y = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= YPosition;
 								}
 								continue;
@@ -309,7 +310,7 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*width = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*width = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= WidthPosition;
 								}
 								continue;
@@ -320,19 +321,8 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*height = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*height = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= HeightPosition;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & BorderPosition)){
-							if(isVariable("Border", line, &element) && !isVariable("BorderColor", line, &element)){
-								pushSpaces(line, &element);
-								if(isVariable("=", line, &element)){
-									pushSpaces(line, &element);
-									*border = getUnsignedDecimalNumber(display, parentWindow, line, &element);
-									hasReadVariable |= BorderPosition;
 								}
 								continue;
 							}
@@ -344,6 +334,17 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 									pushSpaces(line, &element);
 									*borderColor = getARGB(line, &element);
 									hasReadVariable |= BorderColorPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderPosition)){
+							if(isVariable("Border", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*border = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= BorderPosition;
 								}
 								continue;
 							}
@@ -407,7 +408,7 @@ unsigned int readConfigMenuWindow(Display *const display, const char *const path
 	}
 	return value;
 }
-unsigned int readConfigBoxWindow(Display *const display, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
+unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -437,7 +438,7 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									maxLinesCount = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									maxLinesCount = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= LinesPosition;
 								}
 								continue;
@@ -472,7 +473,7 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -483,7 +484,7 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*y = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*y = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= YPosition;
 								}
 								continue;
@@ -494,7 +495,7 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*width = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*width = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= WidthPosition;
 								}
 								continue;
@@ -505,19 +506,8 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*height = getUnsignedDecimalNumber(display, parentWindow, line, &element);
+									*height = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= HeightPosition;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & BorderPosition)){
-							if(isVariable("Border", line, &element) && !isVariable("BorderColor", line, &element)){
-								pushSpaces(line, &element);
-								if(isVariable("=", line, &element)){
-									pushSpaces(line, &element);
-									*border = getUnsignedDecimalNumber(display, parentWindow, line, &element);
-									hasReadVariable |= BorderPosition;
 								}
 								continue;
 							}
@@ -529,6 +519,17 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 									pushSpaces(line, &element);
 									*borderColor = getARGB(line, &element);
 									hasReadVariable |= BorderColorPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderPosition)){
+							if(isVariable("Border", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*border = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= BorderPosition;
 								}
 								continue;
 							}
@@ -559,7 +560,7 @@ unsigned int readConfigBoxWindow(Display *const display, const char *const pathA
 	}
 	return value;
 }
-unsigned int readConfigTextCommands(Display *const display, const char *const pathArray, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, int *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
+unsigned int readConfigTextCommands(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, int *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -574,7 +575,6 @@ unsigned int readConfigTextCommands(Display *const display, const char *const pa
 			unsigned int element;
 			int hasReadVariable = NoPositions;
 			unsigned int boxAmountRead = 0;
-			unsigned int button = 0;
 			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
@@ -586,7 +586,7 @@ unsigned int readConfigTextCommands(Display *const display, const char *const pa
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									maxLinesCount = getUnsignedDecimalNumber(display, window, line, &element);
+									maxLinesCount = getUnsignedDecimalNumber(display, currentMonitor, window, line, &element);
 									hasReadVariable |= LinesPosition;
 								}
 								continue;
@@ -680,12 +680,83 @@ unsigned int readConfigTextCommands(Display *const display, const char *const pa
 								continue;
 							}
 						}
+						if(isVariable("}", line, &element)){
+							break;
+						}
+					}
+				}
+			}
+			free(line);
+			value = 1;
+		}else{
+			fprintf(stderr, "microbar: could not allocate space for config line\n");
+		}
+		fclose(config);
+	}
+	return value;
+}
+unsigned int readConfigButton(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const window, const unsigned int *const currentBox){
+	unsigned int value = 0;
+	FILE *config = getConfigFile(pathArray);
+	if(config){
+		size_t characters = DefaultCharactersCount;
+		char *line = (char *)malloc(characters * sizeof(char));
+		if(line){
+			unsigned int maxLinesCount = DefaultLinesCount;
+			unsigned int element;
+			int hasReadVariable = NoPositions;
+			unsigned int boxAmountRead = 0;
+			unsigned int button = 0;
+			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+				element = 0;
+				getline(&line, &characters, config);
+				pushSpaces(line, &element);
+				if(!isVariable("#", line, &element)){
+					if(!(hasReadVariable & MenuPosition)){
+						if(!(hasReadVariable & LinesPosition)){
+							if(isVariable("Lines", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									maxLinesCount = getUnsignedDecimalNumber(display, currentMonitor, window, line, &element);
+									hasReadVariable |= LinesPosition;
+								}
+								continue;
+							}
+						}
+						if(isVariable("Menu", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= MenuPosition;
+							}
+							continue;
+						}
+					}else if(boxAmountRead <= *currentBox){
+						if(!(hasReadVariable & BoxPosition)){
+							if(isVariable("Box", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("{", line, &element)){
+									boxAmountRead++;
+									hasReadVariable |= BoxPosition;
+								}
+								continue;
+							}
+						}
+						if(isVariable("}", line, &element)){
+							if(hasReadVariable & BoxPosition){
+								hasReadVariable ^= BoxPosition;
+							}else{
+								hasReadVariable ^= MenuPosition;
+							}
+							continue;
+						}
+					}else{
 						if(!(hasReadVariable & ButtonPosition)){
 							if(isVariable("Button", line, &element)){
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									button = getUnsignedDecimalNumber(display, window, line, &element);
+									button = getUnsignedDecimalNumber(display, currentMonitor, window, line, &element);
 									if(button > 5){
 										button = 0;
 									}
@@ -700,7 +771,7 @@ unsigned int readConfigTextCommands(Display *const display, const char *const pa
 					}
 				}
 			}
-			if((hasReadVariable & CommandPosition) || (hasReadVariable & DrawableCommandPosition)){
+			if(hasReadVariable & ButtonPosition){
 				if(button < 6){
 					XGrabButton(display, button, None, *window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 				}
@@ -864,6 +935,8 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n\n");
 			fclose(config);
 			config = fopen(pathArray, "r");
+		}else{
+			fprintf(stderr, "microbar: could not locate config file\n");
 		}
 	}
 	return config;
@@ -875,8 +948,8 @@ static unsigned int pushSpaces(const char *const lineArray, unsigned int *const 
 		dereferencedElement++;
 	}
 	if(dereferencedElement > *element){
-		value = 1;
 		*element = dereferencedElement;
+		value = 1;
 	}
 	return value;
 }
@@ -906,27 +979,34 @@ static unsigned int isVariable(const char *const variable, const char *const lin
 		currentCharacter++;
 	}
 	if(currentCharacter == length){
-		value = 1;
 		*element = dereferencedElement;
+		value = 1;
 	}
 	return value;
 }
-static unsigned int getUnsignedDecimalNumber(Display *const display, const Window *const parentWindow, const char *const lineArray, unsigned int *const element){
-	unsigned int number = getDecimalNumber(display, parentWindow, lineArray, element);
+static unsigned int getUnsignedDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const parentWindow, const char *const lineArray, unsigned int *const element){
+	unsigned int number = getDecimalNumber(display, currentMonitor, parentWindow, lineArray, element);
 	if((int)number < 0){
+		fprintf(stderr, "microbar: %i is not an unsigned integer\n", (int)number);
 		number = 0;
 	}
 	return number;
 }
-static int getDecimalNumber(Display *const display, const Window *const parentWindow, const char *const lineArray, unsigned int *const element){
+static int getDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const parentWindow, const char *const lineArray, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
-	XWindowAttributes windowAttributes;
-	XGetWindowAttributes(display, *parentWindow, &windowAttributes);
 	int number = 0;
 	int numberRead = 0;
 	int numberOperatedOn = 0;
 	unsigned int operation = NoOperation;
 	unsigned int lastOperation = NoOperation;
+	XWindowAttributes windowAttributes;
+	XGetWindowAttributes(display, *parentWindow, &windowAttributes);
+	if(*parentWindow == XDefaultRootWindow(display)){
+		int monitorsAmount;
+		XRRMonitorInfo *monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorsAmount);
+		windowAttributes.width = monitorInfo[*currentMonitor].width;
+		windowAttributes.height = monitorInfo[*currentMonitor].height;
+	}
 	while(dereferencedElement < DefaultCharactersCount){
 		pushSpaces(lineArray, &dereferencedElement);
 		if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
@@ -1078,7 +1158,8 @@ static int getARGB(const char *const lineArray, unsigned int *const element){
 	if(lineArray[dereferencedElement] == '#'){
 		dereferencedElement++;
 	}
-	for(unsigned int currentCharacter = 0; currentCharacter < 8; currentCharacter++){
+	unsigned int currentCharacter;
+	for(currentCharacter = 0; currentCharacter < 8; currentCharacter++){
 		color *= 16;
 		if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
 			color += lineArray[dereferencedElement];
@@ -1091,14 +1172,17 @@ static int getARGB(const char *const lineArray, unsigned int *const element){
 			color -= 87;
 		}else{
 			fprintf(stderr, "microbar: \'%c\' is not recognized as a hexadecimal number\n", lineArray[dereferencedElement]);
+			color = 0x00000000;
 			break;
 		}
 		dereferencedElement++;
 	}
-	*element = dereferencedElement;
+	if(currentCharacter == 8){
+		*element = dereferencedElement;
+	}
 	return color;
 }
-static void getKeys(Display *const display, const Window *const window, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks){
+static void getKeys(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks){
 	unsigned int dereferencedElement = *element;
 	*key = 0;
 	int dereferencedMasks = 0;
@@ -1107,7 +1191,7 @@ static void getKeys(Display *const display, const Window *const window, const ch
 		pushSpaces(lineArray, &dereferencedElement);
 		if(lookingForValue){
 			if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
-				*key = getUnsignedDecimalNumber(display, window, lineArray, &dereferencedElement);
+				*key = getUnsignedDecimalNumber(display, currentMonitor, window, lineArray, &dereferencedElement);
 				if((lineArray[dereferencedElement] >= 'A' && lineArray[dereferencedElement] <= 'Z') || (lineArray[dereferencedElement] >= 'a' && lineArray[dereferencedElement] <= 'z')){
 					dereferencedElement--;
 				}
@@ -1161,10 +1245,10 @@ static char *getText(const char *const lineArray, unsigned int *const element){
 			}
 			dereferencedElement++;
 			text[length] = '\0';
+			*element = dereferencedElement;
 		}else{
 			fprintf(stderr, "could not allocate space for text\n");
 		}
-		*element = dereferencedElement;
 	}
 	return text;
 }
@@ -1187,10 +1271,10 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 			dereferencedElement++;
 			command[length++] = '&';
 			command[length] = '\0';
+			*element = dereferencedElement;
 		}else{
 			fprintf(stderr, "could not allocate space for command\n");
 		}
-		*element = dereferencedElement;
 	}
 	return command;
 }
