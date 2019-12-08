@@ -13,46 +13,57 @@ static void onExpose(Display *const display, const Window *const topLevelWindow,
 static unsigned int isCommandRestart(const char *const commandArray);
 static unsigned int isCommandExit(const char *const commandArray);
 
-void eventLoop(Display *const display, const Window *const topLevelWindow, const char *const pathArray, unsigned int *const mode){
-	unsigned int boxAmount = getBoxAmount(display, topLevelWindow);
-	Window box[boxAmount];
+void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
+	const unsigned int dereferencedMonitorAmount = *monitorAmount;
+	unsigned int currentMonitor;
+	unsigned int currentBox;
+	unsigned int boxAmount = getBoxAmount(display, &topLevelWindowArray[0]);
+	Window box[dereferencedMonitorAmount][boxAmount];
 	{
 		Window rootWindow;
 		Window parentWindow;
 		Window *menu;
 		unsigned int menuAmount;
-		XQueryTree(display, *topLevelWindow, &rootWindow, &parentWindow, &menu, &menuAmount);
-		unsigned int boxNumber = 0;
 		Window *boxArray;
 		unsigned int menuBoxAmount;
-		unsigned int currentBox;
-		for(unsigned int currentMenu = 0; currentMenu < menuAmount; currentMenu++){
-			XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
-			currentBox = 0;
-			while(currentBox < menuBoxAmount){
-				box[boxNumber] = boxArray[currentBox];
-				boxNumber++;
-				currentBox++;
+		unsigned int boxNumber;
+		unsigned int currentMenu;
+		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
+			boxNumber = 0;
+			for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
+				XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
+				currentBox = 0;
+				while(currentBox < menuBoxAmount){
+					box[currentMonitor][boxNumber] = boxArray[currentBox];
+					boxNumber++;
+					currentBox++;
+				}
+				if(menuBoxAmount > 0){
+					XFree(boxArray);
+				}
 			}
-			if(menuBoxAmount > 0){
-				XFree(boxArray);
+			if(menuAmount > 0){
+				XFree(menu);
 			}
-		}
-		if(menuAmount > 0){
-			XFree(menu);
 		}
 	}
 	char *allocatedText[boxAmount];
 	int textColor[boxAmount];
 	char *allocatedCommand[boxAmount];
 	char *allocatedDrawableCommand[boxAmount];
-	for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
-		readConfigTextCommands(display, pathArray, &box[currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
+	for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		readConfigTextCommands(display, &currentMonitor, pathArray, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
+	}
+	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+			readConfigButton(display, &currentMonitor, pathArray, &box[currentMonitor][currentBox], &currentBox);
+		}
 	}
 	unsigned int textMaxWordLength = 0;
 	{
 		unsigned int copy;
-		for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			if(allocatedText[currentBox]){
 				copy = 0;
 				while(allocatedText[currentBox][copy] > '\0'){
@@ -69,7 +80,7 @@ void eventLoop(Display *const display, const Window *const topLevelWindow, const
 	{
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
-		for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedText[currentBox]){
 				while(allocatedText[currentBox][currentCharacter] > '\0'){
@@ -84,13 +95,13 @@ void eventLoop(Display *const display, const Window *const topLevelWindow, const
 			wordBeginning += textMaxWordLength;
 		}
 	}
-	for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+	for(currentBox = 0; currentBox < boxAmount; currentBox++){
 		free(allocatedText[currentBox]);
 	}
 	unsigned int commandMaxWordLength = 0;
 	{
 		unsigned int copy;
-		for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			if(allocatedCommand[currentBox]){
 				copy = 0;
 				while(allocatedCommand[currentBox][copy] > '\0'){
@@ -107,7 +118,7 @@ void eventLoop(Display *const display, const Window *const topLevelWindow, const
 	{
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
-		for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedCommand[currentBox]){
 				while(allocatedCommand[currentBox][currentCharacter] > '\0'){
@@ -122,13 +133,13 @@ void eventLoop(Display *const display, const Window *const topLevelWindow, const
 			wordBeginning += commandMaxWordLength;
 		}
 	}
-	for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+	for(currentBox = 0; currentBox < boxAmount; currentBox++){
 		free(allocatedCommand[currentBox]);
 	}
 	unsigned int drawableCommandMaxWordLength = 0;
 	{
 		unsigned int copy;
-		for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			if(allocatedDrawableCommand[currentBox]){
 				copy = 0;
 				while(allocatedDrawableCommand[currentBox][copy] > '\0'){
@@ -185,7 +196,7 @@ void eventLoop(Display *const display, const Window *const topLevelWindow, const
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
 		unsigned int currentCharacterRight;
-		for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedDrawableCommand[currentBox]){
 				currentCharacterRight = 0;
@@ -209,49 +220,59 @@ void eventLoop(Display *const display, const Window *const topLevelWindow, const
 			wordBeginning += drawableCommandMaxWordLength;
 		}
 	}
-	for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
+	for(currentBox = 0; currentBox < boxAmount; currentBox++){
 		free(allocatedDrawableCommand[currentBox]);
 	}
-	XMapWindow(display, *topLevelWindow);
+	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+		XMapWindow(display, topLevelWindowArray[currentMonitor]);
+	}
 	XEvent event;
-	unsigned int topLevelWindowMapped = 1;
+	unsigned int topLevelWindowArrayMapped = 1;
+	unsigned int commandWordBeginning;
 	for(;;){
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
-			if(topLevelWindowMapped){
-				XUnmapWindow(display, *topLevelWindow);
-				topLevelWindowMapped = 0;
+			if(topLevelWindowArrayMapped){
+				for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+					XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+				}
+				topLevelWindowArrayMapped = 0;
 			}else{
-				XMapWindow(display, *topLevelWindow);
-				topLevelWindowMapped = 1;
+				for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+					XMapWindow(display, topLevelWindowArray[currentMonitor]);
+				}
+				topLevelWindowArrayMapped = 1;
 			}
 		}else if(event.type == ButtonPress){
-			unsigned int commandWordBeginning = 0;
-			for(unsigned int currentBox = 0; currentBox < boxAmount; currentBox++){
-				if(event.xbutton.window == box[currentBox]){
-					if(drawableCommand2DRemappedArray[currentBox * drawableCommandMaxWordLength]){
-						drawCommand(display, topLevelWindow, drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
-					}
-					if(command2DRemappedArray[commandWordBeginning]){
-						if(isCommandRestart(&command2DRemappedArray[commandWordBeginning])){
-							*mode = ModeRestart;
-							break;
-						}else if(isCommandExit(&command2DRemappedArray[commandWordBeginning])){
-							*mode = ModeExit;
-							break;
-						}else{
-							system(&command2DRemappedArray[commandWordBeginning]);
-							break;
+			for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+				commandWordBeginning = 0;
+				for(currentBox = 0; currentBox < boxAmount; currentBox++){
+					if(event.xbutton.window == box[currentMonitor][currentBox]){
+						if(drawableCommand2DRemappedArray[currentBox * drawableCommandMaxWordLength]){
+							drawCommand(display, &topLevelWindowArray[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
 						}
+						if(command2DRemappedArray[commandWordBeginning]){
+							if(isCommandRestart(&command2DRemappedArray[commandWordBeginning])){
+								*mode = ModeRestart;
+							}else if(isCommandExit(&command2DRemappedArray[commandWordBeginning])){
+								*mode = ModeExit;
+							}else{
+								system(&command2DRemappedArray[commandWordBeginning]);
+							}
+						}
+						currentMonitor = dereferencedMonitorAmount;
+						break;
 					}
+					commandWordBeginning += commandMaxWordLength;
 				}
-				commandWordBeginning += commandMaxWordLength;
 			}
 			if(*mode == ModeRestart || *mode == ModeExit){
 				break;
 			}
 		}else if(event.type == Expose){
-			onExpose(display, topLevelWindow, box, &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
+			for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+				onExpose(display, &topLevelWindowArray[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
+			}
 		}
 	}
 	return;
