@@ -30,23 +30,23 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 							continue;
 						}
 					}else{
-						hasReadVariable |= ExitPosition;
 						fprintf(stderr, "microbar: no config value specified\n");
+						hasReadVariable |= ExitPosition;
 						break;
 					}
 				}
 			}
 			if(!(hasReadVariable & HelpPosition)){
 				if(isArgumentHelp(argumentVector[currentArgument])){
-					hasReadVariable |= HelpPosition;
 					fprintf(stdout, "microbar: usage: microbar [parameters] or microbar [parameter] [--help]\n");
 					fprintf(stdout, "   [-h], [--help]     display this message\n");
 					fprintf(stdout, "   [-c], [--config]   specify path to config, necessary\n");
+					hasReadVariable |= HelpPosition;
 					break;
 				}
 			}
-			hasReadVariable |= ExitPosition;
 			fprintf(stderr, "microbar: \"%s\" is not recognized as program parameter, check help? [-h]\n", argumentVector[currentArgument]);
+			hasReadVariable |= ExitPosition;
 			break;
 		}
 		if(hasReadVariable & ConfigPosition && !(hasReadVariable & HelpPosition) && !(hasReadVariable & ExitPosition)){
