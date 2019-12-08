@@ -1,6 +1,6 @@
 #ifndef EVENTLOOP_H
 #define EVENTLOOP_H
 
-void eventLoop(Display *const display, const Window *const topLevelWindow, const char *const pathArray, unsigned int *const mode);
+void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode);
 
 #endif
