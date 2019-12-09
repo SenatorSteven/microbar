@@ -275,6 +275,7 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 			}
 		}
 	}
+	XUngrabKeyboard(display, CurrentTime);
 	return;
 }
 static unsigned int getBoxAmount(Display *const display, const Window *const topLevelWindow){
