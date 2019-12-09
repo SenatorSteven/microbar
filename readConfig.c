@@ -1216,7 +1216,8 @@ static void getKeys(Display *const display, const unsigned int *const currentMon
 			}
 			lookingForValue = 0;
 		}else{
-			if(isVariable("+", lineArray, &dereferencedElement)){
+			if(lineArray[dereferencedElement] == '+'){
+				dereferencedElement++;
 				lookingForValue = 1;
 			}else{
 				break;
