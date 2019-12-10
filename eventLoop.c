@@ -15,9 +15,9 @@ static unsigned int isCommandExit(const char *const commandArray);
 
 void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
+	unsigned int boxAmount = getBoxAmount(display, &topLevelWindowArray[0]);
 	unsigned int currentMonitor;
 	unsigned int currentBox;
-	unsigned int boxAmount = getBoxAmount(display, &topLevelWindowArray[0]);
 	Window box[dereferencedMonitorAmount][boxAmount];
 	{
 		Window rootWindow;
