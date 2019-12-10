@@ -226,6 +226,7 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
+	XAutoRepeatOff(display);
 	XEvent event;
 	unsigned int topLevelWindowArrayMapped = 1;
 	unsigned int commandWordBeginning;
@@ -243,7 +244,8 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 				}
 				topLevelWindowArrayMapped = 1;
 			}
-		}else if(event.type == ButtonPress){
+		}
+		if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 				commandWordBeginning = 0;
 				for(currentBox = 0; currentBox < boxAmount; currentBox++){
