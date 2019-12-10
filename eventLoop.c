@@ -33,11 +33,9 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 			boxNumber = 0;
 			for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
 				XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
-				currentBox = 0;
-				while(currentBox < menuBoxAmount){
+				for(currentBox = 0; currentBox < menuBoxAmount; currentBox++){
 					box[currentMonitor][boxNumber] = boxArray[currentBox];
 					boxNumber++;
-					currentBox++;
 				}
 				if(menuBoxAmount > 0){
 					XFree(boxArray);
