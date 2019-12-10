@@ -95,9 +95,6 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 			wordBeginning += textMaxWordLength;
 		}
 	}
-	for(currentBox = 0; currentBox < boxAmount; currentBox++){
-		free(allocatedText[currentBox]);
-	}
 	unsigned int commandMaxWordLength = 0;
 	{
 		unsigned int copy;
@@ -132,9 +129,6 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 			}
 			wordBeginning += commandMaxWordLength;
 		}
-	}
-	for(currentBox = 0; currentBox < boxAmount; currentBox++){
-		free(allocatedCommand[currentBox]);
 	}
 	unsigned int drawableCommandMaxWordLength = 0;
 	{
@@ -221,6 +215,8 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 		}
 	}
 	for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		free(allocatedText[currentBox]);
+		free(allocatedCommand[currentBox]);
 		free(allocatedDrawableCommand[currentBox]);
 	}
 	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
