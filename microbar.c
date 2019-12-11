@@ -2,6 +2,7 @@
 #include <X11/Xutil.h>
 #include <X11/Xatom.h>
 #include <X11/extensions/Xrandr.h>
+#include "headers/programName.h"
 #include "headers/getParameters.h"
 #include "headers/readConfig.h"
 #include "headers/eventLoop.h"
@@ -32,12 +33,12 @@ int main(const int argumentCount, const char *const *const argumentVector){
 					eventLoop(display, configPath, window, &monitorAmount, &mode);
 					cleanupWindows(display, window, &monitorAmount);
 				}else{
-					fprintf(stderr, "microbar: could not create windows\n");
+					fprintf(stderr, "%s: could not create windows\n", ProgramName);
 					mode = ModeExit;
 				}
 				XCloseDisplay(display);
 			}else{
-				fprintf(stderr, "microbar: could not connect to server\n");
+				fprintf(stderr, "%s: could not connect to server\n", ProgramName);
 				break;
 			}
 		}
