@@ -154,7 +154,7 @@ static unsigned int createWindows(Display *const display, const char *const path
 static void setTopLevelWindowProperties(Display *const display, const Window *const windowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	XTextProperty textProperty = {
-		.value = (unsigned char *)"microbar",
+		.value = (unsigned char *)ProgramName,
 		.encoding = XA_STRING,
 		.format = 8,
 		.nitems = 8
@@ -180,8 +180,8 @@ static void setTopLevelWindowProperties(Display *const display, const Window *co
 		.initial_state = NormalState
 	};
 	XClassHint classHint = {
-		.res_name = "microbar",
-		.res_class = "microbar"
+		.res_name = ProgramName,
+		.res_class = ProgramName
 	};
 	long unsigned int data[12];
 	XRRMonitorInfo *monitorInfo;
@@ -205,8 +205,8 @@ static void setTopLevelWindowProperties(Display *const display, const Window *co
 		XSetWMNormalHints(display, windowArray[currentMonitor], &sizeHints);
 		XSetWMHints(display, windowArray[currentMonitor], &WMHints);
 		XSetClassHint(display, windowArray[currentMonitor], &classHint);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)"microbar", 8);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)"microbar", 8);
+		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
+		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
 		data[0] = 0xFFFFFFFF;
 		data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
 		data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
