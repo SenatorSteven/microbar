@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
+#include "headers/programName.h"
 
 #define DefaultCharactersCount /*------------*/ ((unsigned int)200)
 #define DefaultLinesCount /*-----------------*/ ((unsigned int)100)
@@ -227,7 +228,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 			free(line);
 			value = 1;
 		}else{
-			fprintf(stderr, "microbar: could not allocate space for config line\n");
+			fprintf(stderr, "%s: could not allocate space for config line\n", ProgramName);
 		}
 		fclose(config);
 	}
@@ -402,7 +403,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 			free(line);
 			value = 1;
 		}else{
-			fprintf(stderr, "microbar: could not allocate space for config line\n");
+			fprintf(stderr, "%s: could not allocate space for config line\n", ProgramName);
 		}
 		fclose(config);
 	}
@@ -554,7 +555,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 			free(line);
 			value = 1;
 		}else{
-			fprintf(stderr, "microbar: could not allocate space for config line\n");
+			fprintf(stderr, "%s: could not allocate space for config line\n", ProgramName);
 		}
 		fclose(config);
 	}
@@ -689,7 +690,7 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 			free(line);
 			value = 1;
 		}else{
-			fprintf(stderr, "microbar: could not allocate space for config line\n");
+			fprintf(stderr, "%s: could not allocate space for config line\n", ProgramName);
 		}
 		fclose(config);
 	}
@@ -779,7 +780,7 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 			free(line);
 			value = 1;
 		}else{
-			fprintf(stderr, "microbar: could not allocate space for config line\n");
+			fprintf(stderr, "%s: could not allocate space for config line\n", ProgramName);
 		}
 		fclose(config);
 	}
@@ -936,7 +937,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fclose(config);
 			config = fopen(pathArray, "r");
 		}else{
-			fprintf(stderr, "microbar: could not locate config file\n");
+			fprintf(stderr, "%s: could not locate config file\n", ProgramName);
 		}
 	}
 	return config;
@@ -987,7 +988,7 @@ static unsigned int isVariable(const char *const variable, const char *const lin
 static unsigned int getUnsignedDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const parentWindow, const char *const lineArray, unsigned int *const element){
 	unsigned int number = getDecimalNumber(display, currentMonitor, parentWindow, lineArray, element);
 	if((int)number < 0){
-		fprintf(stderr, "microbar: %i is not an unsigned integer\n", (int)number);
+		fprintf(stderr, "%s: %i is not an unsigned integer\n", ProgramName, (int)number);
 		number = 0;
 	}
 	return number;
@@ -1171,7 +1172,7 @@ static int getARGB(const char *const lineArray, unsigned int *const element){
 			color += lineArray[dereferencedElement];
 			color -= 87;
 		}else{
-			fprintf(stderr, "microbar: \'%c\' is not recognized as a hexadecimal number\n", lineArray[dereferencedElement]);
+			fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", ProgramName, lineArray[dereferencedElement]);
 			color = 0x00000000;
 			break;
 		}
@@ -1248,7 +1249,7 @@ static char *getText(const char *const lineArray, unsigned int *const element){
 			text[length] = '\0';
 			*element = dereferencedElement;
 		}else{
-			fprintf(stderr, "could not allocate space for text\n");
+			fprintf(stderr, "%s: could not allocate space for text\n", ProgramName);
 		}
 	}
 	return text;
@@ -1274,7 +1275,7 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 			command[length] = '\0';
 			*element = dereferencedElement;
 		}else{
-			fprintf(stderr, "could not allocate space for command\n");
+			fprintf(stderr, "%s: could not allocate space for command\n", ProgramName);
 		}
 	}
 	return command;
@@ -1286,7 +1287,7 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 		while(lineArray[length] != 10){
 			length++;
 		}
-		fprintf(stderr, "microbar: line %u: \"", *currentLine + 1);
+		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine + 1);
 		for(unsigned int currentCharacter = 0; currentCharacter < length; currentCharacter++){
 			fprintf(stderr, "%c", lineArray[currentCharacter]);
 		}
