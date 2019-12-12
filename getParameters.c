@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "headers/programName.h"
+#include "headers/defines.h"
 
 #define NoPositions /*----*/ 0
 #define ConfigPosition /*-*/ (1 << 0)
