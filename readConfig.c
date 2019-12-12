@@ -803,7 +803,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# rules #\n");
 			fprintf(config, "# # # # #\n\n");
 			fprintf(config, "# this file needs to be user-specified when launched\n");
-			fprintf(config, "# max line character length is 200\n");
+			fprintf(config, "# max line character length is %u\n", DefaultCharactersCount);
 			fprintf(config, "# comments are signified by a \'#\' at the beginning of the line\n");
 			fprintf(config, "# one variable per line, followed by \'=\' and it's value\n");
 			fprintf(config, "# all spaces and tabs are ignored\n");
@@ -813,7 +813,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# argb do not require a \'#\' before the value\n");
 			fprintf(config, "# text requires the same quote character before and after it\n");
 			fprintf(config, "# text quotation is variable, the first character after \'=\' is the quote character\n");
-			fprintf(config, "# if (y < height of screen / 2) the bar is placed on top otherwise on bottom\n");
+			fprintf(config, "# if (y < height of screen / 2) the bar is placed on top otherwise on bottom\n\n\n\n");
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
@@ -851,14 +851,14 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# # # # #\n");
 			fprintf(config, "# extra #\n");
 			fprintf(config, "# # # # #\n\n");
-			fprintf(config, "# lines: default 100\n");
+			fprintf(config, "# lines: default %u\n", DefaultLinesCount);
 			fprintf(config, "# hideKey: modifiers: Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# text: requires quotation\n");
 			fprintf(config, "# command: requires quotation\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 160\n");
+			fprintf(config, "lines = 163\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
