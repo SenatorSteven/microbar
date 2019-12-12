@@ -2,10 +2,7 @@
 #include <stdlib.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
-#include "headers/programName.h"
-
-#define DefaultCharactersCount /*------------*/ ((unsigned int)200)
-#define DefaultLinesCount /*-----------------*/ ((unsigned int)100)
+#include "headers/defines.h"
 
 #define NoPositions /*-----------------------*/ 0
 #define LinesPosition /*---------------------*/ (1 << 0)
