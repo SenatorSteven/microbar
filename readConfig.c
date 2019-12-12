@@ -805,7 +805,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# this file needs to be user-specified when launched\n");
 			fprintf(config, "# max line character length is %u\n", DefaultCharactersCount);
 			fprintf(config, "# comments are signified by a \'#\' at the beginning of the line\n");
-			fprintf(config, "# one variable per line, followed by \'=\' and it's value\n");
+			fprintf(config, "# one variable per line, followed by \'=\' and it\'s value\n");
 			fprintf(config, "# all spaces and tabs are ignored\n");
 			fprintf(config, "# all variables are valued 0 or undefined by default unless stated otherwise\n");
 			fprintf(config, "# colors are in argb format\n");
