@@ -8,20 +8,20 @@
 
 static unsigned int isArgument(const char *const argument, const char *const argumentArray);
 
-unsigned int getParameters(const int *const argumentCount, const char *const *const argumentVector, const char **configPath){
-	const int dereferencedArgumentCount = *argumentCount;
+unsigned int getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector, const char **configPath){
+	const unsigned int dereferencedArgumentCount = *argumentCount;
 	unsigned int value = 0;
 	if(dereferencedArgumentCount > 1){
 		unsigned int hasReadVariable = NoPositions;
-		for(int currentArgument = 1; currentArgument < dereferencedArgumentCount; currentArgument++){
+		for(unsigned int currentArgument = 1; currentArgument < dereferencedArgumentCount; currentArgument++){
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
-					if(argumentVector[currentArgument + 1]){
-						currentArgument++;
+					currentArgument++;
+					if(argumentVector[currentArgument]){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file/\"\n", ProgramName, ProgramName);
-							fprintf(stdout, "   # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n");
-							fprintf(stdout, "   # the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n");
+							fprintf(stdout, "%s# if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n", Tab);
+							fprintf(stdout, "%s# the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n", Tab);
 							hasReadVariable |= HelpPosition;
 							break;
 						}else{
@@ -39,13 +39,17 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 			if(!(hasReadVariable & HelpPosition)){
 				if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 					fprintf(stdout, "%s: usage: %s [parameters] or %s [parameter] [--help]\n", ProgramName, ProgramName, ProgramName);
-					fprintf(stdout, "   [-h], [--help]     display this message\n");
-					fprintf(stdout, "   [-c], [--config]   specify path to config, necessary\n");
+					fprintf(stdout, "%s[-h], [--help]  %sdisplay this message\n", Tab, Tab);
+					fprintf(stdout, "%s[-c], [--config]%sspecify path to config, necessary\n", Tab, Tab);
 					hasReadVariable |= HelpPosition;
 					break;
 				}
 			}
-			fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", ProgramName, argumentVector[currentArgument]);
+			if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
+				fprintf(stdout, "%s: the config parameter has already been specified\n", ProgramName);
+			}else{
+				fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", ProgramName, argumentVector[currentArgument]);
+			}
 			hasReadVariable |= ExitPosition;
 			break;
 		}
