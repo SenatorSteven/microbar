@@ -42,7 +42,7 @@ static int getARGB(const char *const lineArray, unsigned int *const element);
 static void getKeys(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
 static char *getText(const char *const lineArray, unsigned int *const element);
 static char *getCommand(const char *const lineArray, unsigned int *const element);
-// static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
+static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
 unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalMenuBorderColor, int *const globalMenuBackgroundColor, unsigned int *const menuAmount){
 	unsigned int value = 0;
@@ -219,6 +219,30 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 							hasReadVariable ^= BoxPosition;
 							continue;
 						}
+					}
+					if(!isVariable("Lines",                     line, &element) &&
+					   !isVariable("X",                         line, &element) &&
+					   !isVariable("Y",                         line, &element) &&
+					   !isVariable("Width",                     line, &element) &&
+					   !isVariable("Height",                    line, &element) &&
+					   !isVariable("Border",                    line, &element) &&
+					   !isVariable("BorderColor",               line, &element) &&
+					   !isVariable("BackgroundColor",           line, &element) &&
+					   !isVariable("GlobalMenuBorderColor",     line, &element) &&
+					   !isVariable("GlobalMenuBackgroundColor", line, &element) &&
+					   !isVariable("GlobalBoxBorderColor",      line, &element) &&
+					   !isVariable("GlobalBoxBackgroundColor",  line, &element) &&
+					   !isVariable("HideKey",                   line, &element) &&
+					   !isVariable("Text",                      line, &element) &&
+					   !isVariable("TextColor",                 line, &element) &&
+					   !isVariable("GlobalTextColor",           line, &element) &&
+					   !isVariable("Command",                   line, &element) &&
+					   !isVariable("DrawableCommand",           line, &element) &&
+					   !isVariable("Button",                    line, &element) &&
+					   !isVariable("Menu",                      line, &element) &&
+					   !isVariable("Box",                       line, &element) &&
+					   !isVariable("}",                         line, &element)){
+						printLineError(line, &element, &currentLine);
 					}
 				}
 			}
@@ -1277,7 +1301,7 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 	}
 	return command;
 }
-/*static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine){
+static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine){
 	unsigned int value = 0;
 	if(lineArray[*element] != 10){
 		unsigned int length = 0;
@@ -1292,4 +1316,4 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 		value = 1;
 	}
 	return value;
-}*/
+}
