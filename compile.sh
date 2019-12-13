@@ -3,3 +3,4 @@ if [ ! -d "output" ]; then
 	mkdir output
 fi
 gcc -Wall -Wextra -pedantic microbar.c getParameters.c readConfig.c eventLoop.c -lX11 -lXrandr -o output/microbar
+exit 0
