@@ -6,8 +6,7 @@
 #define HelpPosition /*---*/ (1 << 1)
 #define ExitPosition /*---*/ (1 << 2)
 
-static unsigned int isArgumentHelp(const char *const argumentArray);
-static unsigned int isArgumentConfig(const char *const argumentArray);
+static unsigned int isArgument(const char *const argument, const char *const argumentArray);
 
 unsigned int getParameters(const int *const argumentCount, const char *const *const argumentVector, const char **configPath){
 	const int dereferencedArgumentCount = *argumentCount;
@@ -16,10 +15,10 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 		unsigned int hasReadVariable = NoPositions;
 		for(int currentArgument = 1; currentArgument < dereferencedArgumentCount; currentArgument++){
 			if(!(hasReadVariable & ConfigPosition)){
-				if(isArgumentConfig(argumentVector[currentArgument])){
+				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
 					if(argumentVector[currentArgument + 1]){
 						currentArgument++;
-						if(isArgumentHelp(argumentVector[currentArgument])){
+						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file/\"\n", ProgramName, ProgramName);
 							fprintf(stdout, "   # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n");
 							fprintf(stdout, "   # the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n");
@@ -38,7 +37,7 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 				}
 			}
 			if(!(hasReadVariable & HelpPosition)){
-				if(isArgumentHelp(argumentVector[currentArgument])){
+				if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 					fprintf(stdout, "%s: usage: %s [parameters] or %s [parameter] [--help]\n", ProgramName, ProgramName, ProgramName);
 					fprintf(stdout, "   [-h], [--help]     display this message\n");
 					fprintf(stdout, "   [-c], [--config]   specify path to config, necessary\n");
@@ -58,39 +57,31 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 	}
 	return value;
 }
-static unsigned int isArgumentHelp(const char *const argumentArray){
-	return (
-		(
-			argumentArray[0] == '-' &&
-			(argumentArray[1] == 'H' || argumentArray[1] == 'h') &&
-			argumentArray[2] == '\0'
-		) || (
-			argumentArray[0] == '-' &&
-			argumentArray[1] == '-' &&
-			(argumentArray[2] == 'H' || argumentArray[2] == 'h') &&
-			(argumentArray[3] == 'E' || argumentArray[3] == 'e') &&
-			(argumentArray[4] == 'L' || argumentArray[4] == 'l') &&
-			(argumentArray[5] == 'P' || argumentArray[5] == 'p') &&
-			argumentArray[6] == '\0'
-		)
-	);
-}
-static unsigned int isArgumentConfig(const char *const argumentArray){
-	return (
-		(
-			argumentArray[0] == '-' &&
-			(argumentArray[1] == 'C' || argumentArray[1] == 'c') &&
-			argumentArray[2] == '\0'
-		) || (
-			argumentArray[0] == '-' &&
-			argumentArray[1] == '-' &&
-			(argumentArray[2] == 'C' || argumentArray[2] == 'c') &&
-			(argumentArray[3] == 'O' || argumentArray[3] == 'o') &&
-			(argumentArray[4] == 'N' || argumentArray[4] == 'n') &&
-			(argumentArray[5] == 'F' || argumentArray[5] == 'f') &&
-			(argumentArray[6] == 'I' || argumentArray[6] == 'i') &&
-			(argumentArray[7] == 'G' || argumentArray[7] == 'g') &&
-			argumentArray[8] == '\0'
-		)
-	);
+static unsigned int isArgument(const char *const argument, const char *const argumentArray){
+	unsigned int value = 0;
+	unsigned int length = 0;
+	while(argument[length] > '\0'){
+		length++;
+	}
+	unsigned int currentCharacter = 0;
+	while(currentCharacter < length){
+		if(argument[currentCharacter] >= 'A' && argument[currentCharacter] <= 'Z'){
+			if(!(argumentArray[currentCharacter] == argument[currentCharacter] || argumentArray[currentCharacter] == argument[currentCharacter] + 32)){
+				break;
+			}
+		}else if(argument[currentCharacter] >= 'a' && argument[currentCharacter] <= 'z'){
+			if(!(argumentArray[currentCharacter] == argument[currentCharacter] || argumentArray[currentCharacter] == argument[currentCharacter] - 32)){
+				break;
+			}
+		}else{
+			if(!(argumentArray[currentCharacter] == argument[currentCharacter])){
+				break;
+			}
+		}
+		currentCharacter++;
+	}
+	if(currentCharacter == length){
+		value = 1;
+	}
+	return value;
 }
