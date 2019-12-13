@@ -20,10 +20,10 @@ unsigned int getParameters(const int *const argumentCount, const char *const *co
 					if(argumentVector[currentArgument + 1]){
 						currentArgument++;
 						if(isArgumentHelp(argumentVector[currentArgument])){
-							hasReadVariable |= ExitPosition;
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file/\"\n", ProgramName, ProgramName);
 							fprintf(stdout, "   # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n");
 							fprintf(stdout, "   # the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n");
+							hasReadVariable |= HelpPosition;
 							break;
 						}else{
 							*configPath = (char *)argumentVector[currentArgument];
