@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <X11/Xutil.h>
 #include "headers/readConfig.h"
+#include "headers/defines.h"
 
 #define ModeContinue /*-*/ ((unsigned int)0)
 #define ModeRestart /*--*/ ((unsigned int)1)
@@ -295,53 +296,49 @@ static unsigned int getBoxAmount(Display *const display, const Window *const top
 }
 static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const int *const textColor){
 	system(systemCommandArray);
-	char *line;
+	char *result;
 	{
 		FILE *drawableCommand = fopen(drawableCommandPathArray, "r");
-		size_t characters = 200;
-		line = (char *)malloc(characters * sizeof(char));
-		getline(&line, &characters, drawableCommand);
+		size_t characters = DefaultLinesCount;
+		result = (char *)malloc(characters * sizeof(char));
+		getline(&result, &characters, drawableCommand);
 		fclose(drawableCommand);
 	}
-	unsigned int resultLength = 0;
-	{
-		while(line[resultLength] > '\0'){
+	if(result){
+		unsigned int resultLength = 0;
+		while(result[resultLength] > '\0'){
 			resultLength++;
 		}
-	}
-	if(resultLength > 1){
-		resultLength--;
-		char result[resultLength];
-		{
-			for(unsigned int currentCharacter = 0; currentCharacter < resultLength; currentCharacter++){
-				result[currentCharacter] = line[currentCharacter];
-			}
-		}
-		GC gc = XCreateGC(display, *topLevelWindow, None, None);
-		XSetForeground(display, gc, *textColor);
-		int x;
-		int y;
-		{
-			XCharStruct charStruct;
+		if(resultLength > 1){
+			resultLength--;
+			GC gc = XCreateGC(display, *topLevelWindow, None, None);
+			XSetForeground(display, gc, *textColor);
+			int x;
+			int y;
 			{
-				XFontStruct *font = XLoadQueryFont(display, "fixed");
-				int direction;
-				XTextExtents(font, drawableCommand2DRemappedArray, resultLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
-				XFreeFont(display, font);
+				XCharStruct charStruct;
+				{
+					XFontStruct *font = XLoadQueryFont(display, "fixed");
+					int direction;
+					XTextExtents(font, drawableCommand2DRemappedArray, resultLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
+					XFreeFont(display, font);
+				}
+				XWindowAttributes windowAttributes;
+				XGetWindowAttributes(display, *box, &windowAttributes);
+				x = windowAttributes.width;
+				x -= charStruct.width;
+				x /= 2;
+				y = windowAttributes.height;
+				y += charStruct.ascent;
+				y /= 2;
 			}
-			XWindowAttributes windowAttributes;
-			XGetWindowAttributes(display, *box, &windowAttributes);
-			x = windowAttributes.width;
-			x -= charStruct.width;
-			x /= 2;
-			y = windowAttributes.height;
-			y += charStruct.ascent;
-			y /= 2;
+			XClearWindow(display, *box);
+			XDrawString(display, *box, gc, x, y, result, resultLength);
 		}
-		XClearWindow(display, *box);
-		XDrawString(display, *box, gc, x, y, result, resultLength);
+		free(result);
+	}else{
+		fprintf(stderr, "%s: could not allocate space for drawable command line\n", ProgramName);
 	}
-	free(line);
 	return;
 }
 static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray){
