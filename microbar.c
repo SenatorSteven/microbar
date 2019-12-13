@@ -17,7 +17,7 @@ static void cleanupWindows(Display *const display, const Window *const topLevelW
 
 int main(const int argumentCount, const char *const *const argumentVector){
 	const char *configPath;
-	if(getParameters(&argumentCount, argumentVector, &configPath)){
+	if(getParameters((unsigned int *)&argumentCount, argumentVector, &configPath)){
 		unsigned int mode = ModeContinue;
 		Display *display;
 		unsigned int monitorAmount;
