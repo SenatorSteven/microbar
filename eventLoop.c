@@ -11,8 +11,7 @@
 static unsigned int getBoxAmount(Display *const display, const Window *const topLevelWindow);
 static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const int *const textColor);
 static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray);
-static unsigned int isCommandRestart(const char *const commandArray);
-static unsigned int isCommandExit(const char *const commandArray);
+static unsigned int isCommand(const char *const command, const char *const commandArray);
 
 void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
@@ -53,11 +52,6 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 	char *allocatedDrawableCommand[boxAmount];
 	for(currentBox = 0; currentBox < boxAmount; currentBox++){
 		readConfigTextCommands(display, &currentMonitor, pathArray, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
-	}
-	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
-			readConfigButton(display, &currentMonitor, pathArray, &box[currentMonitor][currentBox], &currentBox);
-		}
 	}
 	unsigned int textMaxWordLength = 0;
 	unsigned int commandMaxWordLength = 0;
@@ -209,6 +203,9 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 		free(allocatedDrawableCommand[currentBox]);
 	}
 	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+			readConfigButton(display, &currentMonitor, pathArray, &box[currentMonitor][currentBox], &currentBox);
+		}
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
 	XEvent event;
@@ -237,9 +234,9 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 							drawCommand(display, &topLevelWindowArray[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
 						}
 						if(command2DRemappedArray[commandWordBeginning]){
-							if(isCommandRestart(&command2DRemappedArray[commandWordBeginning])){
+							if(isCommand("Restart&", &command2DRemappedArray[commandWordBeginning])){
 								*mode = ModeRestart;
-							}else if(isCommandExit(&command2DRemappedArray[commandWordBeginning])){
+							}else if(isCommand("Exit&", &command2DRemappedArray[commandWordBeginning])){
 								*mode = ModeExit;
 							}else{
 								system(&command2DRemappedArray[commandWordBeginning]);
@@ -367,26 +364,31 @@ static void onExpose(Display *const display, const Window *const topLevelWindow,
 	}
 	return;
 }
-static unsigned int isCommandRestart(const char *const commandArray){
-	return (
-		(commandArray[0] == 'R' || commandArray[0] == 'r') &&
-		(commandArray[1] == 'E' || commandArray[1] == 'e') &&
-		(commandArray[2] == 'S' || commandArray[2] == 's') &&
-		(commandArray[3] == 'T' || commandArray[3] == 't') &&
-		(commandArray[4] == 'A' || commandArray[4] == 'a') &&
-		(commandArray[5] == 'R' || commandArray[5] == 'r') &&
-		(commandArray[6] == 'T' || commandArray[6] == 't') &&
-		commandArray[7] == '&' &&
-		commandArray[8] == '\0'
-	);
-}
-static unsigned int isCommandExit(const char *const commandArray){
-	return (
-		(commandArray[0] == 'E' || commandArray[0] == 'e') &&
-		(commandArray[1] == 'X' || commandArray[1] == 'x') &&
-		(commandArray[2] == 'I' || commandArray[2] == 'i') &&
-		(commandArray[3] == 'T' || commandArray[3] == 't') &&
-		commandArray[4] == '&' &&
-		commandArray[5] == '\0'
-	);
+static unsigned int isCommand(const char *const command, const char *const commandArray){
+	unsigned int value = 0;
+	unsigned int length = 0;
+	while(command[length] > '\0'){
+		length++;
+	}
+	unsigned int currentCharacter = 0;
+	while(currentCharacter < length){
+		if(command[currentCharacter] >= 'A' && command[currentCharacter] <= 'Z'){
+			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] + 32)){
+				break;
+			}
+		}else if(command[currentCharacter] >= 'a' && command[currentCharacter] <= 'z'){
+			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] - 32)){
+				break;
+			}
+		}else{
+			if(!(commandArray[currentCharacter] == command[currentCharacter])){
+				break;
+			}
+		}
+		currentCharacter++;
+	}
+	if(currentCharacter == length){
+		value = 1;
+	}
+	return value;
 }
