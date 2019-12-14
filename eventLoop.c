@@ -60,6 +60,8 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 		}
 	}
 	unsigned int textMaxWordLength = 0;
+	unsigned int commandMaxWordLength = 0;
+	unsigned int drawableCommandMaxWordLength = 0;
 	{
 		unsigned int copy;
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
@@ -72,8 +74,28 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 					textMaxWordLength = copy;
 				}
 			}
+			if(allocatedCommand[currentBox]){
+				copy = 0;
+				while(allocatedCommand[currentBox][copy] > '\0'){
+					copy++;
+				}
+				if(copy > commandMaxWordLength){
+					commandMaxWordLength = copy;
+				}
+			}
+			if(allocatedDrawableCommand[currentBox]){
+				copy = 0;
+				while(allocatedDrawableCommand[currentBox][copy] > '\0'){
+					copy++;
+				}
+				if(copy > drawableCommandMaxWordLength){
+					drawableCommandMaxWordLength = copy;
+				}
+			}
 		}
 		textMaxWordLength++;
+		commandMaxWordLength++;
+		drawableCommandMaxWordLength++;
 	}
 	char text2DRemappedArray[boxAmount * textMaxWordLength];
 	{
@@ -94,22 +116,6 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 			wordBeginning += textMaxWordLength;
 		}
 	}
-	unsigned int commandMaxWordLength = 0;
-	{
-		unsigned int copy;
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
-			if(allocatedCommand[currentBox]){
-				copy = 0;
-				while(allocatedCommand[currentBox][copy] > '\0'){
-					copy++;
-				}
-				if(copy > commandMaxWordLength){
-					commandMaxWordLength = copy;
-				}
-			}
-		}
-		commandMaxWordLength++;
-	}
 	char command2DRemappedArray[boxAmount * commandMaxWordLength];
 	{
 		unsigned int currentCharacter;
@@ -128,22 +134,6 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 			}
 			wordBeginning += commandMaxWordLength;
 		}
-	}
-	unsigned int drawableCommandMaxWordLength = 0;
-	{
-		unsigned int copy;
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
-			if(allocatedDrawableCommand[currentBox]){
-				copy = 0;
-				while(allocatedDrawableCommand[currentBox][copy] > '\0'){
-					copy++;
-				}
-				if(copy > drawableCommandMaxWordLength){
-					drawableCommandMaxWordLength = copy;
-				}
-			}
-		}
-		drawableCommandMaxWordLength++;
 	}
 	unsigned int drawableCommandPathLength = 0;
 	{
