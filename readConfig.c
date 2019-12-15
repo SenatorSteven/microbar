@@ -958,7 +958,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fclose(config);
 			config = fopen(pathArray, "r");
 		}else{
-			fprintf(stderr, "%s: could not locate config file\n", ProgramName);
+			fprintf(stderr, "%s: could not create config file\n", ProgramName);
 		}
 	}
 	return config;
