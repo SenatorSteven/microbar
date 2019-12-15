@@ -67,24 +67,24 @@ static unsigned int isArgument(const char *const argument, const char *const arg
 	while(argument[length] > '\0'){
 		length++;
 	}
-	unsigned int currentCharacter = 0;
-	while(currentCharacter < length){
-		if(argument[currentCharacter] >= 'A' && argument[currentCharacter] <= 'Z'){
-			if(!(argumentArray[currentCharacter] == argument[currentCharacter] || argumentArray[currentCharacter] == argument[currentCharacter] + 32)){
+	unsigned int element = 0;
+	while(element < length){
+		if(argument[element] >= 'A' && argument[element] <= 'Z'){
+			if(!(argumentArray[element] == argument[element] || argumentArray[element] == argument[element] + 32)){
 				break;
 			}
-		}else if(argument[currentCharacter] >= 'a' && argument[currentCharacter] <= 'z'){
-			if(!(argumentArray[currentCharacter] == argument[currentCharacter] || argumentArray[currentCharacter] == argument[currentCharacter] - 32)){
+		}else if(argument[element] >= 'a' && argument[element] <= 'z'){
+			if(!(argumentArray[element] == argument[element] || argumentArray[element] == argument[element] - 32)){
 				break;
 			}
 		}else{
-			if(!(argumentArray[currentCharacter] == argument[currentCharacter])){
+			if(!(argumentArray[element] == argument[element])){
 				break;
 			}
 		}
-		currentCharacter++;
+		element++;
 	}
-	if(currentCharacter == length){
+	if(element == length){
 		value = 1;
 	}
 	return value;
