@@ -10,8 +10,8 @@
 
 static unsigned int getBoxAmount(Display *const display, const Window *const topLevelWindow);
 static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const int *const textColor);
-static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
+static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray);
 
 void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
@@ -328,6 +328,34 @@ static void drawCommand(Display *const display, const Window *const topLevelWind
 	}
 	return;
 }
+static unsigned int isCommand(const char *const command, const char *const commandArray){
+	unsigned int value = 0;
+	unsigned int length = 0;
+	while(command[length] > '\0'){
+		length++;
+	}
+	unsigned int currentCharacter = 0;
+	while(currentCharacter < length){
+		if(command[currentCharacter] >= 'A' && command[currentCharacter] <= 'Z'){
+			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] + 32)){
+				break;
+			}
+		}else if(command[currentCharacter] >= 'a' && command[currentCharacter] <= 'z'){
+			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] - 32)){
+				break;
+			}
+		}else{
+			if(!(commandArray[currentCharacter] == command[currentCharacter])){
+				break;
+			}
+		}
+		currentCharacter++;
+	}
+	if(currentCharacter == length){
+		value = 1;
+	}
+	return value;
+}
 static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray){
 	const unsigned int dereferencedBoxAmount = *boxAmount;
 	if(dereferencedBoxAmount > 0){
@@ -363,32 +391,4 @@ static void onExpose(Display *const display, const Window *const topLevelWindow,
 		XFreeFont(display, font);
 	}
 	return;
-}
-static unsigned int isCommand(const char *const command, const char *const commandArray){
-	unsigned int value = 0;
-	unsigned int length = 0;
-	while(command[length] > '\0'){
-		length++;
-	}
-	unsigned int currentCharacter = 0;
-	while(currentCharacter < length){
-		if(command[currentCharacter] >= 'A' && command[currentCharacter] <= 'Z'){
-			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] + 32)){
-				break;
-			}
-		}else if(command[currentCharacter] >= 'a' && command[currentCharacter] <= 'z'){
-			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] - 32)){
-				break;
-			}
-		}else{
-			if(!(commandArray[currentCharacter] == command[currentCharacter])){
-				break;
-			}
-		}
-		currentCharacter++;
-	}
-	if(currentCharacter == length){
-		value = 1;
-	}
-	return value;
 }
