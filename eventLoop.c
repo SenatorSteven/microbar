@@ -269,14 +269,14 @@ static unsigned int getBoxAmount(Display *const display, const Window *const top
 	XQueryTree(display, *topLevelWindow, &rootWindow, &parentWindow, &menus, &menuAmount);
 	Window *boxes;
 	unsigned int menuBoxAmount;
-	for(unsigned int currentMenu = 0; currentMenu < menuAmount; currentMenu++){
-		XQueryTree(display, menus[currentMenu], &rootWindow, &parentWindow, &boxes, &menuBoxAmount);
-		boxAmount += menuBoxAmount;
-		if(menuBoxAmount > 0){
-			XFree(boxes);
-		}
-	}
 	if(menuAmount > 0){
+		for(unsigned int currentMenu = 0; currentMenu < menuAmount; currentMenu++){
+			XQueryTree(display, menus[currentMenu], &rootWindow, &parentWindow, &boxes, &menuBoxAmount);
+			if(menuBoxAmount > 0){
+				boxAmount += menuBoxAmount;
+				XFree(boxes);
+			}
+		}
 		XFree(menus);
 	}
 	return boxAmount;
