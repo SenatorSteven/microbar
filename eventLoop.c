@@ -264,20 +264,20 @@ static unsigned int getBoxAmount(Display *const display, const Window *const top
 	unsigned int boxAmount = 0;
 	Window rootWindow;
 	Window parentWindow;
-	Window *menu;
+	Window *menus;
 	unsigned int menuAmount;
-	XQueryTree(display, *topLevelWindow, &rootWindow, &parentWindow, &menu, &menuAmount);
-	Window *boxArray;
+	XQueryTree(display, *topLevelWindow, &rootWindow, &parentWindow, &menus, &menuAmount);
+	Window *boxes;
 	unsigned int menuBoxAmount;
 	for(unsigned int currentMenu = 0; currentMenu < menuAmount; currentMenu++){
-		XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
+		XQueryTree(display, menus[currentMenu], &rootWindow, &parentWindow, &boxes, &menuBoxAmount);
 		boxAmount += menuBoxAmount;
 		if(menuBoxAmount > 0){
-			XFree(boxArray);
+			XFree(boxes);
 		}
 	}
 	if(menuAmount > 0){
-		XFree(menu);
+		XFree(menus);
 	}
 	return boxAmount;
 }
@@ -334,24 +334,24 @@ static unsigned int isCommand(const char *const command, const char *const comma
 	while(command[length] > '\0'){
 		length++;
 	}
-	unsigned int currentCharacter = 0;
-	while(currentCharacter < length){
-		if(command[currentCharacter] >= 'A' && command[currentCharacter] <= 'Z'){
-			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] + 32)){
+	unsigned int element = 0;
+	while(element < length){
+		if(command[element] >= 'A' && command[element] <= 'Z'){
+			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] + 32)){
 				break;
 			}
-		}else if(command[currentCharacter] >= 'a' && command[currentCharacter] <= 'z'){
-			if(!(commandArray[currentCharacter] == command[currentCharacter] || commandArray[currentCharacter] == command[currentCharacter] - 32)){
+		}else if(command[element] >= 'a' && command[element] <= 'z'){
+			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] - 32)){
 				break;
 			}
 		}else{
-			if(!(commandArray[currentCharacter] == command[currentCharacter])){
+			if(!(commandArray[element] == command[element])){
 				break;
 			}
 		}
-		currentCharacter++;
+		element++;
 	}
-	if(currentCharacter == length){
+	if(element == length){
 		value = 1;
 	}
 	return value;
