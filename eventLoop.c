@@ -31,17 +31,17 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
 			boxNumber = 0;
-			for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
-				XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
-				for(currentBox = 0; currentBox < menuBoxAmount; currentBox++){
-					box[currentMonitor][boxNumber] = boxArray[currentBox];
-					boxNumber++;
-				}
-				if(menuBoxAmount > 0){
-					XFree(boxArray);
-				}
-			}
 			if(menuAmount > 0){
+				for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
+					XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
+					if(menuBoxAmount > 0){
+						for(currentBox = 0; currentBox < menuBoxAmount; currentBox++){
+							box[currentMonitor][boxNumber] = boxArray[currentBox];
+							boxNumber++;
+						}
+						XFree(boxArray);
+					}
+				}
 				XFree(menu);
 			}
 		}
