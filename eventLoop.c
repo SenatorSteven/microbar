@@ -15,7 +15,7 @@ static void onExpose(Display *const display, const Window *const topLevelWindow,
 
 void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
-	unsigned int boxAmount = getBoxAmount(display, &topLevelWindowArray[0]);
+	const unsigned int boxAmount = getBoxAmount(display, &topLevelWindowArray[0]);
 	unsigned int currentMonitor;
 	unsigned int currentBox;
 	Window box[dereferencedMonitorAmount][boxAmount];
@@ -267,9 +267,9 @@ static unsigned int getBoxAmount(Display *const display, const Window *const top
 	Window *menus;
 	unsigned int menuAmount;
 	XQueryTree(display, *topLevelWindow, &rootWindow, &parentWindow, &menus, &menuAmount);
-	Window *boxes;
-	unsigned int menuBoxAmount;
 	if(menuAmount > 0){
+		Window *boxes;
+		unsigned int menuBoxAmount;
 		for(unsigned int currentMenu = 0; currentMenu < menuAmount; currentMenu++){
 			XQueryTree(display, menus[currentMenu], &rootWindow, &parentWindow, &boxes, &menuBoxAmount);
 			if(menuBoxAmount > 0){
