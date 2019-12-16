@@ -47,7 +47,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 }
 static unsigned int createWindows(Display *const display, const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
-	unsigned int value = 0;
+	unsigned int value;
 	unsigned int currentMonitor;
 	unsigned int x;
 	unsigned int y;
@@ -67,6 +67,7 @@ static unsigned int createWindows(Display *const display, const char *const path
 			monitorInfo = XRRGetMonitors(display, rootWindow, True, &monitorsAmount);
 		}
 		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+			value = 0;
 			if(readConfigTopLevelWindow(display, &currentMonitor, pathArray, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
 					XVisualInfo visualInfo;
