@@ -779,9 +779,6 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
 									button = getUnsignedDecimalNumber(display, currentMonitor, window, line, &element);
-									if(button > 5){
-										button = 0;
-									}
 									hasReadVariable |= ButtonPosition;
 								}
 								continue;
