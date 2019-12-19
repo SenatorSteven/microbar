@@ -627,9 +627,7 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									if(*textColor == 0x00000000){
-										*textColor = getARGB(line, &element);
-									}
+									*textColor = getARGB(line, &element);
 									hasReadVariable |= GlobalTextColorPosition;
 								}
 								continue;
