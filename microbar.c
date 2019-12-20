@@ -94,6 +94,9 @@ static unsigned int createWindows(Display *const display, const char *const path
 		unsigned int boxAmount;
 		unsigned int currentBox;
 		Window box;
+		unsigned int innerBoxAmount;
+		unsigned int currentInnerBox;
+		Window innerBox;
 		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 			value = 0;
 			currentMenu = 0;
@@ -114,7 +117,7 @@ static unsigned int createWindows(Display *const display, const char *const path
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(display, &currentMonitor, pathArray, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+						if(readConfigBoxWindow(display, &currentMonitor, pathArray, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -128,6 +131,25 @@ static unsigned int createWindows(Display *const display, const char *const path
 						}
 						if(value){
 							value = 0;
+							currentInnerBox = 0;
+							while(currentInnerBox < innerBoxAmount){
+								if(readConfigInnerBoxWindow(display, &currentMonitor, pathArray, &box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+									if(width > 0 && height > 0){
+										innerBox = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
+										value = 1;
+									}
+								}
+								if(value){
+									value = 0;
+									XMapWindow(display, innerBox);
+								}else{
+									currentInnerBox = innerBoxAmount;
+								}
+								currentInnerBox++;
+							}
+							if(currentInnerBox == innerBoxAmount + 1){
+								currentBox = boxAmount;
+							}
 							XMapWindow(display, box);
 						}else{
 							currentBox = boxAmount;
