@@ -1077,13 +1077,13 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# all variables, argb values and macros can be written with random capitalization\n");
 			fprintf(config, "# argb do not require a \'#\' before the value\n");
 			fprintf(config, "# text requires the same quote character before and after it\n");
-			fprintf(config, "# text quotation is variable, the first character after \'=\' is the quote character\n");
+			fprintf(config, "# text quotation is variable, the first character after \'=\' is the quote character\n\n\n\n");
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
 			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalMenuBorderColor, globalMenuBackgroundColor, hideKey, menu{}\n");
 			fprintf(config, "# menu object: x, y, width, height, border, borderColor, backgroundColor, globalBoxBorderColor, globalBoxBackgroundColor, globalTextColor, box{}\n");
-			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, text, textColor, command, drawableCommand, button\n");
+			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, text, textColor, command, drawableCommand, button, innerBox{}\n");
 			fprintf(config, "# decimal operands: +, -, *, /\n");
 			fprintf(config, "# decimal macros: ParentWidth, ParentHeight\n\n\n\n");
 			fprintf(config, "# # # # # # # # # # # #\n");
@@ -1110,6 +1110,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# button: mouse button used for interaction with box\n");
 			fprintf(config, "# menu: informationless interactionless object, residing in global object\n");
 			fprintf(config, "# box: information object, residing in menu object\n");
+			fprintf(config, "# innerBox: informationless interactionless object, residing in box object\n");
 			fprintf(config, "# ParentWidth: size of parent object\'s width\n");
 			fprintf(config, "# ParentHeight: size of parent object\'s height\n\n\n\n");
 			fprintf(config, "# # # # #\n");
@@ -1122,7 +1123,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 162\n");
+			fprintf(config, "lines = 163\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -1194,7 +1195,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "		button = 1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
-			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n\n");
+			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fclose(config);
 			config = fopen(pathArray, "r");
 		}else{
