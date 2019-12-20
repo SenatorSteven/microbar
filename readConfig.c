@@ -26,6 +26,7 @@
 #define ButtonPosition /*--------------------*/ (1 << 18)
 #define MenuPosition /*----------------------*/ (1 << 19)
 #define BoxPosition /*-----------------------*/ (1 << 20)
+#define InnerBoxPosition /*------------------*/ (1 << 21)
 
 #define NoOperation /*-----------------------*/ ((unsigned int)0)
 #define OperationAddition /*-----------------*/ ((unsigned int)1)
@@ -214,9 +215,21 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 							hasReadVariable ^= MenuPosition;
 							continue;
 						}
-					}else{
+					}else if(!(hasReadVariable & InnerBoxPosition)){
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
+						}
 						if(isVariable("}", line, &element)){
 							hasReadVariable ^= BoxPosition;
+							continue;
+						}
+					}else{
+						if(isVariable("}", line, &element)){
+							hasReadVariable ^= InnerBoxPosition;
 							continue;
 						}
 					}
@@ -241,8 +254,10 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 					   !isVariable("Button",                    line, &element) &&
 					   !isVariable("Menu",                      line, &element) &&
 					   !isVariable("Box",                       line, &element) &&
+					   !isVariable("InnerBox",                  line, &element) &&
 					   !isVariable("}",                         line, &element)){
 						printLineError(line, &element, &currentLine);
+						continue;
 					}
 				}
 			}
@@ -415,9 +430,23 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 						if(isVariable("}", line, &element)){
 							break;
 						}
-					}else if(isVariable("}", line, &element)){
-						hasReadVariable ^= BoxPosition;
-						continue;
+					}else if(!(hasReadVariable & InnerBoxPosition)){
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
+						}
+						if(isVariable("}", line, &element)){
+							hasReadVariable ^= BoxPosition;
+							continue;
+						}
+					}else{
+						if(isVariable("}", line, &element)){
+							hasReadVariable ^= InnerBoxPosition;
+							continue;
+						}
 					}
 				}
 			}
@@ -430,7 +459,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 	}
 	return value;
 }
-unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
+unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, unsigned int *const innerBoxAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -444,6 +473,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 			*border = 0;
 			*borderColor = 0x00000000;
 			*backgroundColor = 0x00000000;
+			*innerBoxAmount = 0;
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
 			int hasReadVariable = NoPositions;
@@ -485,6 +515,184 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 									hasReadVariable |= BoxPosition;
 								}else{
 									boxAmountRead++;
+								}
+							}
+							continue;
+						}
+					}else if(!(hasReadVariable & InnerBoxPosition)){
+						if(!(hasReadVariable & XPosition)){
+							if(isVariable("X", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= XPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & YPosition)){
+							if(isVariable("Y", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*y = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= YPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & WidthPosition)){
+							if(isVariable("Width", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*width = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= WidthPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & HeightPosition)){
+							if(isVariable("Height", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*height = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= HeightPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderColorPosition)){
+							if(isVariable("BorderColor", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*borderColor = getARGB(line, &element);
+									hasReadVariable |= BorderColorPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderPosition)){
+							if(isVariable("Border", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*border = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= BorderPosition;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BackgroundColorPosition)){
+							if(isVariable("BackgroundColor", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									*backgroundColor = getARGB(line, &element);
+									hasReadVariable |= BackgroundColorPosition;
+								}
+								continue;
+							}
+						}
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								(*innerBoxAmount)++;
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
+						}
+						if(isVariable("}", line, &element)){
+							break;
+						}
+					}else{
+						if(isVariable("}", line, &element)){
+							hasReadVariable ^= InnerBoxPosition;
+							continue;
+						}
+					}
+				}
+			}
+			free(line);
+			value = 1;
+		}else{
+			fprintf(stderr, "%s: could not allocate space for config line\n", ProgramName);
+		}
+		fclose(config);
+	}
+	return value;
+}
+unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
+	unsigned int value = 0;
+	FILE *config = getConfigFile(pathArray);
+	if(config){
+		size_t characters = DefaultCharactersCount;
+		char *line = (char *)malloc(characters * sizeof(char));
+		if(line){
+			*x = 0;
+			*y = 0;
+			*width = 0;
+			*height = 0;
+			*border = 0;
+			*borderColor = 0x00000000;
+			*backgroundColor = 0x00000000;
+			unsigned int maxLinesCount = DefaultLinesCount;
+			unsigned int element;
+			int hasReadVariable = NoPositions;
+			unsigned int menuAmountRead = 0;
+			unsigned int boxAmountRead = 0;
+			unsigned int innerBoxAmountRead = 0;
+			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+				element = 0;
+				getline(&line, &characters, config);
+				pushSpaces(line, &element);
+				if(!isVariable("#", line, &element)){
+					if(!(hasReadVariable & MenuPosition)){
+						if(!(hasReadVariable & LinesPosition)){
+							if(isVariable("Lines", line, &element)){
+								pushSpaces(line, &element);
+								if(isVariable("=", line, &element)){
+									pushSpaces(line, &element);
+									maxLinesCount = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									hasReadVariable |= LinesPosition;
+								}
+								continue;
+							}
+						}
+						if(isVariable("Menu", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								if(menuAmountRead == *currentMenu){
+									hasReadVariable |= MenuPosition;
+								}else{
+									menuAmountRead++;
+								}
+							}
+							continue;
+						}
+					}else if(!(hasReadVariable & BoxPosition)){
+						if(isVariable("Box", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								if(boxAmountRead == *currentBox){
+									hasReadVariable |= BoxPosition;
+								}else{
+									boxAmountRead++;
+								}
+							}
+							continue;
+						}
+					}else if(!(hasReadVariable & InnerBoxPosition)){
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								if(innerBoxAmountRead == *currentInnerBox){
+									hasReadVariable |= InnerBoxPosition;
+								}else{
+									innerBoxAmountRead++;
 								}
 							}
 							continue;
@@ -633,18 +841,25 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 								continue;
 							}
 						}
-						if(!(hasReadVariable & BoxPosition)){
-							if(isVariable("Box", line, &element)){
-								pushSpaces(line, &element);
-								if(isVariable("{", line, &element)){
-									boxAmountRead++;
-									hasReadVariable |= BoxPosition;
-								}
-								continue;
+						if(isVariable("Box", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								boxAmountRead++;
+								hasReadVariable |= BoxPosition;
 							}
+							continue;
+						}
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
 						}
 						if(isVariable("}", line, &element)){
-							if(hasReadVariable & BoxPosition){
+							if(hasReadVariable & InnerBoxPosition){
+								hasReadVariable ^= InnerBoxPosition;
+							}else if(hasReadVariable & BoxPosition){
 								hasReadVariable ^= BoxPosition;
 							}else{
 								if(hasReadVariable & GlobalTextColorPosition){
@@ -655,7 +870,7 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 							}
 							continue;
 						}
-					}else{
+					}else if(!(hasReadVariable & InnerBoxPosition)){
 						if(!(hasReadVariable & TextPosition)){
 							if(isVariable("Text", line, &element)){
 								pushSpaces(line, &element);
@@ -700,8 +915,20 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 								continue;
 							}
 						}
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
+						}
 						if(isVariable("}", line, &element)){
 							break;
+						}
+					}else{
+						if(isVariable("}", line, &element)){
+							hasReadVariable ^= InnerBoxPosition;
+							continue;
 						}
 					}
 				}
@@ -752,25 +979,32 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 							continue;
 						}
 					}else if(boxAmountRead <= *currentBox){
-						if(!(hasReadVariable & BoxPosition)){
-							if(isVariable("Box", line, &element)){
-								pushSpaces(line, &element);
-								if(isVariable("{", line, &element)){
-									boxAmountRead++;
-									hasReadVariable |= BoxPosition;
-								}
-								continue;
+						if(isVariable("Box", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								boxAmountRead++;
+								hasReadVariable |= BoxPosition;
 							}
+							continue;
+						}
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
 						}
 						if(isVariable("}", line, &element)){
-							if(hasReadVariable & BoxPosition){
+							if(hasReadVariable & InnerBoxPosition){
+								hasReadVariable ^= InnerBoxPosition;
+							}else if(hasReadVariable & BoxPosition){
 								hasReadVariable ^= BoxPosition;
 							}else{
 								hasReadVariable ^= MenuPosition;
 							}
 							continue;
 						}
-					}else{
+					}else if(!(hasReadVariable & InnerBoxPosition)){
 						if(!(hasReadVariable & ButtonPosition)){
 							if(isVariable("Button", line, &element)){
 								pushSpaces(line, &element);
@@ -782,8 +1016,20 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 								continue;
 							}
 						}
+						if(isVariable("InnerBox", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("{", line, &element)){
+								hasReadVariable |= InnerBoxPosition;
+							}
+							continue;
+						}
 						if(isVariable("}", line, &element)){
 							break;
+						}
+					}else{
+						if(isVariable("}", line, &element)){
+							hasReadVariable ^= InnerBoxPosition;
+							continue;
 						}
 					}
 				}
