@@ -7,6 +7,7 @@ A simple information bar for the X Window System.
 Well, if the comment alone does not provide enough information, microbar is a simple, fast and highly customizable information provider and command runner.
 
 ![microbar](https://github.com/TheSenatorSteven/microbar/blob/master/sample.png)
+![microbar](https://github.com/TheSenatorSteven/microbar/blob/master/sample1.png)
 
 
 
