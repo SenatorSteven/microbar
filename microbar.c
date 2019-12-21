@@ -49,8 +49,8 @@ static unsigned int createWindows(Display *const display, const char *const path
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	unsigned int value;
 	unsigned int currentMonitor;
-	unsigned int x;
-	unsigned int y;
+	int x;
+	int y;
 	unsigned int width;
 	unsigned int height;
 	unsigned int border;
