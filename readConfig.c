@@ -45,7 +45,7 @@ static char *getText(const char *const lineArray, unsigned int *const element);
 static char *getCommand(const char *const lineArray, unsigned int *const element);
 static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
-unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalMenuBorderColor, int *const globalMenuBackgroundColor, unsigned int *const menuAmount){
+unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalMenuBorderColor, int *const globalMenuBackgroundColor, unsigned int *const menuAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -64,7 +64,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 			*menuAmount = 0;
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
-			int hasReadVariable = NoPositions;
+			bytes4 hasReadVariable = NoPositions;
 			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
@@ -87,7 +87,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									*x = getDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -270,7 +270,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 	}
 	return value;
 }
-unsigned int readConfigMenuWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalBoxBorderColor, int *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+unsigned int readConfigMenuWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalBoxBorderColor, int *const globalBoxBackgroundColor, unsigned int *const boxAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -289,7 +289,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 			*boxAmount = 0;
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
-			int hasReadVariable = NoPositions;
+			bytes4 hasReadVariable = NoPositions;
 			unsigned int menuAmountRead = 0;
 			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
 				element = 0;
@@ -325,7 +325,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									*x = getDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -459,7 +459,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 	}
 	return value;
 }
-unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, unsigned int *const innerBoxAmount){
+unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, unsigned int *const innerBoxAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -476,7 +476,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 			*innerBoxAmount = 0;
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
-			int hasReadVariable = NoPositions;
+			bytes4 hasReadVariable = NoPositions;
 			unsigned int menuAmountRead = 0;
 			unsigned int boxAmountRead = 0;
 			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
@@ -525,7 +525,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									*x = getDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -625,7 +625,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 	}
 	return value;
 }
-unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, unsigned int *const x, unsigned int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
+unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -641,7 +641,7 @@ unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int
 			*backgroundColor = 0x00000000;
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
-			int hasReadVariable = NoPositions;
+			bytes4 hasReadVariable = NoPositions;
 			unsigned int menuAmountRead = 0;
 			unsigned int boxAmountRead = 0;
 			unsigned int innerBoxAmountRead = 0;
@@ -703,7 +703,7 @@ unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int
 								pushSpaces(line, &element);
 								if(isVariable("=", line, &element)){
 									pushSpaces(line, &element);
-									*x = getUnsignedDecimalNumber(display, currentMonitor, parentWindow, line, &element);
+									*x = getDecimalNumber(display, currentMonitor, parentWindow, line, &element);
 									hasReadVariable |= XPosition;
 								}
 								continue;
@@ -803,7 +803,7 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 			*drawableCommandPointerArray = NULL;
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
-			int hasReadVariable = NoPositions;
+			bytes4 hasReadVariable = NoPositions;
 			unsigned int boxAmountRead = 0;
 			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
 				element = 0;
@@ -951,7 +951,7 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 		if(line){
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
-			int hasReadVariable = NoPositions;
+			bytes4 hasReadVariable = NoPositions;
 			unsigned int boxAmountRead = 0;
 			unsigned int button = 0;
 			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
