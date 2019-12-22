@@ -1036,7 +1036,7 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 			}
 			if(hasReadVariable & ButtonPosition){
 				if(button < 6){
-					XGrabButton(display, button, None, *window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
+					XGrabButton(display, button, AnyModifier, *window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 				}
 			}
 			free(line);
