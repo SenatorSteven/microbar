@@ -9,9 +9,9 @@
 #define ModeExit /*-----*/ ((unsigned int)2)
 
 static unsigned int getBoxAmount(Display *const display, const Window *const topLevelWindow);
-static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const int *const textColor);
+static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
-static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray);
+static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
 void eventLoop(Display *const display, const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
@@ -47,7 +47,7 @@ void eventLoop(Display *const display, const char *const pathArray, const Window
 		}
 	}
 	char *allocatedText[boxAmount];
-	int textColor[boxAmount];
+	bytes4 textColor[boxAmount];
 	char *allocatedCommand[boxAmount];
 	char *allocatedDrawableCommand[boxAmount];
 	for(currentBox = 0; currentBox < boxAmount; currentBox++){
@@ -281,7 +281,7 @@ static unsigned int getBoxAmount(Display *const display, const Window *const top
 	}
 	return boxAmount;
 }
-static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const int *const textColor){
+static void drawCommand(Display *const display, const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor){
 	system(systemCommandArray);
 	char *result;
 	{
@@ -356,7 +356,7 @@ static unsigned int isCommand(const char *const command, const char *const comma
 	}
 	return value;
 }
-static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const int *const textColorArray){
+static void onExpose(Display *const display, const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
 	const unsigned int dereferencedBoxAmount = *boxAmount;
 	if(dereferencedBoxAmount > 0){
 		GC gc = XCreateGC(display, *topLevelWindow, None, None);
