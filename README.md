@@ -1,5 +1,5 @@
 # microbar
-A simple information bar for the X Window System.
+A simple text-based status bar for the X Window System.
 
 
 
