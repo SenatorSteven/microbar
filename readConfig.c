@@ -65,7 +65,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 			unsigned int maxLinesCount = DefaultLinesCount;
 			unsigned int element;
 			bytes4 hasReadVariable = NoPositions;
-			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+			for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
 				pushSpaces(line, &element);
@@ -291,7 +291,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 			unsigned int element;
 			bytes4 hasReadVariable = NoPositions;
 			unsigned int menuAmountRead = 0;
-			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+			for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
 				pushSpaces(line, &element);
@@ -479,7 +479,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 			bytes4 hasReadVariable = NoPositions;
 			unsigned int menuAmountRead = 0;
 			unsigned int boxAmountRead = 0;
-			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+			for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
 				pushSpaces(line, &element);
@@ -645,7 +645,7 @@ unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int
 			unsigned int menuAmountRead = 0;
 			unsigned int boxAmountRead = 0;
 			unsigned int innerBoxAmountRead = 0;
-			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+			for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
 				pushSpaces(line, &element);
@@ -805,7 +805,7 @@ unsigned int readConfigTextCommands(Display *const display, const unsigned int *
 			unsigned int element;
 			bytes4 hasReadVariable = NoPositions;
 			unsigned int boxAmountRead = 0;
-			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+			for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
 				pushSpaces(line, &element);
@@ -954,7 +954,7 @@ unsigned int readConfigButton(Display *const display, const unsigned int *const 
 			bytes4 hasReadVariable = NoPositions;
 			unsigned int boxAmountRead = 0;
 			unsigned int button = 0;
-			for(unsigned int currentLine = 0; currentLine < maxLinesCount; currentLine++){
+			for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
 				element = 0;
 				getline(&line, &characters, config);
 				pushSpaces(line, &element);
@@ -1251,7 +1251,7 @@ static unsigned int isVariable(const char *const variable, const char *const lin
 static unsigned int getUnsignedDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const parentWindow, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element){
 	unsigned int number = getDecimalNumber(display, currentMonitor, parentWindow, lineArray, element);
 	if((int)number < 0){
-		fprintf(stderr, "%s: line %u: %i is not an unsigned integer\n", ProgramName, *currentLine + 1, (int)number);
+		fprintf(stderr, "%s: line %u: %i is not an unsigned integer\n", ProgramName, *currentLine, (int)number);
 		number = 0;
 	}
 	return number;
@@ -1559,7 +1559,7 @@ static unsigned int printLineError(const char *const lineArray, const unsigned i
 		while(lineArray[length] != 10){
 			length++;
 		}
-		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine + 1);
+		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine);
 		for(unsigned int currentCharacter = 0; currentCharacter < length; currentCharacter++){
 			fprintf(stderr, "%c", lineArray[currentCharacter]);
 		}
