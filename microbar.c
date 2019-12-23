@@ -54,10 +54,10 @@ static unsigned int createWindows(Display *const display, const char *const path
 	unsigned int width;
 	unsigned int height;
 	unsigned int border;
-	int borderColor;
-	int backgroundColor;
-	int globalMenuBorderColor;
-	int globalMenuBackgroundColor;
+	bytes4 borderColor;
+	bytes4 backgroundColor;
+	bytes4 globalMenuBorderColor;
+	bytes4 globalMenuBackgroundColor;
 	unsigned int menuAmount;
 	{
 		Window rootWindow = XDefaultRootWindow(display);
@@ -89,8 +89,8 @@ static unsigned int createWindows(Display *const display, const char *const path
 	if(value){
 		unsigned int currentMenu;
 		Window menu;
-		int globalBoxBorderColor;
-		int globalBoxBackgroundColor;
+		bytes4 globalBoxBorderColor;
+		bytes4 globalBoxBackgroundColor;
 		unsigned int boxAmount;
 		unsigned int currentBox;
 		Window box;
