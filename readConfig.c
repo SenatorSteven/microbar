@@ -39,13 +39,13 @@ static unsigned int pushSpaces(const char *const lineArray, unsigned int *const 
 static unsigned int isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
 static unsigned int getUnsignedDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element);
 static int getDecimalNumber(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const char *const lineArray, unsigned int *const element);
-static int getARGB(const char *const lineArray, unsigned int *const element);
+static bytes4 getARGB(const char *const lineArray, unsigned int *const element);
 static void getKeys(Display *const display, const unsigned int *const currentMonitor, const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
 static char *getText(const char *const lineArray, unsigned int *const element);
 static char *getCommand(const char *const lineArray, unsigned int *const element);
 static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
-unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalMenuBorderColor, int *const globalMenuBackgroundColor, unsigned int *const menuAmount){
+unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalMenuBorderColor, bytes4 *const globalMenuBackgroundColor, unsigned int *const menuAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -270,7 +270,7 @@ unsigned int readConfigTopLevelWindow(Display *const display, const unsigned int
 	}
 	return value;
 }
-unsigned int readConfigMenuWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, int *const globalBoxBorderColor, int *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+unsigned int readConfigMenuWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalBoxBorderColor, bytes4 *const globalBoxBackgroundColor, unsigned int *const boxAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -459,7 +459,7 @@ unsigned int readConfigMenuWindow(Display *const display, const unsigned int *co
 	}
 	return value;
 }
-unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor, unsigned int *const innerBoxAmount){
+unsigned int readConfigBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, unsigned int *const innerBoxAmount){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -625,7 +625,7 @@ unsigned int readConfigBoxWindow(Display *const display, const unsigned int *con
 	}
 	return value;
 }
-unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, int *const borderColor, int *const backgroundColor){
+unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
@@ -790,7 +790,7 @@ unsigned int readConfigInnerBoxWindow(Display *const display, const unsigned int
 	}
 	return value;
 }
-unsigned int readConfigTextCommands(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, int *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
+unsigned int readConfigTextCommands(Display *const display, const unsigned int *const currentMonitor, const char *const pathArray, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
 	unsigned int value = 0;
 	FILE *config = getConfigFile(pathArray);
 	if(config){
