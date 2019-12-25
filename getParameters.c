@@ -21,7 +21,7 @@ unsigned int getParameters(const unsigned int *const argumentCount, const char *
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file/\"\n", ProgramName, ProgramName);
 							fprintf(stdout, "%s# if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n", Tab);
-							fprintf(stdout, "%s# the $HOME variable can be used instead of \"/path/to/home/\", case sensitive\n", Tab);
+							fprintf(stdout, "%s# environment variables may be used\n", Tab);
 							hasReadVariable |= HelpPosition;
 							break;
 						}else{
