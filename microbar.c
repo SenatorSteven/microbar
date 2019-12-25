@@ -11,15 +11,16 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
-static unsigned int createWindows(Display *const display, const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
-static void setTopLevelWindowProperties(Display *const display, const Window *const windowArray, const unsigned int *const monitorAmount);
-static void cleanupWindows(Display *const display, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
+Display *display;
+
+static unsigned int createWindows(const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
+static void setTopLevelWindowProperties(const Window *const windowArray, const unsigned int *const monitorAmount);
+static void cleanupWindows(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
 
 int main(const int argumentCount, const char *const *const argumentVector){
 	const char *configPath;
 	if(getParameters((unsigned int *)&argumentCount, argumentVector, &configPath)){
 		unsigned int mode = ModeContinue;
-		Display *display;
 		unsigned int monitorAmount;
 		while(mode == ModeContinue || mode == ModeRestart){
 			if(mode == ModeRestart){
@@ -28,10 +29,10 @@ int main(const int argumentCount, const char *const *const argumentVector){
 			if((display = XOpenDisplay(NULL))){
 				XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
 				Window window[monitorAmount];
-				if(createWindows(display, configPath, window, &monitorAmount)){
-					setTopLevelWindowProperties(display, window, &monitorAmount);
+				if(createWindows(configPath, window, &monitorAmount)){
+					setTopLevelWindowProperties(window, &monitorAmount);
 					eventLoop(display, configPath, window, &monitorAmount, &mode);
-					cleanupWindows(display, window, &monitorAmount);
+					cleanupWindows(window, &monitorAmount);
 				}else{
 					fprintf(stderr, "%s: could not create windows\n", ProgramName);
 					mode = ModeExit;
@@ -45,7 +46,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	}
 	return 0;
 }
-static unsigned int createWindows(Display *const display, const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
+static unsigned int createWindows(const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	unsigned int value;
 	unsigned int currentMonitor;
@@ -174,7 +175,7 @@ static unsigned int createWindows(Display *const display, const char *const path
 	}
 	return value;
 }
-static void setTopLevelWindowProperties(Display *const display, const Window *const windowArray, const unsigned int *const monitorAmount){
+static void setTopLevelWindowProperties(const Window *const windowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	XTextProperty textProperty = {
 		.value = (unsigned char *)ProgramName,
@@ -264,7 +265,7 @@ static void setTopLevelWindowProperties(Display *const display, const Window *co
 	}
 	return;
 }
-static void cleanupWindows(Display *const display, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
+static void cleanupWindows(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	for(unsigned int currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
