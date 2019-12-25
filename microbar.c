@@ -31,7 +31,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 				Window window[monitorAmount];
 				if(createWindows(configPath, window, &monitorAmount)){
 					setTopLevelWindowProperties(window, &monitorAmount);
-					eventLoop(display, configPath, window, &monitorAmount, &mode);
+					eventLoop(configPath, window, &monitorAmount, &mode);
 					cleanupWindows(window, &monitorAmount);
 				}else{
 					fprintf(stderr, "%s: could not create windows\n", ProgramName);
