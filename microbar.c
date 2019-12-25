@@ -69,7 +69,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 		}
 		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 			value = 0;
-			if(readConfigTopLevelWindow(display, &currentMonitor, pathArray, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
+			if(readConfigTopLevelWindow(&currentMonitor, pathArray, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
 					XVisualInfo visualInfo;
 					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
@@ -102,7 +102,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
-				if(readConfigMenuWindow(display, &currentMonitor, pathArray, &topLevelWindowArray[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+				if(readConfigMenuWindow(&currentMonitor, pathArray, &topLevelWindowArray[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
 							borderColor = globalMenuBorderColor;
@@ -118,7 +118,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(display, &currentMonitor, pathArray, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
+						if(readConfigBoxWindow(&currentMonitor, pathArray, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -134,7 +134,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 							value = 0;
 							currentInnerBox = 0;
 							while(currentInnerBox < innerBoxAmount){
-								if(readConfigInnerBoxWindow(display, &currentMonitor, pathArray, &box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+								if(readConfigInnerBoxWindow(&currentMonitor, pathArray, &box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
 										innerBox = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
 										value = 1;
