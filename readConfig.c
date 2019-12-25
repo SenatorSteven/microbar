@@ -34,9 +34,10 @@
 #define OperationMultiplication /*-----------*/ ((unsigned int)3)
 #define OperationDivision /*-----------------*/ ((unsigned int)4)
 
+extern const char *configPath;
 extern Display *const display;
 
-static FILE *getConfigFile(const char *const pathArray);
+static FILE *getConfigFile();
 static unsigned int pushSpaces(const char *const lineArray, unsigned int *const element);
 static unsigned int isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
 static unsigned int getUnsignedDecimalNumber(const unsigned int *const currentMonitor, const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element);
@@ -47,9 +48,9 @@ static char *getText(const char *const lineArray, unsigned int *const element);
 static char *getCommand(const char *const lineArray, unsigned int *const element);
 static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
-unsigned int readConfigTopLevelWindow(const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalMenuBorderColor, bytes4 *const globalMenuBackgroundColor, unsigned int *const menuAmount){
+unsigned int readConfigTopLevelWindow(const unsigned int *const currentMonitor, const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalMenuBorderColor, bytes4 *const globalMenuBackgroundColor, unsigned int *const menuAmount){
 	unsigned int value = 0;
-	FILE *config = getConfigFile(pathArray);
+	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -268,9 +269,9 @@ unsigned int readConfigTopLevelWindow(const unsigned int *const currentMonitor, 
 	}
 	return value;
 }
-unsigned int readConfigMenuWindow(const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalBoxBorderColor, bytes4 *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+unsigned int readConfigMenuWindow(const unsigned int *const currentMonitor, const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalBoxBorderColor, bytes4 *const globalBoxBackgroundColor, unsigned int *const boxAmount){
 	unsigned int value = 0;
-	FILE *config = getConfigFile(pathArray);
+	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -453,9 +454,9 @@ unsigned int readConfigMenuWindow(const unsigned int *const currentMonitor, cons
 	}
 	return value;
 }
-unsigned int readConfigBoxWindow(const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, unsigned int *const innerBoxAmount){
+unsigned int readConfigBoxWindow(const unsigned int *const currentMonitor, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, unsigned int *const innerBoxAmount){
 	unsigned int value = 0;
-	FILE *config = getConfigFile(pathArray);
+	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -615,9 +616,9 @@ unsigned int readConfigBoxWindow(const unsigned int *const currentMonitor, const
 	}
 	return value;
 }
-unsigned int readConfigInnerBoxWindow(const unsigned int *const currentMonitor, const char *const pathArray, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor){
+unsigned int readConfigInnerBoxWindow(const unsigned int *const currentMonitor, const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor){
 	unsigned int value = 0;
-	FILE *config = getConfigFile(pathArray);
+	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -776,9 +777,9 @@ unsigned int readConfigInnerBoxWindow(const unsigned int *const currentMonitor, 
 	}
 	return value;
 }
-unsigned int readConfigTextCommands(const unsigned int *const currentMonitor, const char *const pathArray, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
+unsigned int readConfigTextCommands(const unsigned int *const currentMonitor, const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
 	unsigned int value = 0;
-	FILE *config = getConfigFile(pathArray);
+	FILE *config = getConfigFile();
 	if(config){
 		*textPointerArray = NULL;
 		*textColor = 0x00000000;
@@ -924,9 +925,9 @@ unsigned int readConfigTextCommands(const unsigned int *const currentMonitor, co
 	}
 	return value;
 }
-unsigned int readConfigButton(const unsigned int *const currentMonitor, const char *const pathArray, const Window *const window, const unsigned int *const currentBox){
+unsigned int readConfigButton(const unsigned int *const currentMonitor, const Window *const window, const unsigned int *const currentBox){
 	unsigned int value = 0;
-	FILE *config = getConfigFile(pathArray);
+	FILE *config = getConfigFile();
 	if(config){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
@@ -1026,10 +1027,10 @@ unsigned int readConfigButton(const unsigned int *const currentMonitor, const ch
 	}
 	return value;
 }
-static FILE *getConfigFile(const char *const pathArray){
-	FILE *config = fopen(pathArray, "r");
+static FILE *getConfigFile(){
+	FILE *config = fopen(configPath, "r");
 	if(!config){
-		if((config = fopen(pathArray, "w"))){
+		if((config = fopen(configPath, "w"))){
 			fprintf(config, "# configuration file for\n\n");
 			fprintf(config, "# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fprintf(config, "#                                                                                               #\n");
@@ -1176,7 +1177,7 @@ static FILE *getConfigFile(const char *const pathArray){
 			fprintf(config, "}\n");
 			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fclose(config);
-			config = fopen(pathArray, "r");
+			config = fopen(configPath, "r");
 		}else{
 			fprintf(stderr, "%s: could not create config file\n", ProgramName);
 		}
