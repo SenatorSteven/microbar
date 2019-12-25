@@ -1184,7 +1184,7 @@ static FILE *getConfigFile(const char *const pathArray){
 static unsigned int pushSpaces(const char *const lineArray, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	unsigned int value = 0;
-	while(lineArray[dereferencedElement] > '\0' && (lineArray[dereferencedElement] == ' ' || lineArray[dereferencedElement] == 9)){
+	while(lineArray[dereferencedElement] != '\n' && (lineArray[dereferencedElement] == ' ' || lineArray[dereferencedElement] == 9)){
 		dereferencedElement++;
 	}
 	if(dereferencedElement > *element){
@@ -1201,7 +1201,7 @@ static unsigned int isVariable(const char *const variable, const char *const lin
 		length++;
 	}
 	unsigned int currentCharacter = 0;
-	while(lineArray[dereferencedElement] > '\0' && currentCharacter < length){
+	while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
 		if(variable[currentCharacter] >= 'A' && variable[currentCharacter] <= 'Z'){
 			if(!(lineArray[dereferencedElement] == variable[currentCharacter] || lineArray[dereferencedElement] == variable[currentCharacter] + 32)){
 				break;
@@ -1247,7 +1247,7 @@ static int getDecimalNumber(Display *const display, const unsigned int *const cu
 		windowAttributes.width = monitorInfo[*currentMonitor].width;
 		windowAttributes.height = monitorInfo[*currentMonitor].height;
 	}
-	while(lineArray[dereferencedElement] > '\0'){
+	while(lineArray[dereferencedElement] != '\n'){
 		pushSpaces(lineArray, &dereferencedElement);
 		if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
 			numberRead *= 10;
@@ -1339,54 +1339,54 @@ static int getDecimalNumber(Display *const display, const unsigned int *const cu
 			numberRead = 0;
 			dereferencedElement++;
 		}else{
-			if(operation == OperationAddition){
-				if(numberOperatedOn > 0){
-					if(lastOperation == OperationAddition){
-						number += numberOperatedOn;
-					}else if(lastOperation == OperationSubtraction){
-						number -= numberOperatedOn;
-					}
-				}
-				number += numberRead;
-			}else if(operation == OperationSubtraction){
-				if(numberOperatedOn > 0){
-					if(lastOperation == OperationAddition){
-						number += numberOperatedOn;
-					}else if(lastOperation == OperationSubtraction){
-						number -= numberOperatedOn;
-					}
-				}
-				number -= numberRead;
-			}else if(operation == OperationMultiplication){
-				if(numberOperatedOn == 0){
-					number *= numberRead;
-				}else{
-					numberOperatedOn *= numberRead;
-					if(lastOperation == OperationAddition){
-						number += numberOperatedOn;
-					}else if(lastOperation == OperationSubtraction){
-						number -= numberOperatedOn;
-					}
-				}
-			}else if(operation == OperationDivision){
-				if(number > 0 || numberOperatedOn > 0){
-					if(numberOperatedOn == 0){
-						number /= numberRead;
-					}else{
-						numberOperatedOn /= numberRead;
-						if(lastOperation == OperationAddition){
-							number += numberOperatedOn;
-						}else if(lastOperation == OperationSubtraction){
-							number -= numberOperatedOn;
-						}
-					}
-				}
+			break;
+		}
+	}
+	if(operation == OperationAddition){
+		if(numberOperatedOn > 0){
+			if(lastOperation == OperationAddition){
+				number += numberOperatedOn;
+			}else if(lastOperation == OperationSubtraction){
+				number -= numberOperatedOn;
+			}
+		}
+		number += numberRead;
+	}else if(operation == OperationSubtraction){
+		if(numberOperatedOn > 0){
+			if(lastOperation == OperationAddition){
+				number += numberOperatedOn;
+			}else if(lastOperation == OperationSubtraction){
+				number -= numberOperatedOn;
+			}
+		}
+		number -= numberRead;
+	}else if(operation == OperationMultiplication){
+		if(numberOperatedOn == 0){
+			number *= numberRead;
+		}else{
+			numberOperatedOn *= numberRead;
+			if(lastOperation == OperationAddition){
+				number += numberOperatedOn;
+			}else if(lastOperation == OperationSubtraction){
+				number -= numberOperatedOn;
+			}
+		}
+	}else if(operation == OperationDivision){
+		if(number > 0 || numberOperatedOn > 0){
+			if(numberOperatedOn == 0){
+				number /= numberRead;
 			}else{
-				if(number == 0){
-					number = numberRead;
+				numberOperatedOn /= numberRead;
+				if(lastOperation == OperationAddition){
+					number += numberOperatedOn;
+				}else if(lastOperation == OperationSubtraction){
+					number -= numberOperatedOn;
 				}
 			}
-			break;
+		}
+	}else{
+		if(number == 0){
+			number = numberRead;
 		}
 	}
 	*element = dereferencedElement;
@@ -1399,7 +1399,7 @@ static int getARGB(const char *const lineArray, unsigned int *const element){
 		dereferencedElement++;
 	}
 	unsigned int currentCharacter = 0;
-	while(lineArray[dereferencedElement] > '\0' && currentCharacter < 8){
+	while(lineArray[dereferencedElement] != '\n' && currentCharacter < 8){
 		color *= 16;
 		if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
 			color += lineArray[dereferencedElement];
@@ -1428,7 +1428,7 @@ static void getKeys(Display *const display, const unsigned int *const currentMon
 	*key = 0;
 	int dereferencedMasks = 0;
 	unsigned int lookingForValue = 1;
-	while(lineArray[dereferencedElement] > '\0'){
+	while(lineArray[dereferencedElement] != '\n'){
 		pushSpaces(lineArray, &dereferencedElement);
 		if(lookingForValue){
 			if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
@@ -1475,14 +1475,14 @@ static char *getText(const char *const lineArray, unsigned int *const element){
 	unsigned int length = 0;
 	{
 		const char quotation = lineArray[dereferencedElement++];
-		while(lineArray[dereferencedElement + length] > '\0' && lineArray[dereferencedElement + length] != quotation){
+		while(lineArray[dereferencedElement + length] != '\n' && lineArray[dereferencedElement + length] != quotation){
 			length++;
 		}
 	}
 	if(length > 0){
 		if((text = (char *)malloc((length + 1) * sizeof(char)))){
 			unsigned int currentCharacter = 0;
-			while(lineArray[dereferencedElement] > '\0' && currentCharacter < length){
+			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
 				text[currentCharacter] = lineArray[dereferencedElement];
 				dereferencedElement++;
 				currentCharacter++;
@@ -1504,14 +1504,14 @@ static char *getCommand(const char *const lineArray, unsigned int *const element
 	unsigned int length = 0;
 	{
 		const char quotation = lineArray[dereferencedElement++];
-		while(lineArray[dereferencedElement + length] > '\0' && lineArray[dereferencedElement + length] != quotation){
+		while(lineArray[dereferencedElement + length] != '\n' && lineArray[dereferencedElement + length] != quotation){
 			length++;
 		}
 	}
 	if(length > 0){
 		if((command = (char *)malloc((length + 2) * sizeof(char)))){
 			unsigned int currentCharacter = 0;
-			while(lineArray[dereferencedElement] > '\0' && currentCharacter < length){
+			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
 				command[currentCharacter] = lineArray[dereferencedElement];
 				dereferencedElement++;
 				currentCharacter++;
