@@ -40,13 +40,13 @@ Somebody could argue that the CPU power being used in updating the bar is as tri
 #### :~$ microbar --help
 <pre>
 microbar: usage: microbar [parameters] or microbar [parameter] [--help]
-   [-h], [--help]     display this message
-   [-c], [--config]   specify path to config, necessary
+    [-h], [--help]      display this message
+    [-c], [--config]    specify path to config, necessary
 </pre>
 
 #### :~$ microbar --config --help
 <pre>
 microbar: usage: microbar --config "/path/to/file/"
-   # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration
-   # the $HOME variable can be used instead of "/path/to/home/", case sensitive
+    # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration
+    # environment variables may be used
 </pre>
