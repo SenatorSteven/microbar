@@ -19,7 +19,7 @@ static void setTopLevelWindowProperties(const Window *const windowArray, const u
 static void cleanupWindows(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
 
 int main(const int argumentCount, const char *const *const argumentVector){
-	if(getParameters((unsigned int *)&argumentCount, argumentVector, &configPath)){
+	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
 		unsigned int mode = ModeContinue;
 		unsigned int monitorAmount;
 		while(mode == ModeContinue || mode == ModeRestart){
