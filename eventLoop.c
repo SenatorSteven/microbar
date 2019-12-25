@@ -8,6 +8,7 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
+extern const char *configPath;
 extern Display *const display;
 
 static unsigned int getBoxAmount(const Window *const topLevelWindow);
@@ -15,7 +16,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 static unsigned int isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
-void eventLoop(const char *const pathArray, const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
+void eventLoop(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	const unsigned int boxAmount = getBoxAmount(&topLevelWindowArray[0]);
 	unsigned int currentMonitor;
@@ -53,7 +54,7 @@ void eventLoop(const char *const pathArray, const Window *const topLevelWindowAr
 	char *allocatedCommand[boxAmount];
 	char *allocatedDrawableCommand[boxAmount];
 	for(currentBox = 0; currentBox < boxAmount; currentBox++){
-		readConfigTextCommands(&currentMonitor, pathArray, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
+		readConfigTextCommands(&currentMonitor, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
 	}
 	unsigned int textMaxWordLength = 0;
 	unsigned int commandMaxWordLength = 0;
@@ -133,10 +134,10 @@ void eventLoop(const char *const pathArray, const Window *const topLevelWindowAr
 	}
 	unsigned int drawableCommandPathLength = 0;
 	{
-		while(pathArray[drawableCommandPathLength] > '\0'){
+		while(configPath[drawableCommandPathLength] > '\0'){
 			drawableCommandPathLength++;
 		}
-		while(pathArray[drawableCommandPathLength] != '/'){
+		while(configPath[drawableCommandPathLength] != '/'){
 			drawableCommandPathLength--;
 		}
 		drawableCommandPathLength += 17;
@@ -147,7 +148,7 @@ void eventLoop(const char *const pathArray, const Window *const topLevelWindowAr
 		{
 			unsigned int lastSlash = drawableCommandPathLength - 17;
 			while(currentCharacter < lastSlash){
-				drawableCommandPath[currentCharacter] = pathArray[currentCharacter];
+				drawableCommandPath[currentCharacter] = configPath[currentCharacter];
 				currentCharacter++;
 			}
 		}
@@ -206,7 +207,7 @@ void eventLoop(const char *const pathArray, const Window *const topLevelWindowAr
 	}
 	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
-			readConfigButton(&currentMonitor, pathArray, &box[currentMonitor][currentBox], &currentBox);
+			readConfigButton(&currentMonitor, &box[currentMonitor][currentBox], &currentBox);
 		}
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
