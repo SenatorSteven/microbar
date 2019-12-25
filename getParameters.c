@@ -6,9 +6,11 @@
 #define HelpPosition /*---*/ (1 << 1)
 #define ExitPosition /*---*/ (1 << 2)
 
+extern const char *configPath;
+
 static unsigned int isArgument(const char *const argument, const char *const argumentArray);
 
-unsigned int getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector, const char **configPath){
+unsigned int getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector){
 	const unsigned int dereferencedArgumentCount = *argumentCount;
 	unsigned int value = 0;
 	if(dereferencedArgumentCount > 1){
@@ -25,7 +27,7 @@ unsigned int getParameters(const unsigned int *const argumentCount, const char *
 							hasReadVariable |= HelpPosition;
 							break;
 						}else{
-							*configPath = (char *)argumentVector[currentArgument];
+							configPath = (char *)argumentVector[currentArgument];
 							hasReadVariable |= ConfigPosition;
 							continue;
 						}
