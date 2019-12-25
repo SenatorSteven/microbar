@@ -8,7 +8,7 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
-extern Display *display;
+extern Display *const display;
 
 static unsigned int getBoxAmount(const Window *const topLevelWindow);
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
