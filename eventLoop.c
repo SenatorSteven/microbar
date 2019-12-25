@@ -53,7 +53,7 @@ void eventLoop(const char *const pathArray, const Window *const topLevelWindowAr
 	char *allocatedCommand[boxAmount];
 	char *allocatedDrawableCommand[boxAmount];
 	for(currentBox = 0; currentBox < boxAmount; currentBox++){
-		readConfigTextCommands(display, &currentMonitor, pathArray, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
+		readConfigTextCommands(&currentMonitor, pathArray, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
 	}
 	unsigned int textMaxWordLength = 0;
 	unsigned int commandMaxWordLength = 0;
@@ -206,7 +206,7 @@ void eventLoop(const char *const pathArray, const Window *const topLevelWindowAr
 	}
 	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
-			readConfigButton(display, &currentMonitor, pathArray, &box[currentMonitor][currentBox], &currentBox);
+			readConfigButton(&currentMonitor, pathArray, &box[currentMonitor][currentBox], &currentBox);
 		}
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
