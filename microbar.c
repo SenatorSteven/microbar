@@ -11,14 +11,14 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
+const char *configPath;
 Display *display;
 
-static unsigned int createWindows(const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
+static unsigned int createWindows(Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
 static void setTopLevelWindowProperties(const Window *const windowArray, const unsigned int *const monitorAmount);
 static void cleanupWindows(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
 
 int main(const int argumentCount, const char *const *const argumentVector){
-	const char *configPath;
 	if(getParameters((unsigned int *)&argumentCount, argumentVector, &configPath)){
 		unsigned int mode = ModeContinue;
 		unsigned int monitorAmount;
@@ -29,7 +29,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 			if((display = XOpenDisplay(NULL))){
 				XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
 				Window window[monitorAmount];
-				if(createWindows(configPath, window, &monitorAmount)){
+				if(createWindows(window, &monitorAmount)){
 					setTopLevelWindowProperties(window, &monitorAmount);
 					eventLoop(configPath, window, &monitorAmount, &mode);
 					cleanupWindows(window, &monitorAmount);
@@ -46,7 +46,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	}
 	return 0;
 }
-static unsigned int createWindows(const char *const pathArray, Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
+static unsigned int createWindows(Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	unsigned int value;
 	unsigned int currentMonitor;
@@ -69,7 +69,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 		}
 		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
 			value = 0;
-			if(readConfigTopLevelWindow(&currentMonitor, pathArray, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
+			if(readConfigTopLevelWindow(&currentMonitor, configPath, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
 					XVisualInfo visualInfo;
 					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
@@ -102,7 +102,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
-				if(readConfigMenuWindow(&currentMonitor, pathArray, &topLevelWindowArray[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+				if(readConfigMenuWindow(&currentMonitor, configPath, &topLevelWindowArray[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
 							borderColor = globalMenuBorderColor;
@@ -118,7 +118,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(&currentMonitor, pathArray, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
+						if(readConfigBoxWindow(&currentMonitor, configPath, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -134,7 +134,7 @@ static unsigned int createWindows(const char *const pathArray, Window *const top
 							value = 0;
 							currentInnerBox = 0;
 							while(currentInnerBox < innerBoxAmount){
-								if(readConfigInnerBoxWindow(&currentMonitor, pathArray, &box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+								if(readConfigInnerBoxWindow(&currentMonitor, configPath, &box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
 										innerBox = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
 										value = 1;
