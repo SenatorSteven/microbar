@@ -66,7 +66,7 @@ unsigned int getParameters(const unsigned int *const argumentCount, const char *
 static unsigned int isArgument(const char *const argument, const char *const argumentArray){
 	unsigned int value = 0;
 	unsigned int length = 0;
-	while(argument[length] > '\0'){
+	while(argument[length] != '\0'){
 		length++;
 	}
 	unsigned int element = 0;
