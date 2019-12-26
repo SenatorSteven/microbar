@@ -12,6 +12,7 @@
 #define ModeExit /*-----*/ ((unsigned int)2)
 
 const char *configPath;
+unsigned int mode = ModeContinue;
 Display *display;
 
 static unsigned int createWindows(Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
@@ -20,7 +21,6 @@ static void cleanupWindows(const Window *const topLevelWindowArray, const unsign
 
 int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
-		unsigned int mode = ModeContinue;
 		unsigned int monitorAmount;
 		while(mode == ModeContinue || mode == ModeRestart){
 			if(mode == ModeRestart){
@@ -31,7 +31,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 				Window window[monitorAmount];
 				if(createWindows(window, &monitorAmount)){
 					setTopLevelWindowProperties(window, &monitorAmount);
-					eventLoop(window, &monitorAmount, &mode);
+					eventLoop(window, &monitorAmount);
 					cleanupWindows(window, &monitorAmount);
 				}else{
 					fprintf(stderr, "%s: could not create windows\n", ProgramName);
