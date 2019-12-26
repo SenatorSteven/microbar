@@ -34,7 +34,7 @@
 #define OperationMultiplication /*-----------*/ ((unsigned int)3)
 #define OperationDivision /*-----------------*/ ((unsigned int)4)
 
-extern const char *configPath;
+extern const char *const configPath;
 extern Display *const display;
 
 static FILE *getConfigFile();
