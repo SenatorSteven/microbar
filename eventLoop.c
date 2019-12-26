@@ -8,7 +8,7 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
-extern const char *configPath;
+extern const char *const configPath;
 extern unsigned int mode;
 extern Display *const display;
 extern const unsigned int monitorAmount;
