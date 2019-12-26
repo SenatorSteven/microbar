@@ -16,10 +16,11 @@ unsigned int mode = ModeContinue;
 Display *display;
 unsigned int monitorAmount;
 const XRRMonitorInfo *monitorInfo;
+Window *topLevelWindow;
 
-static unsigned int createWindows(Window *const topLevelWindowArray);
-static void setTopLevelWindowProperties(const Window *const windowArray);
-static void cleanupWindows(const Window *const topLevelWindowArray);
+static unsigned int createWindows(void);
+static void setTopLevelWindowProperties(void);
+static void cleanupWindows(void);
 
 int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
@@ -30,10 +31,11 @@ int main(const int argumentCount, const char *const *const argumentVector){
 			if((display = XOpenDisplay(NULL))){
 				monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
 				Window window[monitorAmount];
-				if(createWindows(window)){
-					setTopLevelWindowProperties(window);
-					eventLoop(window);
-					cleanupWindows(window);
+				topLevelWindow = window;
+				if(createWindows()){
+					setTopLevelWindowProperties();
+					eventLoop();
+					cleanupWindows();
 				}else{
 					fprintf(stderr, "%s: could not create windows\n", ProgramName);
 					mode = ModeExit;
@@ -47,7 +49,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	}
 	return 0;
 }
-static unsigned int createWindows(Window *const topLevelWindowArray){
+static unsigned int createWindows(void){
 	unsigned int value;
 	unsigned int currentMonitor;
 	int x;
@@ -73,7 +75,7 @@ static unsigned int createWindows(Window *const topLevelWindowArray){
 						.border_pixel = borderColor,
 						.colormap = XCreateColormap(display, rootWindow, visualInfo.visual, AllocNone)
 					};
-					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x + monitorInfo[currentMonitor].x, y + monitorInfo[currentMonitor].y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
+					topLevelWindow[currentMonitor] = XCreateWindow(display, rootWindow, x + monitorInfo[currentMonitor].x, y + monitorInfo[currentMonitor].y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
 					value = 1;
 				}
 			}
@@ -97,7 +99,7 @@ static unsigned int createWindows(Window *const topLevelWindowArray){
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
-				if(readConfigMenuWindow(&currentMonitor, &topLevelWindowArray[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+				if(readConfigMenuWindow(&currentMonitor, &topLevelWindow[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
 							borderColor = globalMenuBorderColor;
@@ -105,7 +107,7 @@ static unsigned int createWindows(Window *const topLevelWindowArray){
 						if(backgroundColor == 0x00000000){
 							backgroundColor = globalMenuBackgroundColor;
 						}
-						menu = XCreateSimpleWindow(display, topLevelWindowArray[currentMonitor], x, y, width, height, border, borderColor, backgroundColor);
+						menu = XCreateSimpleWindow(display, topLevelWindow[currentMonitor], x, y, width, height, border, borderColor, backgroundColor);
 						value = 1;
 					}
 				}
@@ -170,7 +172,7 @@ static unsigned int createWindows(Window *const topLevelWindowArray){
 	}
 	return value;
 }
-static void setTopLevelWindowProperties(const Window *const windowArray){
+static void setTopLevelWindowProperties(void){
 	XTextProperty textProperty = {
 		.value = (unsigned char *)ProgramName,
 		.encoding = XA_STRING,
@@ -208,7 +210,7 @@ static void setTopLevelWindowProperties(const Window *const windowArray){
 		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorsAmount);
 	}
 	for(unsigned int currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-		XGetWindowAttributes(display, windowArray[currentMonitor], &windowAttributes);
+		XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
 		sizeHints.x = windowAttributes.x;
 		sizeHints.y = windowAttributes.y;
 		sizeHints.width = windowAttributes.width;
@@ -219,20 +221,20 @@ static void setTopLevelWindowProperties(const Window *const windowArray){
 		sizeHints.max_height = windowAttributes.height;
 		sizeHints.base_width = windowAttributes.width;
 		sizeHints.base_height = windowAttributes.height;
-		XSetWMName(display, windowArray[currentMonitor], &textProperty);
-		XSetWMNormalHints(display, windowArray[currentMonitor], &sizeHints);
-		XSetWMHints(display, windowArray[currentMonitor], &WMHints);
-		XSetClassHint(display, windowArray[currentMonitor], &classHint);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
+		XSetWMName(display, topLevelWindow[currentMonitor], &textProperty);
+		XSetWMNormalHints(display, topLevelWindow[currentMonitor], &sizeHints);
+		XSetWMHints(display, topLevelWindow[currentMonitor], &WMHints);
+		XSetClassHint(display, topLevelWindow[currentMonitor], &classHint);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
 		data[0] = 0xFFFFFFFF;
 		data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
 		data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
 		data[3] = XInternAtom(display, "_NET_WM_ACTION_STICK", False);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_DESKTOP", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data[0], 1);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_WINDOW_TYPE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[1], 1);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[2], 1);
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_ALLOWED_ACTIONS", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[3], 1);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_DESKTOP", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data[0], 1);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_WINDOW_TYPE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[1], 1);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[2], 1);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_ALLOWED_ACTIONS", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[3], 1);
 		data[0] = 0;
 		data[1] = 0;
 		data[4] = 0;
@@ -254,17 +256,17 @@ static void setTopLevelWindowProperties(const Window *const windowArray){
 			data[10] = windowAttributes.x;
 			data[11] = windowAttributes.x + windowAttributes.width - 1;
 		}
-		XChangeProperty(display, windowArray[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
-		XSelectInput(display, windowArray[currentMonitor], ExposureMask);
+		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
+		XSelectInput(display, topLevelWindow[currentMonitor], ExposureMask);
 	}
 	return;
 }
-static void cleanupWindows(const Window *const topLevelWindowArray){
+static void cleanupWindows(void){
 	for(unsigned int currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
-		XDestroySubwindows(display, topLevelWindowArray[currentMonitor]);
-		XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
-		XDestroyWindow(display, topLevelWindowArray[currentMonitor]);
+		XUnmapSubwindows(display, topLevelWindow[currentMonitor]);
+		XDestroySubwindows(display, topLevelWindow[currentMonitor]);
+		XUnmapWindow(display, topLevelWindow[currentMonitor]);
+		XDestroyWindow(display, topLevelWindow[currentMonitor]);
 	}
 	return;
 }
