@@ -1202,7 +1202,7 @@ static unsigned int isVariable(const char *const variable, const char *const lin
 	unsigned int dereferencedElement = *element;
 	unsigned int value = 0;
 	unsigned int length = 0;
-	while(variable[length] > '\0'){
+	while(variable[length] != '\0'){
 		length++;
 	}
 	unsigned int currentCharacter = 0;
