@@ -15,6 +15,7 @@ const char *configPath;
 unsigned int mode = ModeContinue;
 Display *display;
 unsigned int monitorAmount;
+XRRMonitorInfo *monitorInfo;
 
 static unsigned int createWindows(Window *const topLevelWindowArray);
 static void setTopLevelWindowProperties(const Window *const windowArray);
@@ -27,7 +28,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 				mode = ModeContinue;
 			}
 			if((display = XOpenDisplay(NULL))){
-				XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+				monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
 				Window window[monitorAmount];
 				if(createWindows(window)){
 					setTopLevelWindowProperties(window);
@@ -61,11 +62,6 @@ static unsigned int createWindows(Window *const topLevelWindowArray){
 	unsigned int menuAmount;
 	{
 		Window rootWindow = XDefaultRootWindow(display);
-		XRRMonitorInfo *monitorInfo;
-		{
-			int tempMonitorAmount;
-			monitorInfo = XRRGetMonitors(display, rootWindow, True, &tempMonitorAmount);
-		}
 		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 			value = 0;
 			if(readConfigTopLevelWindow(&currentMonitor, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
