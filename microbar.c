@@ -17,6 +17,7 @@ Display *display;
 unsigned int monitorAmount;
 const XRRMonitorInfo *monitorInfo;
 Window *topLevelWindow;
+unsigned int currentMonitor;
 
 static unsigned int createWindows(void);
 static void setTopLevelWindowProperties(void);
@@ -51,7 +52,6 @@ int main(const int argumentCount, const char *const *const argumentVector){
 }
 static unsigned int createWindows(void){
 	unsigned int value;
-	unsigned int currentMonitor;
 	int x;
 	int y;
 	unsigned int width;
@@ -66,7 +66,7 @@ static unsigned int createWindows(void){
 		Window rootWindow = XDefaultRootWindow(display);
 		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 			value = 0;
-			if(readConfigTopLevelWindow(&currentMonitor, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
+			if(readConfigTopLevelWindow(&rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
 					XVisualInfo visualInfo;
 					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
@@ -99,7 +99,7 @@ static unsigned int createWindows(void){
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
-				if(readConfigMenuWindow(&currentMonitor, &topLevelWindow[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+				if(readConfigMenuWindow(&topLevelWindow[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
 							borderColor = globalMenuBorderColor;
@@ -115,7 +115,7 @@ static unsigned int createWindows(void){
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(&currentMonitor, &menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
+						if(readConfigBoxWindow(&menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -131,7 +131,7 @@ static unsigned int createWindows(void){
 							value = 0;
 							currentInnerBox = 0;
 							while(currentInnerBox < innerBoxAmount){
-								if(readConfigInnerBoxWindow(&currentMonitor, &box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+								if(readConfigInnerBoxWindow(&box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
 										innerBox = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
 										value = 1;
@@ -204,12 +204,7 @@ static void setTopLevelWindowProperties(void){
 		.res_class = ProgramName
 	};
 	long unsigned int data[12];
-	XRRMonitorInfo *monitorInfo;
-	{
-		int monitorsAmount;
-		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorsAmount);
-	}
-	for(unsigned int currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
+	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 		XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
 		sizeHints.x = windowAttributes.x;
 		sizeHints.y = windowAttributes.y;
@@ -262,7 +257,7 @@ static void setTopLevelWindowProperties(void){
 	return;
 }
 static void cleanupWindows(void){
-	for(unsigned int currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
+	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 		XUnmapSubwindows(display, topLevelWindow[currentMonitor]);
 		XDestroySubwindows(display, topLevelWindow[currentMonitor]);
 		XUnmapWindow(display, topLevelWindow[currentMonitor]);
