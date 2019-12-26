@@ -12,14 +12,15 @@ extern const char *const configPath;
 extern unsigned int mode;
 extern Display *const display;
 extern const unsigned int monitorAmount;
+extern const Window *const topLevelWindow;
 
-static unsigned int getBoxAmount(const Window *const topLevelWindow);
+static unsigned int getBoxAmount();
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
-void eventLoop(const Window *const topLevelWindowArray){
-	const unsigned int boxAmount = getBoxAmount(&topLevelWindowArray[0]);
+void eventLoop(){
+	const unsigned int boxAmount = getBoxAmount();
 	unsigned int currentMonitor;
 	unsigned int currentBox;
 	Window box[monitorAmount][boxAmount];
@@ -33,7 +34,7 @@ void eventLoop(const Window *const topLevelWindowArray){
 		unsigned int boxNumber;
 		unsigned int currentMenu;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
+			XQueryTree(display, topLevelWindow[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
 			boxNumber = 0;
 			if(menuAmount > 0){
 				for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
@@ -210,24 +211,24 @@ void eventLoop(const Window *const topLevelWindowArray){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			readConfigButton(&currentMonitor, &box[currentMonitor][currentBox], &currentBox);
 		}
-		XMapWindow(display, topLevelWindowArray[currentMonitor]);
+		XMapWindow(display, topLevelWindow[currentMonitor]);
 	}
 	XEvent event;
-	unsigned int topLevelWindowArrayMapped = 1;
+	unsigned int topLevelWindowMapped = 1;
 	unsigned int commandWordBeginning;
 	for(;;){
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
-			if(topLevelWindowArrayMapped){
+			if(topLevelWindowMapped){
 				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-					XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+					XUnmapWindow(display, topLevelWindow[currentMonitor]);
 				}
-				topLevelWindowArrayMapped = 0;
+				topLevelWindowMapped = 0;
 			}else{
 				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-					XMapWindow(display, topLevelWindowArray[currentMonitor]);
+					XMapWindow(display, topLevelWindow[currentMonitor]);
 				}
-				topLevelWindowArrayMapped = 1;
+				topLevelWindowMapped = 1;
 			}
 		}else if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
@@ -235,7 +236,7 @@ void eventLoop(const Window *const topLevelWindowArray){
 				for(currentBox = 0; currentBox < boxAmount; currentBox++){
 					if(event.xbutton.window == box[currentMonitor][currentBox]){
 						if(drawableCommand2DRemappedArray[currentBox * drawableCommandMaxWordLength]){
-							drawCommand(&topLevelWindowArray[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
+							drawCommand(&topLevelWindow[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
 						}
 						if(command2DRemappedArray[commandWordBeginning]){
 							if(isCommand("Restart&", &command2DRemappedArray[commandWordBeginning])){
@@ -257,14 +258,14 @@ void eventLoop(const Window *const topLevelWindowArray){
 			}
 		}else if(event.type == Expose){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-				onExpose(&topLevelWindowArray[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
+				onExpose(&topLevelWindow[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
 			}
 		}
 	}
 	XUngrabKeyboard(display, CurrentTime);
 	return;
 }
-static unsigned int getBoxAmount(const Window *const topLevelWindow){
+static unsigned int getBoxAmount(){
 	unsigned int boxAmount = 0;
 	Window rootWindow;
 	Window parentWindow;
