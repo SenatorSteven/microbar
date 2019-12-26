@@ -66,7 +66,7 @@ void eventLoop(void){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			if(allocatedText[currentBox]){
 				copy = 0;
-				while(allocatedText[currentBox][copy] > '\0'){
+				while(allocatedText[currentBox][copy] != '\0'){
 					copy++;
 				}
 				if(copy > textMaxWordLength){
@@ -75,7 +75,7 @@ void eventLoop(void){
 			}
 			if(allocatedCommand[currentBox]){
 				copy = 0;
-				while(allocatedCommand[currentBox][copy] > '\0'){
+				while(allocatedCommand[currentBox][copy] != '\0'){
 					copy++;
 				}
 				if(copy > commandMaxWordLength){
@@ -84,7 +84,7 @@ void eventLoop(void){
 			}
 			if(allocatedDrawableCommand[currentBox]){
 				copy = 0;
-				while(allocatedDrawableCommand[currentBox][copy] > '\0'){
+				while(allocatedDrawableCommand[currentBox][copy] != '\0'){
 					copy++;
 				}
 				if(copy > drawableCommandMaxWordLength){
@@ -103,7 +103,7 @@ void eventLoop(void){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedText[currentBox]){
-				while(allocatedText[currentBox][currentCharacter] > '\0'){
+				while(allocatedText[currentBox][currentCharacter] != '\0'){
 					text2DRemappedArray[wordBeginning + currentCharacter] = allocatedText[currentBox][currentCharacter];
 					currentCharacter++;
 				}
@@ -122,7 +122,7 @@ void eventLoop(void){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedCommand[currentBox]){
-				while(allocatedCommand[currentBox][currentCharacter] > '\0'){
+				while(allocatedCommand[currentBox][currentCharacter] != '\0'){
 					command2DRemappedArray[wordBeginning + currentCharacter] = allocatedCommand[currentBox][currentCharacter];
 					currentCharacter++;
 				}
@@ -136,7 +136,7 @@ void eventLoop(void){
 	}
 	unsigned int drawableCommandPathLength = 0;
 	{
-		while(configPath[drawableCommandPathLength] > '\0'){
+		while(configPath[drawableCommandPathLength] != '\0'){
 			drawableCommandPathLength++;
 		}
 		while(configPath[drawableCommandPathLength] != '/'){
@@ -182,7 +182,7 @@ void eventLoop(void){
 			currentCharacter = 0;
 			if(allocatedDrawableCommand[currentBox]){
 				currentCharacterRight = 0;
-				while(allocatedDrawableCommand[currentBox][currentCharacterRight] > '\0'){
+				while(allocatedDrawableCommand[currentBox][currentCharacterRight] != '\0'){
 					drawableCommand2DRemappedArray[wordBeginning + currentCharacter] = allocatedDrawableCommand[currentBox][currentCharacterRight];
 					currentCharacter++;
 					currentCharacterRight++;
@@ -298,7 +298,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 	}
 	if(result){
 		unsigned int resultLength = 0;
-		while(result[resultLength] > '\0'){
+		while(result[resultLength] != '\0'){
 			resultLength++;
 		}
 		if(resultLength > 1){
@@ -336,7 +336,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 static unsigned int isCommand(const char *const command, const char *const commandArray){
 	unsigned int value = 0;
 	unsigned int length = 0;
-	while(command[length] > '\0'){
+	while(command[length] != '\0'){
 		length++;
 	}
 	unsigned int element = 0;
@@ -378,7 +378,7 @@ static void onExpose(const Window *const topLevelWindow, const Window *const box
 			if(text2DRemappedArray[wordBeginning]){
 				XSetForeground(display, gc, textColorArray[currentBox]);
 				actualWordLength = 0;
-				while(text2DRemappedArray[wordBeginning + actualWordLength] > '\0'){
+				while(text2DRemappedArray[wordBeginning + actualWordLength] != '\0'){
 					actualWordLength++;
 				}
 				XTextExtents(font, &text2DRemappedArray[wordBeginning], actualWordLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
