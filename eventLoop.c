@@ -19,7 +19,6 @@ static unsigned int isCommand(const char *const command, const char *const comma
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
 void eventLoop(const Window *const topLevelWindowArray){
-	
 	const unsigned int boxAmount = getBoxAmount(&topLevelWindowArray[0]);
 	unsigned int currentMonitor;
 	unsigned int currentBox;
