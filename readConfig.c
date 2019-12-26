@@ -1395,7 +1395,7 @@ static int getDecimalNumber(const Window *const parentWindow, const char *const 
 	*element = dereferencedElement;
 	return number;
 }
-static int getARGB(const char *const lineArray, unsigned int *const element){
+static bytes4 getARGB(const char *const lineArray, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	int color = 0x00000000;
 	if(lineArray[dereferencedElement] == '#'){
