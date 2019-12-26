@@ -9,6 +9,7 @@
 #define ModeExit /*-----*/ ((unsigned int)2)
 
 extern const char *configPath;
+extern unsigned int mode;
 extern Display *const display;
 
 static unsigned int getBoxAmount(const Window *const topLevelWindow);
@@ -16,7 +17,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 static unsigned int isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
-void eventLoop(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount, unsigned int *const mode){
+void eventLoop(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
 	const unsigned int dereferencedMonitorAmount = *monitorAmount;
 	const unsigned int boxAmount = getBoxAmount(&topLevelWindowArray[0]);
 	unsigned int currentMonitor;
@@ -238,9 +239,9 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 						}
 						if(command2DRemappedArray[commandWordBeginning]){
 							if(isCommand("Restart&", &command2DRemappedArray[commandWordBeginning])){
-								*mode = ModeRestart;
+								mode = ModeRestart;
 							}else if(isCommand("Exit&", &command2DRemappedArray[commandWordBeginning])){
-								*mode = ModeExit;
+								mode = ModeExit;
 							}else{
 								system(&command2DRemappedArray[commandWordBeginning]);
 							}
@@ -251,7 +252,7 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 					commandWordBeginning += commandMaxWordLength;
 				}
 			}
-			if(*mode == ModeRestart || *mode == ModeExit){
+			if(mode == ModeRestart || mode == ModeExit){
 				break;
 			}
 		}else if(event.type == Expose){
