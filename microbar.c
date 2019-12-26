@@ -14,14 +14,14 @@
 const char *configPath;
 unsigned int mode = ModeContinue;
 Display *display;
+unsigned int monitorAmount;
 
-static unsigned int createWindows(Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
-static void setTopLevelWindowProperties(const Window *const windowArray, const unsigned int *const monitorAmount);
-static void cleanupWindows(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount);
+static unsigned int createWindows(Window *const topLevelWindowArray);
+static void setTopLevelWindowProperties(const Window *const windowArray);
+static void cleanupWindows(const Window *const topLevelWindowArray);
 
 int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
-		unsigned int monitorAmount;
 		while(mode == ModeContinue || mode == ModeRestart){
 			if(mode == ModeRestart){
 				mode = ModeContinue;
@@ -29,10 +29,10 @@ int main(const int argumentCount, const char *const *const argumentVector){
 			if((display = XOpenDisplay(NULL))){
 				XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
 				Window window[monitorAmount];
-				if(createWindows(window, &monitorAmount)){
-					setTopLevelWindowProperties(window, &monitorAmount);
+				if(createWindows(window)){
+					setTopLevelWindowProperties(window);
 					eventLoop(window, &monitorAmount);
-					cleanupWindows(window, &monitorAmount);
+					cleanupWindows(window);
 				}else{
 					fprintf(stderr, "%s: could not create windows\n", ProgramName);
 					mode = ModeExit;
@@ -46,8 +46,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	}
 	return 0;
 }
-static unsigned int createWindows(Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
-	const unsigned int dereferencedMonitorAmount = *monitorAmount;
+static unsigned int createWindows(Window *const topLevelWindowArray){
 	unsigned int value;
 	unsigned int currentMonitor;
 	int x;
@@ -64,10 +63,10 @@ static unsigned int createWindows(Window *const topLevelWindowArray, const unsig
 		Window rootWindow = XDefaultRootWindow(display);
 		XRRMonitorInfo *monitorInfo;
 		{
-			int monitorsAmount;
-			monitorInfo = XRRGetMonitors(display, rootWindow, True, &monitorsAmount);
+			int tempMonitorAmount;
+			monitorInfo = XRRGetMonitors(display, rootWindow, True, &tempMonitorAmount);
 		}
-		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 			value = 0;
 			if(readConfigTopLevelWindow(&currentMonitor, &rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
@@ -98,7 +97,7 @@ static unsigned int createWindows(Window *const topLevelWindowArray, const unsig
 		unsigned int innerBoxAmount;
 		unsigned int currentInnerBox;
 		Window innerBox;
-		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
@@ -175,8 +174,7 @@ static unsigned int createWindows(Window *const topLevelWindowArray, const unsig
 	}
 	return value;
 }
-static void setTopLevelWindowProperties(const Window *const windowArray, const unsigned int *const monitorAmount){
-	const unsigned int dereferencedMonitorAmount = *monitorAmount;
+static void setTopLevelWindowProperties(const Window *const windowArray){
 	XTextProperty textProperty = {
 		.value = (unsigned char *)ProgramName,
 		.encoding = XA_STRING,
@@ -213,7 +211,7 @@ static void setTopLevelWindowProperties(const Window *const windowArray, const u
 		int monitorsAmount;
 		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorsAmount);
 	}
-	for(unsigned int currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+	for(unsigned int currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 		XGetWindowAttributes(display, windowArray[currentMonitor], &windowAttributes);
 		sizeHints.x = windowAttributes.x;
 		sizeHints.y = windowAttributes.y;
@@ -265,9 +263,8 @@ static void setTopLevelWindowProperties(const Window *const windowArray, const u
 	}
 	return;
 }
-static void cleanupWindows(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
-	const unsigned int dereferencedMonitorAmount = *monitorAmount;
-	for(unsigned int currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+static void cleanupWindows(const Window *const topLevelWindowArray){
+	for(unsigned int currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
 		XDestroySubwindows(display, topLevelWindowArray[currentMonitor]);
 		XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
