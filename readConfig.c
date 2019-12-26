@@ -37,7 +37,7 @@
 extern const char *const configPath;
 extern Display *const display;
 
-static FILE *getConfigFile();
+static FILE *getConfigFile(void);
 static unsigned int pushSpaces(const char *const lineArray, unsigned int *const element);
 static unsigned int isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
 static unsigned int getUnsignedDecimalNumber(const unsigned int *const currentMonitor, const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element);
@@ -1027,7 +1027,7 @@ unsigned int readConfigButton(const unsigned int *const currentMonitor, const Wi
 	}
 	return value;
 }
-static FILE *getConfigFile(){
+static FILE *getConfigFile(void){
 	FILE *config = fopen(configPath, "r");
 	if(!config){
 		if((config = fopen(configPath, "w"))){
