@@ -15,7 +15,7 @@ const char *configPath;
 unsigned int mode = ModeContinue;
 Display *display;
 unsigned int monitorAmount;
-XRRMonitorInfo *monitorInfo;
+const XRRMonitorInfo *monitorInfo;
 
 static unsigned int createWindows(Window *const topLevelWindowArray);
 static void setTopLevelWindowProperties(const Window *const windowArray);
