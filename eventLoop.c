@@ -13,6 +13,7 @@ extern unsigned int mode;
 extern Display *const display;
 extern const unsigned int monitorAmount;
 extern const Window *const topLevelWindow;
+extern unsigned int currentMonitor;
 
 static unsigned int getBoxAmount(void);
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
@@ -21,7 +22,6 @@ static void onExpose(const Window *const topLevelWindow, const Window *const box
 
 void eventLoop(void){
 	const unsigned int boxAmount = getBoxAmount();
-	unsigned int currentMonitor;
 	unsigned int currentBox;
 	Window box[monitorAmount][boxAmount];
 	{
@@ -56,7 +56,7 @@ void eventLoop(void){
 	char *allocatedCommand[boxAmount];
 	char *allocatedDrawableCommand[boxAmount];
 	for(currentBox = 0; currentBox < boxAmount; currentBox++){
-		readConfigTextCommands(&currentMonitor, &box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
+		readConfigTextCommands(&box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
 	}
 	unsigned int textMaxWordLength = 0;
 	unsigned int commandMaxWordLength = 0;
@@ -209,7 +209,7 @@ void eventLoop(void){
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
-			readConfigButton(&currentMonitor, &box[currentMonitor][currentBox], &currentBox);
+			readConfigButton(&box[currentMonitor][currentBox], &currentBox);
 		}
 		XMapWindow(display, topLevelWindow[currentMonitor]);
 	}
