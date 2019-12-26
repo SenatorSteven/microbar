@@ -11,18 +11,19 @@
 extern const char *configPath;
 extern unsigned int mode;
 extern Display *const display;
+extern const unsigned int monitorAmount;
 
 static unsigned int getBoxAmount(const Window *const topLevelWindow);
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
-void eventLoop(const Window *const topLevelWindowArray, const unsigned int *const monitorAmount){
-	const unsigned int dereferencedMonitorAmount = *monitorAmount;
+void eventLoop(const Window *const topLevelWindowArray){
+	
 	const unsigned int boxAmount = getBoxAmount(&topLevelWindowArray[0]);
 	unsigned int currentMonitor;
 	unsigned int currentBox;
-	Window box[dereferencedMonitorAmount][boxAmount];
+	Window box[monitorAmount][boxAmount];
 	{
 		Window rootWindow;
 		Window parentWindow;
@@ -32,7 +33,7 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 		unsigned int menuBoxAmount;
 		unsigned int boxNumber;
 		unsigned int currentMenu;
-		for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
 			boxNumber = 0;
 			if(menuAmount > 0){
@@ -206,7 +207,7 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 		free(allocatedCommand[currentBox]);
 		free(allocatedDrawableCommand[currentBox]);
 	}
-	for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			readConfigButton(&currentMonitor, &box[currentMonitor][currentBox], &currentBox);
 		}
@@ -219,18 +220,18 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
 			if(topLevelWindowArrayMapped){
-				for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 					XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
 				}
 				topLevelWindowArrayMapped = 0;
 			}else{
-				for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 					XMapWindow(display, topLevelWindowArray[currentMonitor]);
 				}
 				topLevelWindowArrayMapped = 1;
 			}
 		}else if(event.type == ButtonPress){
-			for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 				commandWordBeginning = 0;
 				for(currentBox = 0; currentBox < boxAmount; currentBox++){
 					if(event.xbutton.window == box[currentMonitor][currentBox]){
@@ -246,7 +247,7 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 								system(&command2DRemappedArray[commandWordBeginning]);
 							}
 						}
-						currentMonitor = dereferencedMonitorAmount;
+						currentMonitor = monitorAmount;
 						break;
 					}
 					commandWordBeginning += commandMaxWordLength;
@@ -256,7 +257,7 @@ void eventLoop(const Window *const topLevelWindowArray, const unsigned int *cons
 				break;
 			}
 		}else if(event.type == Expose){
-			for(currentMonitor = 0; currentMonitor < dereferencedMonitorAmount; currentMonitor++){
+			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 				onExpose(&topLevelWindowArray[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
 			}
 		}
