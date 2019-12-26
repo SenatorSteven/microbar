@@ -291,7 +291,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 	char *result;
 	{
 		FILE *drawableCommand = fopen(drawableCommandPathArray, "r");
-		size_t characters = DefaultLinesCount;
+		size_t characters = DefaultCharactersCount;
 		result = (char *)malloc(characters * sizeof(char));
 		getline(&result, &characters, drawableCommand);
 		fclose(drawableCommand);
