@@ -14,12 +14,12 @@ extern Display *const display;
 extern const unsigned int monitorAmount;
 extern const Window *const topLevelWindow;
 
-static unsigned int getBoxAmount();
+static unsigned int getBoxAmount(void);
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
-void eventLoop(){
+void eventLoop(void){
 	const unsigned int boxAmount = getBoxAmount();
 	unsigned int currentMonitor;
 	unsigned int currentBox;
@@ -265,7 +265,7 @@ void eventLoop(){
 	XUngrabKeyboard(display, CurrentTime);
 	return;
 }
-static unsigned int getBoxAmount(){
+static unsigned int getBoxAmount(void){
 	unsigned int boxAmount = 0;
 	Window rootWindow;
 	Window parentWindow;
