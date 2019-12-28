@@ -330,20 +330,6 @@ unsigned int readConfigTopLevelWindow(const Window *const parentWindow, int *con
 							continue;
 						}
 					}
-					if(!(hasReadVariable & HideKeyPosition)){
-						if(isVariable("HideKey", line, &element)){
-							pushSpaces(line, &element);
-							if(isVariable("=", line, &element)){
-								pushSpaces(line, &element);
-								unsigned int key;
-								int masks;
-								getKeys(parentWindow, &currentLine, line, &element, &key, &masks);
-								XGrabKey(display, key, masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
-							}
-							hasReadVariable |= HideKeyPosition;
-							continue;
-						}
-					}
 					if(isVariable("Menu", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
