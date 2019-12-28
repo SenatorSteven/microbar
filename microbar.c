@@ -27,9 +27,7 @@ static void cleanupWindows(void);
 int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
 		while(mode == ModeContinue || mode == ModeRestart){
-			if(mode == ModeRestart){
-				mode = ModeContinue;
-			}
+			mode = ModeContinue;
 			if((display = XOpenDisplay(NULL))){
 				{
 					Window rootWindow = XDefaultRootWindow(display);
