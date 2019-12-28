@@ -12,16 +12,16 @@ extern const char *configPath;
 extern unsigned int mode;
 extern Display *display;
 extern unsigned int monitorAmount;
-extern Window *topLevelWindow;
+extern unsigned int totalBoxAmount;
+extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
-static unsigned int getBoxAmount(void);
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
 void eventLoop(void){
-	const unsigned int boxAmount = getBoxAmount();
+	const unsigned int boxAmount = totalBoxAmount;
 	unsigned int currentBox;
 	Window box[monitorAmount][boxAmount];
 	{
@@ -34,7 +34,7 @@ void eventLoop(void){
 		unsigned int boxNumber;
 		unsigned int currentMenu;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-			XQueryTree(display, topLevelWindow[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
+			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
 			boxNumber = 0;
 			if(menuAmount > 0){
 				for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
@@ -211,24 +211,24 @@ void eventLoop(void){
 		for(currentBox = 0; currentBox < boxAmount; currentBox++){
 			readConfigButton(&box[currentMonitor][currentBox], &currentBox);
 		}
-		XMapWindow(display, topLevelWindow[currentMonitor]);
+		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
 	XEvent event;
-	unsigned int topLevelWindowMapped = 1;
+	unsigned int topLevelWindowArrayMapped = 1;
 	unsigned int commandWordBeginning;
 	for(;;){
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
-			if(topLevelWindowMapped){
+			if(topLevelWindowArrayMapped){
 				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-					XUnmapWindow(display, topLevelWindow[currentMonitor]);
+					XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
 				}
-				topLevelWindowMapped = 0;
+				topLevelWindowArrayMapped = 0;
 			}else{
 				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-					XMapWindow(display, topLevelWindow[currentMonitor]);
+					XMapWindow(display, topLevelWindowArray[currentMonitor]);
 				}
-				topLevelWindowMapped = 1;
+				topLevelWindowArrayMapped = 1;
 			}
 		}else if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
@@ -236,7 +236,7 @@ void eventLoop(void){
 				for(currentBox = 0; currentBox < boxAmount; currentBox++){
 					if(event.xbutton.window == box[currentMonitor][currentBox]){
 						if(drawableCommand2DRemappedArray[currentBox * drawableCommandMaxWordLength]){
-							drawCommand(&topLevelWindow[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
+							drawCommand(&topLevelWindowArray[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
 						}
 						if(command2DRemappedArray[commandWordBeginning]){
 							if(isCommand("Restart&", &command2DRemappedArray[commandWordBeginning])){
@@ -258,33 +258,12 @@ void eventLoop(void){
 			}
 		}else if(event.type == Expose){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-				onExpose(&topLevelWindow[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
+				onExpose(&topLevelWindowArray[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
 			}
 		}
 	}
 	XUngrabKeyboard(display, CurrentTime);
 	return;
-}
-static unsigned int getBoxAmount(void){
-	unsigned int boxAmount = 0;
-	Window rootWindow;
-	Window parentWindow;
-	Window *menus;
-	unsigned int menuAmount;
-	XQueryTree(display, *topLevelWindow, &rootWindow, &parentWindow, &menus, &menuAmount);
-	if(menuAmount > 0){
-		Window *boxes;
-		unsigned int menuBoxAmount;
-		for(unsigned int currentMenu = 0; currentMenu < menuAmount; currentMenu++){
-			XQueryTree(display, menus[currentMenu], &rootWindow, &parentWindow, &boxes, &menuBoxAmount);
-			if(menuBoxAmount > 0){
-				boxAmount += menuBoxAmount;
-				XFree(boxes);
-			}
-		}
-		XFree(menus);
-	}
-	return boxAmount;
 }
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor){
 	system(systemCommandArray);
