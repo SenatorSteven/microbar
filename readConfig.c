@@ -47,8 +47,7 @@ static unsigned int getUnsignedDecimalNumber(const Window *const window, const u
 static int getDecimalNumber(const Window *const window, const char *const lineArray, unsigned int *const element);
 static bytes4 getARGB(const char *const lineArray, unsigned int *const element);
 static void getKeys(const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
-static char *getText(const char *const lineArray, unsigned int *const element);
-static char *getCommand(const char *const lineArray, unsigned int *const element);
+static char *getText(const char *const lineArray, unsigned int *const element, const unsigned int addAmpersand);
 static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
 unsigned int readConfigScan(const Window *const parentWindow){
@@ -972,7 +971,7 @@ unsigned int readConfigTextCommands(const Window *const window, const unsigned i
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								*textPointerArray = getText(line, &element);
+								*textPointerArray = getText(line, &element, 0);
 								hasReadVariable |= TextPosition;
 							}
 							continue;
@@ -994,7 +993,7 @@ unsigned int readConfigTextCommands(const Window *const window, const unsigned i
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								*commandPointerArray = getCommand(line, &element);
+								*commandPointerArray = getText(line, &element, 1);
 								hasReadVariable |= CommandPosition;
 							}
 							continue;
@@ -1005,7 +1004,7 @@ unsigned int readConfigTextCommands(const Window *const window, const unsigned i
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								*drawableCommandPointerArray = getText(line, &element);
+								*drawableCommandPointerArray = getText(line, &element, 0);
 								hasReadVariable |= DrawableCommandPosition;
 							}
 							continue;
@@ -1579,7 +1578,7 @@ static void getKeys(const Window *const window, const unsigned int *const curren
 	*masks = dereferencedMasks;
 	return;
 }
-static char *getText(const char *const lineArray, unsigned int *const element){
+static char *getText(const char *const lineArray, unsigned int *const element, const unsigned int addAmpersand){
 	unsigned int dereferencedElement = *element;
 	char *text = NULL;
 	unsigned int length = 0;
@@ -1590,7 +1589,16 @@ static char *getText(const char *const lineArray, unsigned int *const element){
 		}
 	}
 	if(length > 0){
-		if((text = (char *)malloc((length + 1) * sizeof(char)))){
+		{
+			unsigned int extraCharacters;
+			if(addAmpersand){
+				extraCharacters = 1;
+			}else{
+				extraCharacters = 0;
+			}
+			text = (char *)malloc((length + 1 + extraCharacters) * sizeof(char));
+		}
+		if(text){
 			unsigned int currentCharacter = 0;
 			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
 				text[currentCharacter] = lineArray[dereferencedElement];
@@ -1599,6 +1607,9 @@ static char *getText(const char *const lineArray, unsigned int *const element){
 			}
 			if(currentCharacter == length){
 				dereferencedElement++;
+				if(addAmpersand){
+					text[length++] = '&';
+				}
 				text[length] = '\0';
 				*element = dereferencedElement;
 			}
@@ -1607,36 +1618,6 @@ static char *getText(const char *const lineArray, unsigned int *const element){
 		}
 	}
 	return text;
-}
-static char *getCommand(const char *const lineArray, unsigned int *const element){
-	unsigned int dereferencedElement = *element;
-	char *command = NULL;
-	unsigned int length = 0;
-	{
-		const char quotation = lineArray[dereferencedElement++];
-		while(lineArray[dereferencedElement + length] != '\n' && lineArray[dereferencedElement + length] != quotation){
-			length++;
-		}
-	}
-	if(length > 0){
-		if((command = (char *)malloc((length + 2) * sizeof(char)))){
-			unsigned int currentCharacter = 0;
-			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
-				command[currentCharacter] = lineArray[dereferencedElement];
-				dereferencedElement++;
-				currentCharacter++;
-			}
-			if(currentCharacter == length){
-				dereferencedElement++;
-				command[length++] = '&';
-				command[length] = '\0';
-				*element = dereferencedElement;
-			}
-		}else{
-			fprintf(stderr, "%s: could not allocate space for command\n", ProgramName);
-		}
-	}
-	return command;
 }
 static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine){
 	unsigned int value = 0;
