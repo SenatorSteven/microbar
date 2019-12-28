@@ -95,38 +95,6 @@ void eventLoop(void){
 		commandMaxWordLength++;
 		drawableCommandMaxWordLength++;
 	}
-	char text2DRemappedArray[totalBoxAmount * textMaxWordLength];
-	{
-		unsigned int currentCharacter;
-		unsigned int wordBeginning = 0;
-		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
-			currentCharacter = 0;
-			if(allocatedText[currentBox]){
-				while(allocatedText[currentBox][currentCharacter] != '\0'){
-					text2DRemappedArray[wordBeginning + currentCharacter] = allocatedText[currentBox][currentCharacter];
-					currentCharacter++;
-				}
-			}
-			text2DRemappedArray[wordBeginning + currentCharacter] = '\0';
-			wordBeginning += textMaxWordLength;
-		}
-	}
-	char command2DRemappedArray[totalBoxAmount* commandMaxWordLength];
-	{
-		unsigned int currentCharacter;
-		unsigned int wordBeginning = 0;
-		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
-			currentCharacter = 0;
-			if(allocatedCommand[currentBox]){
-				while(allocatedCommand[currentBox][currentCharacter] != '\0'){
-					command2DRemappedArray[wordBeginning + currentCharacter] = allocatedCommand[currentBox][currentCharacter];
-					currentCharacter++;
-				}
-			}
-			command2DRemappedArray[wordBeginning + currentCharacter] = '\0';
-			wordBeginning += commandMaxWordLength;
-		}
-	}
 	unsigned int drawableCommandPathLength = 0;
 	{
 		while(configPath[drawableCommandPathLength] != '\0'){
@@ -164,12 +132,38 @@ void eventLoop(void){
 		drawableCommandPath[currentCharacter++] = 'n';
 		drawableCommandPath[currentCharacter++] = 'd';
 		drawableCommandPath[currentCharacter] = '\0';
+		drawableCommandMaxWordLength += drawableCommandPathLength;
 	}
-	drawableCommandMaxWordLength += drawableCommandPathLength;
+	char text2DRemappedArray[totalBoxAmount * textMaxWordLength];
+	char command2DRemappedArray[totalBoxAmount* commandMaxWordLength];
 	char drawableCommand2DRemappedArray[totalBoxAmount * drawableCommandMaxWordLength];
 	{
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
+			currentCharacter = 0;
+			if(allocatedText[currentBox]){
+				while(allocatedText[currentBox][currentCharacter] != '\0'){
+					text2DRemappedArray[wordBeginning + currentCharacter] = allocatedText[currentBox][currentCharacter];
+					currentCharacter++;
+				}
+			}
+			text2DRemappedArray[wordBeginning + currentCharacter] = '\0';
+			wordBeginning += textMaxWordLength;
+		}
+		wordBeginning = 0;
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
+			currentCharacter = 0;
+			if(allocatedCommand[currentBox]){
+				while(allocatedCommand[currentBox][currentCharacter] != '\0'){
+					command2DRemappedArray[wordBeginning + currentCharacter] = allocatedCommand[currentBox][currentCharacter];
+					currentCharacter++;
+				}
+			}
+			command2DRemappedArray[wordBeginning + currentCharacter] = '\0';
+			wordBeginning += commandMaxWordLength;
+		}
+		wordBeginning = 0;
 		unsigned int currentCharacterRight;
 		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			currentCharacter = 0;
