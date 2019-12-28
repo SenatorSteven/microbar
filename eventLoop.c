@@ -107,10 +107,7 @@ void eventLoop(void){
 					currentCharacter++;
 				}
 			}
-			while(currentCharacter < textMaxWordLength){
-				text2DRemappedArray[wordBeginning + currentCharacter] = '\0';
-				currentCharacter++;
-			}
+			text2DRemappedArray[wordBeginning + currentCharacter] = '\0';
 			wordBeginning += textMaxWordLength;
 		}
 	}
@@ -126,10 +123,7 @@ void eventLoop(void){
 					currentCharacter++;
 				}
 			}
-			while(currentCharacter < commandMaxWordLength){
-				command2DRemappedArray[wordBeginning + currentCharacter] = '\0';
-				currentCharacter++;
-			}
+			command2DRemappedArray[wordBeginning + currentCharacter] = '\0';
 			wordBeginning += commandMaxWordLength;
 		}
 	}
@@ -194,10 +188,7 @@ void eventLoop(void){
 					currentCharacterRight++;
 				}
 			}
-			while(currentCharacter < drawableCommandMaxWordLength){
-				drawableCommand2DRemappedArray[wordBeginning + currentCharacter] = '\0';
-				currentCharacter++;
-			}
+			drawableCommand2DRemappedArray[wordBeginning + currentCharacter] = '\0';
 			wordBeginning += drawableCommandMaxWordLength;
 		}
 	}
