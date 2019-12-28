@@ -29,7 +29,7 @@ void eventLoop(void){
 		Window *menu;
 		unsigned int menuAmount;
 		Window *boxArray;
-		unsigned int menuBoxAmount;
+		unsigned int boxAmount;
 		unsigned int boxNumber;
 		unsigned int currentMenu;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
@@ -37,9 +37,9 @@ void eventLoop(void){
 			boxNumber = 0;
 			if(menuAmount > 0){
 				for(currentMenu = 0; currentMenu < menuAmount; currentMenu++){
-					XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &menuBoxAmount);
-					if(menuBoxAmount > 0){
-						for(currentBox = 0; currentBox < menuBoxAmount; currentBox++){
+					XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &boxAmount);
+					if(boxAmount > 0){
+						for(currentBox = 0; currentBox < boxAmount; currentBox++){
 							box[currentMonitor][boxNumber] = boxArray[currentBox];
 							boxNumber++;
 						}
