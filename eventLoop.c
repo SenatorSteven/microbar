@@ -8,11 +8,11 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
-extern const char *const configPath;
+extern const char *configPath;
 extern unsigned int mode;
-extern Display *const display;
-extern const unsigned int monitorAmount;
-extern const Window *const topLevelWindow;
+extern Display *display;
+extern unsigned int monitorAmount;
+extern Window *topLevelWindow;
 extern unsigned int currentMonitor;
 
 static unsigned int getBoxAmount(void);
