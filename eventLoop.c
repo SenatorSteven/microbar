@@ -135,7 +135,7 @@ void eventLoop(void){
 		drawableCommandMaxWordLength += drawableCommandPathLength;
 	}
 	char text2DRemappedArray[totalBoxAmount * textMaxWordLength];
-	char command2DRemappedArray[totalBoxAmount* commandMaxWordLength];
+	char command2DRemappedArray[totalBoxAmount * commandMaxWordLength];
 	char drawableCommand2DRemappedArray[totalBoxAmount * drawableCommandMaxWordLength];
 	{
 		unsigned int currentCharacter;
