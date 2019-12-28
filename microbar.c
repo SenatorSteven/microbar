@@ -30,7 +30,11 @@ int main(const int argumentCount, const char *const *const argumentVector){
 				mode = ModeContinue;
 			}
 			if((display = XOpenDisplay(NULL))){
-				monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+				{
+					Window rootWindow = XDefaultRootWindow(display);
+					monitorInfo = XRRGetMonitors(display, rootWindow, True, (int *)&monitorAmount);
+					readConfigScan(&rootWindow);
+				}
 				Window window[monitorAmount];
 				topLevelWindow = window;
 				if(createWindows()){
