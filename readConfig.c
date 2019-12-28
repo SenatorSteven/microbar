@@ -37,6 +37,7 @@
 extern const char *configPath;
 extern Display *display;
 extern const XRRMonitorInfo *monitorInfo;
+extern unsigned int totalBoxAmount;
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
@@ -54,6 +55,7 @@ unsigned int readConfigScan(const Window *const parentWindow){
 	unsigned int value = 0;
 	FILE *config = getConfigFile();
 	if(config){
+		totalBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		size_t characters = DefaultCharactersCount;
@@ -118,6 +120,7 @@ unsigned int readConfigScan(const Window *const parentWindow){
 					if(isVariable("Box", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
+							totalBoxAmount++;
 							hasReadVariable |= BoxPosition;
 						}
 						continue;
@@ -1643,7 +1646,7 @@ static unsigned int printLineError(const char *const lineArray, const unsigned i
 			length++;
 		}
 		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine);
-		for(unsigned int currentCharacter = 0; currentCharacter < length; currentCharacter++){
+		for(unsigned int currentCharacter = *element; currentCharacter < length; currentCharacter++){
 			fprintf(stderr, "%c", lineArray[currentCharacter]);
 		}
 		fprintf(stderr, "\" not recognized as an internal variable\n");
