@@ -18,12 +18,11 @@ extern unsigned int currentMonitor;
 
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
 static unsigned int isCommand(const char *const command, const char *const commandArray);
-static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
+static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
 void eventLoop(void){
-	const unsigned int boxAmount = totalBoxAmount;
 	unsigned int currentBox;
-	Window box[monitorAmount][boxAmount];
+	Window box[monitorAmount][totalBoxAmount];
 	{
 		Window rootWindow;
 		Window parentWindow;
@@ -51,11 +50,11 @@ void eventLoop(void){
 			}
 		}
 	}
-	char *allocatedText[boxAmount];
-	bytes4 textColor[boxAmount];
-	char *allocatedCommand[boxAmount];
-	char *allocatedDrawableCommand[boxAmount];
-	for(currentBox = 0; currentBox < boxAmount; currentBox++){
+	char *allocatedText[totalBoxAmount];
+	bytes4 textColor[totalBoxAmount];
+	char *allocatedCommand[totalBoxAmount];
+	char *allocatedDrawableCommand[totalBoxAmount];
+	for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 		readConfigTextCommands(&box[0][currentBox], &currentBox, &allocatedText[currentBox], &textColor[currentBox], &allocatedCommand[currentBox], &allocatedDrawableCommand[currentBox]);
 	}
 	unsigned int textMaxWordLength = 0;
@@ -63,7 +62,7 @@ void eventLoop(void){
 	unsigned int drawableCommandMaxWordLength = 0;
 	{
 		unsigned int copy;
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			if(allocatedText[currentBox]){
 				copy = 0;
 				while(allocatedText[currentBox][copy] != '\0'){
@@ -96,11 +95,11 @@ void eventLoop(void){
 		commandMaxWordLength++;
 		drawableCommandMaxWordLength++;
 	}
-	char text2DRemappedArray[boxAmount * textMaxWordLength];
+	char text2DRemappedArray[totalBoxAmount * textMaxWordLength];
 	{
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedText[currentBox]){
 				while(allocatedText[currentBox][currentCharacter] != '\0'){
@@ -115,11 +114,11 @@ void eventLoop(void){
 			wordBeginning += textMaxWordLength;
 		}
 	}
-	char command2DRemappedArray[boxAmount * commandMaxWordLength];
+	char command2DRemappedArray[totalBoxAmount* commandMaxWordLength];
 	{
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedCommand[currentBox]){
 				while(allocatedCommand[currentBox][currentCharacter] != '\0'){
@@ -173,12 +172,12 @@ void eventLoop(void){
 		drawableCommandPath[currentCharacter] = '\0';
 	}
 	drawableCommandMaxWordLength += drawableCommandPathLength;
-	char drawableCommand2DRemappedArray[boxAmount * drawableCommandMaxWordLength];
+	char drawableCommand2DRemappedArray[totalBoxAmount * drawableCommandMaxWordLength];
 	{
 		unsigned int currentCharacter;
 		unsigned int wordBeginning = 0;
 		unsigned int currentCharacterRight;
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			currentCharacter = 0;
 			if(allocatedDrawableCommand[currentBox]){
 				currentCharacterRight = 0;
@@ -202,13 +201,13 @@ void eventLoop(void){
 			wordBeginning += drawableCommandMaxWordLength;
 		}
 	}
-	for(currentBox = 0; currentBox < boxAmount; currentBox++){
+	for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 		free(allocatedText[currentBox]);
 		free(allocatedCommand[currentBox]);
 		free(allocatedDrawableCommand[currentBox]);
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-		for(currentBox = 0; currentBox < boxAmount; currentBox++){
+		for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			readConfigButton(&box[currentMonitor][currentBox], &currentBox);
 		}
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
@@ -233,7 +232,7 @@ void eventLoop(void){
 		}else if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 				commandWordBeginning = 0;
-				for(currentBox = 0; currentBox < boxAmount; currentBox++){
+				for(currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 					if(event.xbutton.window == box[currentMonitor][currentBox]){
 						if(drawableCommand2DRemappedArray[currentBox * drawableCommandMaxWordLength]){
 							drawCommand(&topLevelWindowArray[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
@@ -258,7 +257,7 @@ void eventLoop(void){
 			}
 		}else if(event.type == Expose){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
-				onExpose(&topLevelWindowArray[currentMonitor], box[currentMonitor], &boxAmount, text2DRemappedArray, &textMaxWordLength, textColor);
+				onExpose(&topLevelWindowArray[currentMonitor], box[currentMonitor], text2DRemappedArray, &textMaxWordLength, textColor);
 			}
 		}
 	}
@@ -340,9 +339,8 @@ static unsigned int isCommand(const char *const command, const char *const comma
 	}
 	return value;
 }
-static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const unsigned int *const boxAmount, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
-	const unsigned int dereferencedBoxAmount = *boxAmount;
-	if(dereferencedBoxAmount > 0){
+static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
+	if(totalBoxAmount > 0){
 		GC gc = XCreateGC(display, *topLevelWindow, None, None);
 		const unsigned int dereferencedTextMaxWordLength = *textMaxWordLength;
 		unsigned int wordBeginning = 0;
@@ -353,7 +351,7 @@ static void onExpose(const Window *const topLevelWindow, const Window *const box
 		XWindowAttributes windowAttributes;
 		int x;
 		int y;
-		for(unsigned int currentBox = 0; currentBox < dereferencedBoxAmount; currentBox++){
+		for(unsigned int currentBox = 0; currentBox < totalBoxAmount; currentBox++){
 			if(text2DRemappedArray[wordBeginning]){
 				XSetForeground(display, gc, textColorArray[currentBox]);
 				actualWordLength = 0;
