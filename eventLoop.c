@@ -326,7 +326,13 @@ static unsigned int isCommand(const char *const command, const char *const comma
 }
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
 	if(totalBoxAmount > 0){
-		GC gc = XCreateGC(display, *topLevelWindow, None, None);
+		GC gc;
+		{
+			XGCValues gcValues = {
+				.subwindow_mode = IncludeInferiors
+			};
+			gc = XCreateGC(display, *topLevelWindow, GCSubwindowMode, &gcValues);
+		}
 		const unsigned int dereferencedTextMaxWordLength = *textMaxWordLength;
 		unsigned int wordBeginning = 0;
 		XFontStruct *font = XLoadQueryFont(display, "fixed");
