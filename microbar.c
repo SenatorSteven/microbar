@@ -255,7 +255,7 @@ static void setTopLevelWindowProperties(void){
 			data[11] = windowAttributes.x + windowAttributes.width - 1;
 		}
 		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
-		XSelectInput(display, topLevelWindowArray[currentMonitor], ExposureMask);
+		XSelectInput(display, topLevelWindowArray[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
 	}
 	return;
 }
