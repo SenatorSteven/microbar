@@ -8,11 +8,11 @@
 
 extern const char *configPath;
 
-static unsigned int isArgument(const char *const argument, const char *const argumentArray);
+static bool isArgument(const char *const argument, const char *const argumentArray);
 
-unsigned int getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector){
+bool getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector){
 	const unsigned int dereferencedArgumentCount = *argumentCount;
-	unsigned int value = 0;
+	bool value = 0;
 	if(dereferencedArgumentCount > 1){
 		unsigned int hasReadVariable = NoPositions;
 		for(unsigned int currentArgument = 1; currentArgument < dereferencedArgumentCount; currentArgument++){
@@ -63,8 +63,8 @@ unsigned int getParameters(const unsigned int *const argumentCount, const char *
 	}
 	return value;
 }
-static unsigned int isArgument(const char *const argument, const char *const argumentArray){
-	unsigned int value = 0;
+static bool isArgument(const char *const argument, const char *const argumentArray){
+	bool value = 0;
 	unsigned int length = 0;
 	while(argument[length] != '\0'){
 		length++;
