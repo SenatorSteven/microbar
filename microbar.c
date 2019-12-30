@@ -20,7 +20,7 @@ unsigned int totalBoxAmount;
 Window *topLevelWindowArray;
 unsigned int currentMonitor;
 
-static unsigned int createWindows(void);
+static bool createWindows(void);
 static void setTopLevelWindowProperties(void);
 static void cleanupWindows(void);
 
@@ -53,8 +53,8 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	}
 	return 0;
 }
-static unsigned int createWindows(void){
-	unsigned int value;
+static bool createWindows(void){
+	bool value;
 	int x;
 	int y;
 	unsigned int width;
