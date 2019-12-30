@@ -17,7 +17,7 @@ extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
-static unsigned int isCommand(const char *const command, const char *const commandArray);
+static bool isCommand(const char *const command, const char *const commandArray);
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
 void eventLoop(void){
@@ -303,8 +303,8 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 	}
 	return;
 }
-static unsigned int isCommand(const char *const command, const char *const commandArray){
-	unsigned int value = 0;
+static bool isCommand(const char *const command, const char *const commandArray){
+	bool value = 0;
 	unsigned int length = 0;
 	while(command[length] != '\0'){
 		length++;
