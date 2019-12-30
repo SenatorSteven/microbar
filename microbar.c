@@ -71,6 +71,8 @@ static unsigned int createWindows(void){
 			value = 0;
 			if(readConfigTopLevelWindow(&rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
+					x += monitorInfo[currentMonitor].x;
+					y += monitorInfo[currentMonitor].y;
 					XVisualInfo visualInfo;
 					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
 					XSetWindowAttributes windowAttributes = {
@@ -78,7 +80,7 @@ static unsigned int createWindows(void){
 						.border_pixel = borderColor,
 						.colormap = XCreateColormap(display, rootWindow, visualInfo.visual, AllocNone)
 					};
-					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x + monitorInfo[currentMonitor].x, y + monitorInfo[currentMonitor].y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
+					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
 					value = 1;
 				}
 			}
@@ -240,19 +242,25 @@ static void setTopLevelWindowProperties(void){
 		data[6] = 0;
 		data[7] = 0;
 		if(windowAttributes.y < monitorInfo[currentMonitor].height / 2){
-			data[2] = windowAttributes.y + windowAttributes.height;
+			data[2] = windowAttributes.y;
+			data[2] += windowAttributes.height;
 			data[3] = 0;
 			data[8] = windowAttributes.x;
-			data[9] = windowAttributes.x + windowAttributes.width - 1;
+			data[9] = windowAttributes.x;
+			data[9] += windowAttributes.width;
+			data[9] -= 1;
 			data[10] = 0;
 			data[11] = 0;
 		}else{
 			data[2] = 0;
-			data[3] = XDisplayHeight(display, XDefaultScreen(display)) - windowAttributes.y;
+			data[3] = XDisplayHeight(display, XDefaultScreen(display));
+			data[3] -= windowAttributes.y;
 			data[8] = 0;
 			data[9] = 0;
 			data[10] = windowAttributes.x;
-			data[11] = windowAttributes.x + windowAttributes.width - 1;
+			data[11] = windowAttributes.x;
+			data[11] += windowAttributes.width;
+			data[11] -= 1;
 		}
 		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
 		XSelectInput(display, topLevelWindowArray[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
