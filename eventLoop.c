@@ -266,8 +266,14 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 		}
 		if(resultLength > 1){
 			resultLength--;
-			GC gc = XCreateGC(display, *topLevelWindow, None, None);
-			XSetForeground(display, gc, *textColor);
+			GC gc;
+			{
+				XGCValues gcValues = {
+					.foreground = *textColor,
+					.subwindow_mode = IncludeInferiors
+				};
+				gc = XCreateGC(display, *topLevelWindow, GCForeground | GCSubwindowMode, &gcValues);
+			}
 			int x;
 			int y;
 			{
@@ -289,6 +295,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 			}
 			XClearWindow(display, *box);
 			XDrawString(display, *box, gc, x, y, result, resultLength);
+			XFreeGC(display, gc);
 		}
 		free(result);
 	}else{
@@ -362,6 +369,7 @@ static void onExpose(const Window *const topLevelWindow, const Window *const box
 			wordBeginning += dereferencedTextMaxWordLength;
 		}
 		XFreeFont(display, font);
+		XFreeGC(display, gc);
 	}
 	return;
 }
