@@ -41,17 +41,17 @@ extern unsigned int totalBoxAmount;
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
-static unsigned int pushSpaces(const char *const lineArray, unsigned int *const element);
-static unsigned int isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
+static bool pushSpaces(const char *const lineArray, unsigned int *const element);
+static bool isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
 static unsigned int getUnsignedDecimalNumber(const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element);
 static int getDecimalNumber(const Window *const window, const char *const lineArray, unsigned int *const element);
 static bytes4 getARGB(const char *const lineArray, unsigned int *const element);
 static void getKeys(const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
 static char *getText(const char *const lineArray, unsigned int *const element, const unsigned int addAmpersand);
-static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
+static bool printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
 
-unsigned int readConfigScan(const Window *const parentWindow){
-	unsigned int value = 0;
+bool readConfigScan(const Window *const parentWindow){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		totalBoxAmount = 0;
@@ -196,8 +196,8 @@ unsigned int readConfigScan(const Window *const parentWindow){
 	}
 	return value;
 }
-unsigned int readConfigTopLevelWindow(const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalMenuBorderColor, bytes4 *const globalMenuBackgroundColor, unsigned int *const menuAmount){
-	unsigned int value = 0;
+bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalMenuBorderColor, bytes4 *const globalMenuBackgroundColor, unsigned int *const menuAmount){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
@@ -377,8 +377,8 @@ unsigned int readConfigTopLevelWindow(const Window *const parentWindow, int *con
 	}
 	return value;
 }
-unsigned int readConfigMenuWindow(const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalBoxBorderColor, bytes4 *const globalBoxBackgroundColor, unsigned int *const boxAmount){
-	unsigned int value = 0;
+bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalBoxBorderColor, bytes4 *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
@@ -562,8 +562,8 @@ unsigned int readConfigMenuWindow(const Window *const parentWindow, const unsign
 	}
 	return value;
 }
-unsigned int readConfigBoxWindow(const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, unsigned int *const innerBoxAmount){
-	unsigned int value = 0;
+bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, unsigned int *const innerBoxAmount){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
@@ -724,8 +724,8 @@ unsigned int readConfigBoxWindow(const Window *const parentWindow, const unsigne
 	}
 	return value;
 }
-unsigned int readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor){
-	unsigned int value = 0;
+bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		*x = 0;
@@ -885,8 +885,8 @@ unsigned int readConfigInnerBoxWindow(const Window *const parentWindow, const un
 	}
 	return value;
 }
-unsigned int readConfigTextCommands(const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
-	unsigned int value = 0;
+bool readConfigTextCommands(const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		*textPointerArray = NULL;
@@ -1033,8 +1033,8 @@ unsigned int readConfigTextCommands(const Window *const window, const unsigned i
 	}
 	return value;
 }
-unsigned int readConfigButton(const Window *const window, const unsigned int *const currentBox){
-	unsigned int value = 0;
+bool readConfigButton(const Window *const window, const unsigned int *const currentBox){
+	bool value = 0;
 	FILE *config = getConfigFile();
 	if(config){
 		unsigned int maxLinesCount = DefaultLinesCount;
@@ -1292,9 +1292,9 @@ static FILE *getConfigFile(void){
 	}
 	return config;
 }
-static unsigned int pushSpaces(const char *const lineArray, unsigned int *const element){
+static bool pushSpaces(const char *const lineArray, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
-	unsigned int value = 0;
+	bool value = 0;
 	while(lineArray[dereferencedElement] != '\n' && (lineArray[dereferencedElement] == ' ' || lineArray[dereferencedElement] == 9)){
 		dereferencedElement++;
 	}
@@ -1304,9 +1304,9 @@ static unsigned int pushSpaces(const char *const lineArray, unsigned int *const 
 	}
 	return value;
 }
-static unsigned int isVariable(const char *const variable, const char *const lineArray, unsigned int *const element){
+static bool isVariable(const char *const variable, const char *const lineArray, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
-	unsigned int value = 0;
+	bool value = 0;
 	unsigned int length = 0;
 	while(variable[length] != '\0'){
 		length++;
@@ -1619,8 +1619,8 @@ static char *getText(const char *const lineArray, unsigned int *const element, c
 	}
 	return text;
 }
-static unsigned int printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine){
-	unsigned int value = 0;
+static bool printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine){
+	bool value = 0;
 	if(lineArray[*element] != 10){
 		unsigned int length = 0;
 		while(lineArray[length] != 10){
