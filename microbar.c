@@ -11,20 +11,21 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
-const char *configPath;
+const char *restrict configPath;
+const char *restrict workplacePath = NULL;
 unsigned int mode = ModeContinue;
-Display *display;
+Display *restrict display;
 unsigned int monitorAmount;
-const XRRMonitorInfo *monitorInfo;
+const XRRMonitorInfo *restrict monitorInfo;
 unsigned int totalBoxAmount;
-Window *topLevelWindowArray;
+Window *restrict topLevelWindowArray;
 unsigned int currentMonitor;
 
 static bool createWindows(void);
 static void setTopLevelWindowProperties(void);
 static void cleanupWindows(void);
 
-int main(const int argumentCount, const char *const *const argumentVector){
+int main(const int argumentCount, const char *const restrict *const restrict argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
 		while(mode == ModeContinue || mode == ModeRestart){
 			mode = ModeContinue;
@@ -97,6 +98,8 @@ static bool createWindows(void){
 		unsigned int boxAmount;
 		unsigned int currentBox;
 		Window box;
+		bytes4 globalInnerBoxBorderColor;
+		bytes4 globalInnerBoxBackgroundColor;
 		unsigned int innerBoxAmount;
 		unsigned int currentInnerBox;
 		Window innerBox;
@@ -120,7 +123,7 @@ static bool createWindows(void){
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(&menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &innerBoxAmount)){
+						if(readConfigBoxWindow(&menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalInnerBoxBorderColor, &globalInnerBoxBackgroundColor, &innerBoxAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -138,6 +141,12 @@ static bool createWindows(void){
 							while(currentInnerBox < innerBoxAmount){
 								if(readConfigInnerBoxWindow(&box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
+										if(borderColor == 0x00000000){
+											borderColor = globalInnerBoxBorderColor;
+										}
+										if(backgroundColor == 0x00000000){
+											backgroundColor = globalInnerBoxBackgroundColor;
+										}
 										innerBox = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
 										value = 1;
 									}
