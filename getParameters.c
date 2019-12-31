@@ -59,6 +59,7 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory\"\n", ProgramName, ProgramName);
 							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
+							fprintf(stdout, "%s# if not specified, workspace directory will be the directory of config\n", Tab);
 							fprintf(stdout, "%s# environment variables may be used\n", Tab);
 							hasReadVariable |= HelpPosition;
 							break;
