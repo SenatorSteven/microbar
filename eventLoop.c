@@ -8,17 +8,18 @@
 #define ModeRestart /*--*/ ((unsigned int)1)
 #define ModeExit /*-----*/ ((unsigned int)2)
 
-extern const char *configPath;
+extern const char *restrict configPath;
+extern const char *restrict workplacePath;
 extern unsigned int mode;
-extern Display *display;
+extern Display *restrict display;
 extern unsigned int monitorAmount;
 extern unsigned int totalBoxAmount;
-extern Window *topLevelWindowArray;
+extern Window *restrict topLevelWindowArray;
 extern unsigned int currentMonitor;
 
-static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
-static bool isCommand(const char *const command, const char *const commandArray);
-static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
+static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor);
+static bool isCommand(const char *const restrict command, const char *const restrict commandArray);
+static void onExpose(const Window *const restrict topLevelWindow, const Window *const restrict boxArray, const char *const restrict text2DRemappedArray, const unsigned int *const restrict textMaxWordLength, const bytes4 *const restrict textColorArray);
 
 void eventLoop(void){
 	unsigned int currentBox;
@@ -249,11 +250,11 @@ void eventLoop(void){
 	XUngrabKeyboard(display, CurrentTime);
 	return;
 }
-static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor){
+static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor){
 	system(systemCommandArray);
 	char *result;
 	{
-		FILE *drawableCommand = fopen(drawableCommandPathArray, "r");
+		FILE *restrict drawableCommand = fopen(drawableCommandPathArray, "r");
 		size_t characters = DefaultCharactersCount;
 		result = (char *)malloc(characters * sizeof(char));
 		getline(&result, &characters, drawableCommand);
@@ -279,7 +280,7 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 			{
 				XCharStruct charStruct;
 				{
-					XFontStruct *font = XLoadQueryFont(display, "fixed");
+					XFontStruct *restrict font = XLoadQueryFont(display, "fixed");
 					int direction;
 					XTextExtents(font, drawableCommand2DRemappedArray, resultLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
 					XFreeFont(display, font);
@@ -303,35 +304,34 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 	}
 	return;
 }
-static bool isCommand(const char *const command, const char *const commandArray){
+static bool isCommand(const char *const restrict command, const char *const restrict commandArray){
 	bool value = 0;
-	unsigned int length = 0;
-	while(command[length] != '\0'){
-		length++;
-	}
 	unsigned int element = 0;
-	while(element < length){
+	while(command[element] != '\0'){
 		if(command[element] >= 'A' && command[element] <= 'Z'){
 			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] + 32)){
+				element = 0;
 				break;
 			}
 		}else if(command[element] >= 'a' && command[element] <= 'z'){
 			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] - 32)){
+				element = 0;
 				break;
 			}
 		}else{
 			if(!(commandArray[element] == command[element])){
+				element = 0;
 				break;
 			}
 		}
 		element++;
 	}
-	if(element == length){
+	if(element != 0){
 		value = 1;
 	}
 	return value;
 }
-static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
+static void onExpose(const Window *const restrict topLevelWindow, const Window *const restrict boxArray, const char *const restrict text2DRemappedArray, const unsigned int *const restrict textMaxWordLength, const bytes4 *const restrict textColorArray){
 	if(totalBoxAmount > 0){
 		GC gc;
 		{
@@ -342,7 +342,7 @@ static void onExpose(const Window *const topLevelWindow, const Window *const box
 		}
 		const unsigned int dereferencedTextMaxWordLength = *textMaxWordLength;
 		unsigned int wordBeginning = 0;
-		XFontStruct *font = XLoadQueryFont(display, "fixed");
+		XFontStruct *restrict font = XLoadQueryFont(display, "fixed");
 		unsigned int actualWordLength;
 		int direction;
 		XCharStruct charStruct;
