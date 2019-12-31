@@ -4,55 +4,57 @@
 #include <X11/extensions/Xrandr.h>
 #include "headers/defines.h"
 
-#define NoPositions /*-----------------------*/ 0
-#define LinesPosition /*---------------------*/ (1 << 0)
-#define XPosition /*-------------------------*/ (1 << 1)
-#define YPosition /*-------------------------*/ (1 << 2)
-#define WidthPosition /*---------------------*/ (1 << 3)
-#define HeightPosition /*--------------------*/ (1 << 4)
-#define BorderPosition /*--------------------*/ (1 << 5)
-#define BorderColorPosition /*---------------*/ (1 << 6)
-#define BackgroundColorPosition /*-----------*/ (1 << 7)
-#define GlobalMenuBorderColorPosition /*-----*/ (1 << 8)
-#define GlobalMenuBackgroundColorPosition /*-*/ (1 << 9)
-#define GlobalBoxBorderColorPosition /*------*/ (1 << 10)
-#define GlobalBoxBackgroundColorPosition /*--*/ (1 << 11)
-#define HideKeyPosition /*-------------------*/ (1 << 12)
-#define TextPosition /*----------------------*/ (1 << 13)
-#define TextColorPosition /*-----------------*/ (1 << 14)
-#define GlobalTextColorPosition /*-----------*/ (1 << 15)
-#define CommandPosition /*-------------------*/ (1 << 16)
-#define DrawableCommandPosition /*-----------*/ (1 << 17)
-#define ButtonPosition /*--------------------*/ (1 << 18)
-#define MenuPosition /*----------------------*/ (1 << 19)
-#define BoxPosition /*-----------------------*/ (1 << 20)
-#define InnerBoxPosition /*------------------*/ (1 << 21)
+#define NoPositions /*---------------------------*/ 0
+#define LinesPosition /*-------------------------*/ (1 << 0)
+#define XPosition /*-----------------------------*/ (1 << 1)
+#define YPosition /*-----------------------------*/ (1 << 2)
+#define WidthPosition /*-------------------------*/ (1 << 3)
+#define HeightPosition /*------------------------*/ (1 << 4)
+#define BorderPosition /*------------------------*/ (1 << 5)
+#define BorderColorPosition /*-------------------*/ (1 << 6)
+#define BackgroundColorPosition /*---------------*/ (1 << 7)
+#define GlobalMenuBorderColorPosition /*---------*/ (1 << 8)
+#define GlobalMenuBackgroundColorPosition /*-----*/ (1 << 9)
+#define GlobalBoxBorderColorPosition /*----------*/ (1 << 10)
+#define GlobalBoxBackgroundColorPosition /*------*/ (1 << 11)
+#define GlobalInnerBoxBorderColorPosition /*-----*/ (1 << 12)
+#define GlobalInnerBoxBackgroundColorPosition /*-*/ (1 << 13)
+#define HideKeyPosition /*-----------------------*/ (1 << 14)
+#define TextPosition /*--------------------------*/ (1 << 15)
+#define TextColorPosition /*---------------------*/ (1 << 16)
+#define GlobalTextColorPosition /*---------------*/ (1 << 17)
+#define CommandPosition /*-----------------------*/ (1 << 18)
+#define DrawableCommandPosition /*---------------*/ (1 << 19)
+#define ButtonPosition /*------------------------*/ (1 << 20)
+#define MenuPosition /*--------------------------*/ (1 << 21)
+#define BoxPosition /*---------------------------*/ (1 << 22)
+#define InnerBoxPosition /*----------------------*/ (1 << 23)
 
-#define NoOperation /*-----------------------*/ ((unsigned int)0)
-#define OperationAddition /*-----------------*/ ((unsigned int)1)
-#define OperationSubtraction /*--------------*/ ((unsigned int)2)
-#define OperationMultiplication /*-----------*/ ((unsigned int)3)
-#define OperationDivision /*-----------------*/ ((unsigned int)4)
+#define NoOperation /*---------------------------*/ ((unsigned int)0)
+#define OperationAddition /*---------------------*/ ((unsigned int)1)
+#define OperationSubtraction /*------------------*/ ((unsigned int)2)
+#define OperationMultiplication /*---------------*/ ((unsigned int)3)
+#define OperationDivision /*---------------------*/ ((unsigned int)4)
 
-extern const char *configPath;
-extern Display *display;
-extern const XRRMonitorInfo *monitorInfo;
+extern const char *restrict configPath;
+extern Display *restrict display;
+extern const XRRMonitorInfo *restrict monitorInfo;
 extern unsigned int totalBoxAmount;
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
-static bool pushSpaces(const char *const lineArray, unsigned int *const element);
-static bool isVariable(const char *const variableArray, const char *const lineArray, unsigned int *const element);
-static unsigned int getUnsignedDecimalNumber(const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element);
-static int getDecimalNumber(const Window *const window, const char *const lineArray, unsigned int *const element);
-static bytes4 getARGB(const char *const lineArray, unsigned int *const element);
-static void getKeys(const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks);
-static char *getText(const char *const lineArray, unsigned int *const element, const unsigned int addAmpersand);
-static bool printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine);
+static bool pushSpaces(const char *const restrict lineArray, unsigned int *const restrict element);
+static bool isVariable(const char *const restrict variableArray, const char *const restrict lineArray, unsigned int *const restrict element);
+static unsigned int getUnsignedDecimalNumber(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
+static int getDecimalNumber(const Window *const restrict window, const char *const restrict lineArray, unsigned int *const restrict element);
+static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element);
+static void getKeys(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element, unsigned int *const restrict key, int *const restrict masks);
+static char *getText(const char *const restrict lineArray, unsigned int *const restrict element, const unsigned int addAmpersand);
+static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine);
 
-bool readConfigScan(const Window *const parentWindow){
+bool readConfigScan(const Window *const restrict parentWindow){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		totalBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
@@ -196,9 +198,9 @@ bool readConfigScan(const Window *const parentWindow){
 	}
 	return value;
 }
-bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalMenuBorderColor, bytes4 *const globalMenuBackgroundColor, unsigned int *const menuAmount){
+bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor, bytes4 *const restrict globalMenuBorderColor, bytes4 *const restrict globalMenuBackgroundColor, unsigned int *const restrict menuAmount){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -377,9 +379,9 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 	}
 	return value;
 }
-bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *const currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, bytes4 *const globalBoxBorderColor, bytes4 *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsigned int *const restrict currentMenu, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor, bytes4 *const restrict globalBoxBorderColor, bytes4 *const restrict globalBoxBackgroundColor, unsigned int *const restrict boxAmount){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -562,9 +564,9 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 	}
 	return value;
 }
-bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor, unsigned int *const innerBoxAmount){
+bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsigned int *const restrict currentMenu, const unsigned int *const restrict currentBox, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor, bytes4 *const restrict globalInnerBoxBorderColor, bytes4 *const restrict globalInnerBoxBackgroundColor, unsigned int *const restrict innerBoxAmount){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -573,6 +575,8 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 		*border = 0;
 		*borderColor = 0x00000000;
 		*backgroundColor = 0x00000000;
+		*globalInnerBoxBorderColor = 0x00000000;
+		*globalInnerBoxBackgroundColor = 0x00000000;
 		*innerBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
@@ -700,6 +704,34 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 							continue;
 						}
 					}
+
+
+
+					if(!(hasReadVariable & GlobalInnerBoxBorderColorPosition)){
+						if(isVariable("GlobalInnerBoxBorderColor", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("=", line, &element)){
+								pushSpaces(line, &element);
+								*globalInnerBoxBorderColor = getARGB(line, &element);
+								hasReadVariable |= GlobalInnerBoxBorderColorPosition;
+							}
+							continue;
+						}
+					}
+					if(!(hasReadVariable & GlobalInnerBoxBackgroundColorPosition)){
+						if(isVariable("GlobalInnerBoxBackgroundColor", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("=", line, &element)){
+								pushSpaces(line, &element);
+								*globalInnerBoxBackgroundColor = getARGB(line, &element);
+								hasReadVariable |= GlobalInnerBoxBackgroundColorPosition;
+							}
+							continue;
+						}
+					}
+
+
+
 					if(isVariable("InnerBox", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
@@ -724,9 +756,9 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 	}
 	return value;
 }
-bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned int *const currentMenu, const unsigned int *const currentBox, const unsigned int *const currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, bytes4 *const borderColor, bytes4 *const backgroundColor){
+bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const unsigned int *const restrict currentMenu, const unsigned int *const restrict currentBox, const unsigned int *const restrict currentInnerBox, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		*x = 0;
 		*y = 0;
@@ -885,9 +917,9 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 	}
 	return value;
 }
-bool readConfigTextCommands(const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
+bool readConfigTextCommands(const Window *const restrict window, const unsigned int *const restrict currentBox, char **const restrict textPointerArray, bytes4 *const restrict textColor, char **const restrict commandPointerArray, char **const restrict drawableCommandPointerArray){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		*textPointerArray = NULL;
 		*textColor = 0x00000000;
@@ -1033,9 +1065,9 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 	}
 	return value;
 }
-bool readConfigButton(const Window *const window, const unsigned int *const currentBox){
+bool readConfigButton(const Window *const restrict window, const unsigned int *const restrict currentBox){
 	bool value = 0;
-	FILE *config = getConfigFile();
+	FILE *restrict config = getConfigFile();
 	if(config){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
@@ -1136,7 +1168,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 	return value;
 }
 static FILE *getConfigFile(void){
-	FILE *config = fopen(configPath, "r");
+	FILE *restrict config = fopen(configPath, "r");
 	if(!config){
 		if((config = fopen(configPath, "w"))){
 			fprintf(config, "# configuration file for\n\n");
@@ -1292,10 +1324,10 @@ static FILE *getConfigFile(void){
 	}
 	return config;
 }
-static bool pushSpaces(const char *const lineArray, unsigned int *const element){
+static bool pushSpaces(const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
-	while(lineArray[dereferencedElement] != '\n' && (lineArray[dereferencedElement] == ' ' || lineArray[dereferencedElement] == 9)){
+	while(lineArray[dereferencedElement] != '\n' && (lineArray[dereferencedElement] == ' ' || lineArray[dereferencedElement] == '	')){
 		dereferencedElement++;
 	}
 	if(dereferencedElement > *element){
@@ -1304,38 +1336,37 @@ static bool pushSpaces(const char *const lineArray, unsigned int *const element)
 	}
 	return value;
 }
-static bool isVariable(const char *const variable, const char *const lineArray, unsigned int *const element){
+static bool isVariable(const char *const restrict variable, const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
-	unsigned int length = 0;
-	while(variable[length] != '\0'){
-		length++;
-	}
 	unsigned int currentCharacter = 0;
-	while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
+	while(lineArray[dereferencedElement] != '\n' && variable[currentCharacter] != '\0'){
 		if(variable[currentCharacter] >= 'A' && variable[currentCharacter] <= 'Z'){
 			if(!(lineArray[dereferencedElement] == variable[currentCharacter] || lineArray[dereferencedElement] == variable[currentCharacter] + 32)){
+				currentCharacter = 0;
 				break;
 			}
 		}else if(variable[currentCharacter] >= 'a' && variable[currentCharacter] <= 'z'){
 			if(!(lineArray[dereferencedElement] == variable[currentCharacter] || lineArray[dereferencedElement] == variable[currentCharacter] - 32)){
+				currentCharacter = 0;
 				break;
 			}
 		}else{
 			if(!(lineArray[dereferencedElement] == variable[currentCharacter])){
+				currentCharacter = 0;
 				break;
 			}
 		}
 		dereferencedElement++;
 		currentCharacter++;
 	}
-	if(currentCharacter == length){
+	if(currentCharacter != 0){
 		*element = dereferencedElement;
 		value = 1;
 	}
 	return value;
 }
-static unsigned int getUnsignedDecimalNumber(const Window *const parentWindow, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element){
+static unsigned int getUnsignedDecimalNumber(const Window *const restrict parentWindow, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int number = getDecimalNumber(parentWindow, lineArray, element);
 	if((int)number < 0){
 		fprintf(stderr, "%s: line %u: %i is not an unsigned integer\n", ProgramName, *currentLine, (int)number);
@@ -1343,7 +1374,7 @@ static unsigned int getUnsignedDecimalNumber(const Window *const parentWindow, c
 	}
 	return number;
 }
-static int getDecimalNumber(const Window *const parentWindow, const char *const lineArray, unsigned int *const element){
+static int getDecimalNumber(const Window *const restrict parentWindow, const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
 	int number = 0;
 	int numberRead = 0;
@@ -1501,7 +1532,7 @@ static int getDecimalNumber(const Window *const parentWindow, const char *const 
 	*element = dereferencedElement;
 	return number;
 }
-static bytes4 getARGB(const char *const lineArray, unsigned int *const element){
+static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
 	int color = 0x00000000;
 	if(lineArray[dereferencedElement] == '#'){
@@ -1532,7 +1563,7 @@ static bytes4 getARGB(const char *const lineArray, unsigned int *const element){
 	}
 	return color;
 }
-static void getKeys(const Window *const window, const unsigned int *const currentLine, const char *const lineArray, unsigned int *const element, unsigned int *const key, int *const masks){
+static void getKeys(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element, unsigned int *const restrict key, int *const restrict masks){
 	unsigned int dereferencedElement = *element;
 	*key = 0;
 	int dereferencedMasks = 0;
@@ -1578,9 +1609,9 @@ static void getKeys(const Window *const window, const unsigned int *const curren
 	*masks = dereferencedMasks;
 	return;
 }
-static char *getText(const char *const lineArray, unsigned int *const element, const unsigned int addAmpersand){
+static char *getText(const char *const restrict lineArray, unsigned int *const restrict element, const unsigned int addAmpersand){
 	unsigned int dereferencedElement = *element;
-	char *text = NULL;
+	char *restrict text = NULL;
 	unsigned int length = 0;
 	{
 		const char quotation = lineArray[dereferencedElement++];
@@ -1619,7 +1650,7 @@ static char *getText(const char *const lineArray, unsigned int *const element, c
 	}
 	return text;
 }
-static bool printLineError(const char *const lineArray, const unsigned int *const element, const unsigned int *const currentLine){
+static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine){
 	bool value = 0;
 	if(lineArray[*element] != 10){
 		unsigned int length = 0;
