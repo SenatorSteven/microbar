@@ -36,13 +36,7 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 							break;
 						}else{
 							configPath = (char *)argumentVector[currentArgument];
-							if((configPath = realpath(configPath, NULL))){
-								continue;
-							}else{
-								fprintf(stderr, "%s: config value is not valid\n", ProgramName);
-								hasReadVariable |= ExitPosition;
-								break;
-							}
+							continue;
 						}
 					}else{
 						fprintf(stderr, "%s: no config value specified\n", ProgramName);
