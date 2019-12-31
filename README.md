@@ -48,13 +48,22 @@ Somebody could argue that the CPU power being used in updating the bar is as tri
 #### :~$ microbar --help
 <pre>
 microbar: usage: microbar [parameters] or microbar [parameter] [--help]
-    [-h], [--help]      display this message
-    [-c], [--config]    specify path to config, necessary
+    [-h], [--help]         display this message
+    [-c], [--config]       specify path to config, necessary
+    [-w], [--workplace]    specify path to directory used for temporary files, optional
 </pre>
 
 #### :~$ microbar --config --help
 <pre>
-microbar: usage: microbar --config "/path/to/file/"
+microbar: usage: microbar --config "/path/to/file"
     # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration
+    # environment variables may be used
+</pre>
+
+#### :~$ microbar --workplace --help
+<pre>
+microbar: usage: microbar --workplace "/path/to/directory"
+    # if the specified directory doesn't exist, it will not be created
+    # if not specified, workspace directory will be the directory of config
     # environment variables may be used
 </pre>
