@@ -1652,9 +1652,9 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 }
 static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine){
 	bool value = 0;
-	if(lineArray[*element] != 10){
+	if(lineArray[*element] != '\n'){
 		unsigned int length = 0;
-		while(lineArray[length] != 10){
+		while(lineArray[length] != '\n'){
 			length++;
 		}
 		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine);
