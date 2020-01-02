@@ -89,8 +89,8 @@ bool readConfigScan(const Window *const restrict parentWindow){
 								int masks;
 								getKeys(parentWindow, &currentLine, line, &element, &key, &masks);
 								XGrabKey(display, key, masks, *parentWindow, True, GrabModeAsync, GrabModeAsync);
+								hasReadVariable |= HideKeyPosition;
 							}
-							hasReadVariable |= HideKeyPosition;
 							continue;
 						}
 					}
