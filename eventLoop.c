@@ -213,7 +213,6 @@ void eventLoop(void){
 	unsigned int commandWordBeginning;
 	for(;;){
 		XNextEvent(display, &event);
-		fprintf(stdout, "event.type: %u\n", event.type);
 		if(event.type == KeyPress){
 			if(topLevelWindowArrayMapped){
 				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
