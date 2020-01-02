@@ -273,6 +273,7 @@ static void setTopLevelWindowProperties(void){
 		}
 		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
 		XSelectInput(display, topLevelWindowArray[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
+		XRRSelectInput(display, topLevelWindowArray[currentMonitor], RRScreenChangeNotifyMask);
 	}
 	return;
 }
