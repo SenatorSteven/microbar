@@ -18,11 +18,11 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 	bool value = 0;
 	if(dereferencedArgumentCount > 1){
 		unsigned int hasReadVariable = NoPositions;
-		for(unsigned int currentArgument = 1; currentArgument < dereferencedArgumentCount; currentArgument++){
+		for(unsigned int currentArgument = 1; currentArgument < dereferencedArgumentCount; ++currentArgument){
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
 					hasReadVariable |= ConfigPosition;
-					currentArgument++;
+					++currentArgument;
 					if(argumentVector[currentArgument]){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file\"\n", ProgramName, ProgramName);
@@ -48,7 +48,7 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 			if(!(hasReadVariable & WorkplacePosition)){
 				if(isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){
 					hasReadVariable |= WorkplacePosition;
-					currentArgument++;
+					++currentArgument;
 					if(argumentVector[currentArgument]){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory\"\n", ProgramName, ProgramName);
@@ -132,7 +132,7 @@ static bool isArgument(const char *const restrict argument, const char *const re
 				break;
 			}
 		}
-		element++;
+		++element;
 	}
 	if(element != 0){
 		value = 1;
