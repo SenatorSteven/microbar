@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xutil.h>
+#include <X11/extensions/Xrandr.h>
 #include "headers/readConfig.h"
 #include "headers/defines.h"
 
@@ -203,10 +204,16 @@ void eventLoop(void){
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
 	XEvent event;
+	int rrEventBase;
+	{
+		int rrErrorBase;
+		XRRQueryExtension(display, &rrEventBase, &rrErrorBase);
+	}
 	unsigned int topLevelWindowArrayMapped = 1;
 	unsigned int commandWordBeginning;
 	for(;;){
 		XNextEvent(display, &event);
+		fprintf(stdout, "event.type: %u\n", event.type);
 		if(event.type == KeyPress){
 			if(topLevelWindowArrayMapped){
 				for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
@@ -249,6 +256,9 @@ void eventLoop(void){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
 				onExpose(&topLevelWindowArray[currentMonitor], box[currentMonitor], text2DRemappedArray, &textMaxWordLength, textColor);
 			}
+		}else if(event.type == rrEventBase + RRScreenChangeNotify){
+			mode = ModeRestart;
+			break;
 		}
 	}
 	XUngrabKeyboard(display, CurrentTime);
@@ -368,6 +378,7 @@ static void onExpose(const Window *const restrict topLevelWindow, const Window *
 				y = windowAttributes.height;
 				y += charStruct.ascent;
 				y /= 2;
+				XClearWindow(display, boxArray[currentBox]);
 				XDrawString(display, boxArray[currentBox], gc, x, y, &text2DRemappedArray[wordBeginning], actualWordLength);
 			}
 			wordBeginning += dereferencedTextMaxWordLength;
