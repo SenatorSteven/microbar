@@ -68,7 +68,7 @@ static bool createWindows(void){
 	unsigned int menuAmount;
 	{
 		Window rootWindow = XDefaultRootWindow(display);
-		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			value = 0;
 			if(readConfigTopLevelWindow(&rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
 				if(width > 0 && height > 0){
@@ -103,7 +103,7 @@ static bool createWindows(void){
 		unsigned int innerBoxAmount;
 		unsigned int currentInnerBox;
 		Window innerBox;
-		for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
@@ -157,7 +157,7 @@ static bool createWindows(void){
 								}else{
 									currentInnerBox = innerBoxAmount;
 								}
-								currentInnerBox++;
+								++currentInnerBox;
 							}
 							if(currentInnerBox == innerBoxAmount + 1){
 								currentBox = boxAmount;
@@ -166,7 +166,7 @@ static bool createWindows(void){
 						}else{
 							currentBox = boxAmount;
 						}
-						currentBox++;
+						++currentBox;
 					}
 					if(currentBox == boxAmount + 1){
 						currentMenu = menuAmount;
@@ -175,7 +175,7 @@ static bool createWindows(void){
 				}else{
 					currentMenu = menuAmount;
 				}
-				currentMenu++;
+				++currentMenu;
 			}
 			if(currentMenu == menuAmount){
 				value = 1;
@@ -218,7 +218,7 @@ static void setTopLevelWindowProperties(void){
 		.res_class = ProgramName
 	};
 	long unsigned int data[12];
-	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
+	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XGetWindowAttributes(display, topLevelWindowArray[currentMonitor], &windowAttributes);
 		sizeHints.x = windowAttributes.x;
 		sizeHints.y = windowAttributes.y;
@@ -278,7 +278,7 @@ static void setTopLevelWindowProperties(void){
 	return;
 }
 static void cleanupWindows(void){
-	for(currentMonitor = 0; currentMonitor < monitorAmount; currentMonitor++){
+	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
 		XDestroySubwindows(display, topLevelWindowArray[currentMonitor]);
 		XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
