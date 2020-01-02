@@ -63,7 +63,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 		char fileBuffer[characters];
 		char *line = fileBuffer;
 		bytes4 hasReadVariable = NoPositions;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -121,7 +121,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 					if(isVariable("Box", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
-							totalBoxAmount++;
+							++totalBoxAmount;
 							hasReadVariable |= BoxPosition;
 						}
 						continue;
@@ -218,7 +218,7 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 		char fileBuffer[characters];
 		char *line = fileBuffer;
 		bytes4 hasReadVariable = NoPositions;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -337,7 +337,7 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 					if(isVariable("Menu", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
-							(*menuAmount)++;
+							++(*menuAmount);
 							hasReadVariable |= MenuPosition;
 						}
 						continue;
@@ -400,7 +400,7 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 		char *line = fileBuffer;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -423,7 +423,7 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 							if(menuAmountRead == *currentMenu){
 								hasReadVariable |= MenuPosition;
 							}else{
-								menuAmountRead++;
+								++menuAmountRead;
 							}
 						}
 						continue;
@@ -531,7 +531,7 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 					if(isVariable("Box", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
-							(*boxAmount)++;
+							++(*boxAmount);
 							hasReadVariable |= BoxPosition;
 						}
 						continue;
@@ -586,7 +586,7 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -609,7 +609,7 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 							if(menuAmountRead == *currentMenu){
 								hasReadVariable |= MenuPosition;
 							}else{
-								menuAmountRead++;
+								++menuAmountRead;
 							}
 						}
 						continue;
@@ -621,7 +621,7 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 							if(boxAmountRead == *currentBox){
 								hasReadVariable |= BoxPosition;
 							}else{
-								boxAmountRead++;
+								++boxAmountRead;
 							}
 						}
 						continue;
@@ -735,7 +735,7 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 					if(isVariable("InnerBox", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
-							(*innerBoxAmount)++;
+							++(*innerBoxAmount);
 							hasReadVariable |= InnerBoxPosition;
 						}
 						continue;
@@ -776,7 +776,7 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
 		unsigned int innerBoxAmountRead = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -799,7 +799,7 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 							if(menuAmountRead == *currentMenu){
 								hasReadVariable |= MenuPosition;
 							}else{
-								menuAmountRead++;
+								++menuAmountRead;
 							}
 						}
 						continue;
@@ -811,7 +811,7 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 							if(boxAmountRead == *currentBox){
 								hasReadVariable |= BoxPosition;
 							}else{
-								boxAmountRead++;
+								++boxAmountRead;
 							}
 						}
 						continue;
@@ -823,7 +823,7 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 							if(innerBoxAmountRead == *currentInnerBox){
 								hasReadVariable |= InnerBoxPosition;
 							}else{
-								innerBoxAmountRead++;
+								++innerBoxAmountRead;
 							}
 						}
 						continue;
@@ -932,7 +932,7 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 		char *line = fileBuffer;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -971,7 +971,7 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 					if(isVariable("Box", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
-							boxAmountRead++;
+							++boxAmountRead;
 							hasReadVariable |= BoxPosition;
 						}
 						continue;
@@ -1077,7 +1077,7 @@ bool readConfigButton(const Window *const restrict window, const unsigned int *c
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		unsigned int button = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; currentLine++){
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline(&line, &characters, config);
 			pushSpaces(line, &element);
@@ -1105,7 +1105,7 @@ bool readConfigButton(const Window *const restrict window, const unsigned int *c
 					if(isVariable("Box", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
-							boxAmountRead++;
+							++boxAmountRead;
 							hasReadVariable |= BoxPosition;
 						}
 						continue;
@@ -1328,7 +1328,7 @@ static bool pushSpaces(const char *const restrict lineArray, unsigned int *const
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
 	while(lineArray[dereferencedElement] != '\n' && (lineArray[dereferencedElement] == ' ' || lineArray[dereferencedElement] == '	')){
-		dereferencedElement++;
+		++dereferencedElement;
 	}
 	if(dereferencedElement > *element){
 		*element = dereferencedElement;
@@ -1357,8 +1357,8 @@ static bool isVariable(const char *const restrict variable, const char *const re
 				break;
 			}
 		}
-		dereferencedElement++;
-		currentCharacter++;
+		++dereferencedElement;
+		++currentCharacter;
 	}
 	if(currentCharacter != 0){
 		*element = dereferencedElement;
@@ -1393,7 +1393,7 @@ static int getDecimalNumber(const Window *const restrict parentWindow, const cha
 			numberRead *= 10;
 			numberRead += lineArray[dereferencedElement];
 			numberRead -= 48;
-			dereferencedElement++;
+			++dereferencedElement;
 		}else if(isVariable("ParentWidth", lineArray, &dereferencedElement)){
 			numberRead = windowAttributes.width;
 		}else if(isVariable("ParentHeight", lineArray, &dereferencedElement)){
@@ -1477,7 +1477,7 @@ static int getDecimalNumber(const Window *const restrict parentWindow, const cha
 				operation = OperationDivision;
 			}
 			numberRead = 0;
-			dereferencedElement++;
+			++dereferencedElement;
 		}else{
 			break;
 		}
@@ -1536,7 +1536,7 @@ static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const 
 	unsigned int dereferencedElement = *element;
 	int color = 0x00000000;
 	if(lineArray[dereferencedElement] == '#'){
-		dereferencedElement++;
+		++dereferencedElement;
 	}
 	unsigned int currentCharacter = 0;
 	while(lineArray[dereferencedElement] != '\n' && currentCharacter < 8){
@@ -1555,8 +1555,8 @@ static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const 
 			color = 0x00000000;
 			break;
 		}
-		dereferencedElement++;
-		currentCharacter++;
+		++dereferencedElement;
+		++currentCharacter;
 	}
 	if(currentCharacter == 8){
 		*element = dereferencedElement;
@@ -1574,7 +1574,7 @@ static void getKeys(const Window *const restrict window, const unsigned int *con
 			if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
 				*key = getUnsignedDecimalNumber(window, currentLine, lineArray, &dereferencedElement);
 				if((lineArray[dereferencedElement] >= 'A' && lineArray[dereferencedElement] <= 'Z') || (lineArray[dereferencedElement] >= 'a' && lineArray[dereferencedElement] <= 'z')){
-					dereferencedElement--;
+					--dereferencedElement;
 				}
 			}else if(isVariable("Shift", lineArray, &dereferencedElement)){
 				dereferencedMasks |= ShiftMask;
@@ -1598,7 +1598,7 @@ static void getKeys(const Window *const restrict window, const unsigned int *con
 			lookingForValue = 0;
 		}else{
 			if(lineArray[dereferencedElement] == '+'){
-				dereferencedElement++;
+				++dereferencedElement;
 				lookingForValue = 1;
 			}else{
 				break;
@@ -1614,9 +1614,10 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 	char *restrict text = NULL;
 	unsigned int length = 0;
 	{
-		const char quotation = lineArray[dereferencedElement++];
+		const char quotation = lineArray[dereferencedElement];
+		++dereferencedElement;
 		while(lineArray[dereferencedElement + length] != '\n' && lineArray[dereferencedElement + length] != quotation){
-			length++;
+			++length;
 		}
 	}
 	if(length > 0){
@@ -1633,13 +1634,14 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 			unsigned int currentCharacter = 0;
 			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
 				text[currentCharacter] = lineArray[dereferencedElement];
-				dereferencedElement++;
-				currentCharacter++;
+				++dereferencedElement;
+				++currentCharacter;
 			}
 			if(currentCharacter == length){
-				dereferencedElement++;
+				++dereferencedElement;
 				if(addAmpersand){
-					text[length++] = '&';
+					text[length] = '&';
+					++length;
 				}
 				text[length] = '\0';
 				*element = dereferencedElement;
@@ -1655,10 +1657,10 @@ static bool printLineError(const char *const restrict lineArray, const unsigned 
 	if(lineArray[*element] != '\n'){
 		unsigned int length = 0;
 		while(lineArray[length] != '\n'){
-			length++;
+			++length;
 		}
 		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine);
-		for(unsigned int currentCharacter = *element; currentCharacter < length; currentCharacter++){
+		for(unsigned int currentCharacter = *element; currentCharacter < length; ++currentCharacter){
 			fprintf(stderr, "%c", lineArray[currentCharacter]);
 		}
 		fprintf(stderr, "\" not recognized as an internal variable\n");
