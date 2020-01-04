@@ -18,6 +18,8 @@ Display *restrict display;
 unsigned int monitorAmount;
 const XRRMonitorInfo *restrict monitorInfo;
 unsigned int totalBoxAmount;
+char fileBuffer[DefaultCharactersCount];
+char *line = fileBuffer;
 Window *restrict topLevelWindowArray;
 unsigned int currentMonitor;
 
