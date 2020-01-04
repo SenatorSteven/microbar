@@ -51,7 +51,7 @@ static bool isVariable(const char *const restrict variableArray, const char *con
 static unsigned int getUnsignedDecimalNumber(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
 static int getDecimalNumber(const Window *const restrict window, const char *const restrict lineArray, unsigned int *const restrict element);
 static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element);
-static void getKeys(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element, unsigned int *const restrict key, int *const restrict masks);
+static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
 static char *getText(const char *const restrict lineArray, unsigned int *const restrict element, const unsigned int addAmpersand);
 static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine);
 
@@ -84,10 +84,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								unsigned int key;
-								int masks;
-								getKeys(parentWindow, &currentLine, line, &element, &key, &masks);
-								XGrabKey(display, key, masks, *parentWindow, True, GrabModeAsync, GrabModeAsync);
+								getGrabKey(parentWindow, &currentLine, line, &element);
 								hasReadVariable |= HideKeyPosition;
 							}
 							continue;
@@ -1535,35 +1532,35 @@ static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const 
 	}
 	return color;
 }
-static void getKeys(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element, unsigned int *const restrict key, int *const restrict masks){
+static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
-	*key = 0;
-	int dereferencedMasks = 0;
+	unsigned int key = 0;
+	int masks = 0;
 	unsigned int lookingForValue = 1;
 	while(lineArray[dereferencedElement] != '\n'){
 		pushSpaces(lineArray, &dereferencedElement);
 		if(lookingForValue){
 			if(lineArray[dereferencedElement] >= '0' && lineArray[dereferencedElement] <= '9'){
-				*key = getUnsignedDecimalNumber(window, currentLine, lineArray, &dereferencedElement);
+				key = getUnsignedDecimalNumber(window, currentLine, lineArray, &dereferencedElement);
 				if((lineArray[dereferencedElement] >= 'A' && lineArray[dereferencedElement] <= 'Z') || (lineArray[dereferencedElement] >= 'a' && lineArray[dereferencedElement] <= 'z')){
 					--dereferencedElement;
 				}
 			}else if(isVariable("Shift", lineArray, &dereferencedElement)){
-				dereferencedMasks |= ShiftMask;
+				masks |= ShiftMask;
 			}else if(isVariable("Lock", lineArray, &dereferencedElement)){
-				dereferencedMasks |= LockMask;
+				masks |= LockMask;
 			}else if(isVariable("Control", lineArray, &dereferencedElement)){
-				dereferencedMasks |= ControlMask;
+				masks |= ControlMask;
 			}else if(isVariable("Mod1", lineArray, &dereferencedElement)){
-				dereferencedMasks |= Mod1Mask;
+				masks |= Mod1Mask;
 			}else if(isVariable("Mod2", lineArray, &dereferencedElement)){
-				dereferencedMasks |= Mod2Mask;
+				masks |= Mod2Mask;
 			}else if(isVariable("Mod3", lineArray, &dereferencedElement)){
-				dereferencedMasks |= Mod3Mask;
+				masks |= Mod3Mask;
 			}else if(isVariable("Mod4", lineArray, &dereferencedElement)){
-				dereferencedMasks |= Mod4Mask;
+				masks |= Mod4Mask;
 			}else if(isVariable("Mod5", lineArray, &dereferencedElement)){
-				dereferencedMasks |= Mod5Mask;
+				masks |= Mod5Mask;
 			}else{
 				break;
 			}
@@ -1578,7 +1575,7 @@ static void getKeys(const Window *const restrict window, const unsigned int *con
 		}
 	}
 	*element = dereferencedElement;
-	*masks = dereferencedMasks;
+	XGrabKey(display, key, masks, *window, True, GrabModeAsync, GrabModeAsync);
 	return;
 }
 static char *getText(const char *const restrict lineArray, unsigned int *const restrict element, const unsigned int addAmpersand){
