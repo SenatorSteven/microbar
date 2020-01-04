@@ -59,9 +59,9 @@ bool readConfigScan(const Window *const restrict parentWindow){
 		totalBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
@@ -214,9 +214,9 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 		*menuAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
@@ -395,9 +395,9 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 		*boxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
@@ -580,9 +580,9 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 		*innerBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
@@ -769,9 +769,9 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 		*backgroundColor = 0x00000000;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
@@ -927,9 +927,9 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 		*drawableCommandPointerArray = NULL;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
@@ -1071,9 +1071,9 @@ bool readConfigButton(const Window *const restrict window, const unsigned int *c
 	if(config){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
-		char fileBuffer[characters];
+		char fileBuffer[DefaultCharactersCount];
 		char *line = fileBuffer;
+		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		unsigned int button = 0;
