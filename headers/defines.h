@@ -7,9 +7,10 @@
 #define DefaultCharactersCount /*-*/ ((unsigned int)200)
 #define DefaultLinesCount /*------*/ ((unsigned int)100)
 
-typedef unsigned int bool;
 typedef int bytes4;
 /* # /user-defined constants end # # # # */
+
+typedef unsigned int bool;
 
 #define ModeContinue /*-----------*/ ((unsigned int)0)
 #define ModeRestart /*------------*/ ((unsigned int)1)
