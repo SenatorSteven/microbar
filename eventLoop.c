@@ -5,15 +5,13 @@
 #include "headers/readConfig.h"
 #include "headers/defines.h"
 
-#define ModeContinue /*-*/ ((unsigned int)0)
-#define ModeRestart /*--*/ ((unsigned int)1)
-#define ModeExit /*-----*/ ((unsigned int)2)
-
 extern const char *restrict configPath;
 extern const char *restrict workplacePath;
 extern unsigned int mode;
 extern Display *restrict display;
 extern unsigned int monitorAmount;
+extern FILE *restrict file;
+extern size_t characters;
 extern unsigned int totalBoxAmount;
 extern char *line;
 extern Window *restrict topLevelWindowArray;
@@ -267,18 +265,9 @@ void eventLoop(void){
 }
 static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor){
 	system(systemCommandArray);
-	line[0] = 0;
-	{
-		FILE *restrict drawableCommand = fopen(drawableCommandPathArray, "r");
-		if(drawableCommand){
-			size_t characters = DefaultCharactersCount;
-			getline(&line, &characters, drawableCommand);
-			fclose(drawableCommand);
-		}else{
-			fprintf(stdout, "%s: could not read drawableCommand\n", ProgramName);
-		}
-	}
-	if(line[0]){
+	if((file = fopen(drawableCommandPathArray, "r"))){
+		getline(&line, &characters, file);
+		fclose(file);
 		unsigned int lineLength = 0;
 		while(line[lineLength] != '\0'){
 			++lineLength;
@@ -317,7 +306,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 			XFreeGC(display, gc);
 		}
 	}else{
-		fprintf(stderr, "%s: could not allocate space for drawable command line\n", ProgramName);
+		fprintf(stdout, "%s: could not read temporary file (drawableCommand)\n", ProgramName);
 	}
 	return;
 }
