@@ -1,6 +1,7 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 
+/* # /user-defined constants start # # # */
 #define ProgramName /*------------*/ "microbar"
 #define Tab /*--------------------*/ "    "
 #define DefaultCharactersCount /*-*/ ((unsigned int)200)
@@ -8,5 +9,10 @@
 
 typedef unsigned int bool;
 typedef int bytes4;
+/* # /user-defined constants end # # # # */
+
+#define ModeContinue /*-----------*/ ((unsigned int)0)
+#define ModeRestart /*------------*/ ((unsigned int)1)
+#define ModeExit /*---------------*/ ((unsigned int)2)
 
 #endif
