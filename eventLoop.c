@@ -266,21 +266,26 @@ void eventLoop(void){
 }
 static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor){
 	system(systemCommandArray);
-	char *result;
+	char fileBuffer[DefaultCharactersCount];
+	fileBuffer[0] = 0;
+	char *line = fileBuffer;
 	{
 		FILE *restrict drawableCommand = fopen(drawableCommandPathArray, "r");
-		size_t characters = DefaultCharactersCount;
-		result = (char *)malloc(characters * sizeof(char));
-		getline(&result, &characters, drawableCommand);
-		fclose(drawableCommand);
-	}
-	if(result){
-		unsigned int resultLength = 0;
-		while(result[resultLength] != '\0'){
-			++resultLength;
+		if(drawableCommand){
+			size_t characters = DefaultCharactersCount;
+			getline(&line, &characters, drawableCommand);
+			fclose(drawableCommand);
+		}else{
+			fprintf(stdout, "%s: could not read drawableCommand\n", ProgramName);
 		}
-		if(resultLength > 1){
-			--resultLength;
+	}
+	if(line[0]){
+		unsigned int lineLength = 0;
+		while(line[lineLength] != '\0'){
+			++lineLength;
+		}
+		if(lineLength > 1){
+			--lineLength;
 			GC gc;
 			{
 				XGCValues gcValues = {
@@ -296,7 +301,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 				{
 					XFontStruct *restrict font = XLoadQueryFont(display, "fixed");
 					int direction;
-					XTextExtents(font, drawableCommand2DRemappedArray, resultLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
+					XTextExtents(font, drawableCommand2DRemappedArray, lineLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
 					XFreeFont(display, font);
 				}
 				XWindowAttributes windowAttributes;
@@ -309,10 +314,9 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 				y /= 2;
 			}
 			XClearWindow(display, *box);
-			XDrawString(display, *box, gc, x, y, result, resultLength);
+			XDrawString(display, *box, gc, x, y, line, lineLength);
 			XFreeGC(display, gc);
 		}
-		free(result);
 	}else{
 		fprintf(stderr, "%s: could not allocate space for drawable command line\n", ProgramName);
 	}
