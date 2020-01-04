@@ -39,6 +39,8 @@
 extern const char *restrict configPath;
 extern Display *restrict display;
 extern const XRRMonitorInfo *restrict monitorInfo;
+extern FILE *restrict file;
+extern size_t characters;
 extern unsigned int totalBoxAmount;
 extern char *line;
 extern unsigned int currentMonitor;
@@ -55,16 +57,14 @@ static bool printLineError(const char *const restrict lineArray, const unsigned 
 
 bool readConfigScan(const Window *const restrict parentWindow){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		totalBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -192,15 +192,14 @@ bool readConfigScan(const Window *const restrict parentWindow){
 				}
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
 }
 bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor, bytes4 *const restrict globalMenuBorderColor, bytes4 *const restrict globalMenuBackgroundColor, unsigned int *const restrict menuAmount){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -213,11 +212,10 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 		*menuAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -371,15 +369,14 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 				}
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
 }
 bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsigned int *const restrict currentMenu, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor, bytes4 *const restrict globalBoxBorderColor, bytes4 *const restrict globalBoxBackgroundColor, unsigned int *const restrict boxAmount){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -392,12 +389,11 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 		*boxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -554,15 +550,14 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 				}
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
 }
 bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsigned int *const restrict currentMenu, const unsigned int *const restrict currentBox, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor, bytes4 *const restrict globalInnerBoxBorderColor, bytes4 *const restrict globalInnerBoxBackgroundColor, unsigned int *const restrict innerBoxAmount){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -575,13 +570,12 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 		*innerBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -697,9 +691,6 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 							continue;
 						}
 					}
-
-
-
 					if(!(hasReadVariable & GlobalInnerBoxBorderColorPosition)){
 						if(isVariable("GlobalInnerBoxBorderColor", line, &element)){
 							pushSpaces(line, &element);
@@ -722,9 +713,6 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 							continue;
 						}
 					}
-
-
-
 					if(isVariable("InnerBox", line, &element)){
 						pushSpaces(line, &element);
 						if(isVariable("{", line, &element)){
@@ -744,15 +732,14 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 				}
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
 }
 bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const unsigned int *const restrict currentMenu, const unsigned int *const restrict currentBox, const unsigned int *const restrict currentInnerBox, int *const restrict x, int *const restrict y, unsigned int *const restrict width, unsigned int *const restrict height, unsigned int *const restrict border, bytes4 *const restrict borderColor, bytes4 *const restrict backgroundColor){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -762,14 +749,13 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 		*backgroundColor = 0x00000000;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
 		unsigned int innerBoxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -903,27 +889,25 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 				}
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
 }
 bool readConfigTextCommands(const Window *const restrict window, const unsigned int *const restrict currentBox, char **const restrict textPointerArray, bytes4 *const restrict textColor, char **const restrict commandPointerArray, char **const restrict drawableCommandPointerArray){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		*textPointerArray = NULL;
 		*textColor = 0x00000000;
 		*commandPointerArray = NULL;
 		*drawableCommandPointerArray = NULL;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -1049,24 +1033,22 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 				}
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
 }
 bool readConfigButton(const Window *const restrict window, const unsigned int *const restrict currentBox){
 	bool value = 0;
-	FILE *restrict config = getConfigFile();
-	if(config){
+	if((file = getConfigFile())){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
-		size_t characters = DefaultCharactersCount;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		unsigned int button = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, config);
+			getline(&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -1149,7 +1131,7 @@ bool readConfigButton(const Window *const restrict window, const unsigned int *c
 				XGrabButton(display, button, AnyModifier, *window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 			}
 		}
-		fclose(config);
+		fclose(file);
 		value = 1;
 	}
 	return value;
@@ -1173,6 +1155,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# # # # #\n");
 			fprintf(config, "# rules #\n");
 			fprintf(config, "# # # # #\n\n");
+			fprintf(config, "# certain values can be changed through the headers/defines.h of the program's source\n");
 			fprintf(config, "# this file needs to be user-specified when launched\n");
 			fprintf(config, "# max line character length is %u\n", DefaultCharactersCount);
 			fprintf(config, "# comments are signified by a \'#\' at the beginning of the line\n");
@@ -1189,7 +1172,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# # # # # # #\n\n");
 			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalMenuBorderColor, globalMenuBackgroundColor, hideKey, menu{}\n");
 			fprintf(config, "# menu object: x, y, width, height, border, borderColor, backgroundColor, globalBoxBorderColor, globalBoxBackgroundColor, globalTextColor, box{}\n");
-			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, text, textColor, command, drawableCommand, button, innerBox{}\n");
+			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, globalInnerBoxBorderColor, globalInnerBoxBackgroundColor, text, textColor, command, drawableCommand, button, innerBox{}\n");
 			fprintf(config, "# innerBox object: x, y, width, height, border, borderColor, backgroundColor\n");
 			fprintf(config, "# decimal operands: +, -, *, /\n");
 			fprintf(config, "# decimal macros: ParentWidth, ParentHeight\n\n\n\n");
@@ -1208,6 +1191,8 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# globalMenuBackgroundColor: color of all menus\' background\n");
 			fprintf(config, "# globalBoxBorderColor: color of all boxes\' border\n");
 			fprintf(config, "# globalBoxBackgroundColor: color of all boxes\' background\n");
+			fprintf(config, "# globalInnerBoxBorderColor: color of all innerBoxes\' border\n");
+			fprintf(config, "# globalInnerBoxBackgroundColor: color of all innerBoxes\' background\n");
 			fprintf(config, "# globalTextColor: color of all boxes\' text\n");
 			fprintf(config, "# hideKey: combination of keycode and modifiers to hide the bar\n");
 			fprintf(config, "# text: text label of box\n");
@@ -1230,7 +1215,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 164\n");
+			fprintf(config, "lines = 167\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
