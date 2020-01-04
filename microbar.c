@@ -7,16 +7,14 @@
 #include "headers/readConfig.h"
 #include "headers/eventLoop.h"
 
-#define ModeContinue /*-*/ ((unsigned int)0)
-#define ModeRestart /*--*/ ((unsigned int)1)
-#define ModeExit /*-----*/ ((unsigned int)2)
-
 const char *restrict configPath;
 const char *restrict workplacePath = NULL;
 unsigned int mode = ModeContinue;
 Display *restrict display;
 unsigned int monitorAmount;
 const XRRMonitorInfo *restrict monitorInfo;
+FILE *restrict file;
+size_t characters = DefaultCharactersCount;
 unsigned int totalBoxAmount;
 char fileBuffer[DefaultCharactersCount];
 char *line = fileBuffer;
