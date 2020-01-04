@@ -15,6 +15,7 @@ extern unsigned int mode;
 extern Display *restrict display;
 extern unsigned int monitorAmount;
 extern unsigned int totalBoxAmount;
+extern char *line;
 extern Window *restrict topLevelWindowArray;
 extern unsigned int currentMonitor;
 
@@ -266,9 +267,7 @@ void eventLoop(void){
 }
 static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor){
 	system(systemCommandArray);
-	char fileBuffer[DefaultCharactersCount];
-	fileBuffer[0] = 0;
-	char *line = fileBuffer;
+	line[0] = 0;
 	{
 		FILE *restrict drawableCommand = fopen(drawableCommandPathArray, "r");
 		if(drawableCommand){
