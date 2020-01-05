@@ -97,19 +97,21 @@ void eventLoop(void){
 		++drawableCommandMaxWordLength;
 	}
 	unsigned int drawableCommandPathLength = 0;
-	if(workplacePath){
-		while(workplacePath[drawableCommandPathLength] != '\0'){
-			++drawableCommandPathLength;
+	{
+		if(workplacePath){
+			while(workplacePath[drawableCommandPathLength] != '\0'){
+				++drawableCommandPathLength;
+			}
+		}else{
+			while(configPath[drawableCommandPathLength] != '\0'){
+				++drawableCommandPathLength;
+			}
+			while(configPath[drawableCommandPathLength] != '/'){
+				--drawableCommandPathLength;
+			}
 		}
-	}else{
-		while(configPath[drawableCommandPathLength] != '\0'){
-			++drawableCommandPathLength;
-		}
-		while(configPath[drawableCommandPathLength] != '/'){
-			--drawableCommandPathLength;
-		}
+		drawableCommandPathLength += 17;
 	}
-	drawableCommandPathLength += 17;
 	char drawableCommandPath[drawableCommandPathLength];
 	{
 		unsigned int currentCharacter = 0;
