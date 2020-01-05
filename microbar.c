@@ -31,7 +31,7 @@ int main(const int argumentCount, const char *const restrict *const restrict arg
 			mode = ModeContinue;
 			if((display = XOpenDisplay(NULL))){
 				{
-					Window rootWindow = XDefaultRootWindow(display);
+					const Window rootWindow = XDefaultRootWindow(display);
 					monitorInfo = XRRGetMonitors(display, rootWindow, True, (int *)&monitorAmount);
 					readConfigScan(&rootWindow);
 				}
@@ -67,7 +67,7 @@ static bool createWindows(void){
 	bytes4 globalMenuBackgroundColor;
 	unsigned int menuAmount;
 	{
-		Window rootWindow = XDefaultRootWindow(display);
+		const Window rootWindow = XDefaultRootWindow(display);
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			value = 0;
 			if(readConfigTopLevelWindow(&rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
