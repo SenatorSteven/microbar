@@ -35,8 +35,8 @@ int main(const int argumentCount, const char *const restrict *const restrict arg
 					monitorInfo = XRRGetMonitors(display, rootWindow, True, (int *)&monitorAmount);
 					readConfigScan(&rootWindow);
 				}
-				Window window[monitorAmount];
-				topLevelWindowArray = window;
+				Window topLevelWindow[monitorAmount];
+				topLevelWindowArray = topLevelWindow;
 				if(createWindows()){
 					setTopLevelWindowProperties();
 					eventLoop();
