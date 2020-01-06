@@ -51,7 +51,7 @@ Before compilation, while possible to edit all files, it is important to pay a v
 
 ## Terminal help menu
 
-#### :~$ microbar --help
+#### $ microbar --help
 <pre>
 microbar: usage: microbar [parameters] or microbar [parameter] [--help]
     [-h], [--help]         display this message
@@ -59,14 +59,14 @@ microbar: usage: microbar [parameters] or microbar [parameter] [--help]
     [-w], [--workplace]    specify path to directory used for temporary files, optional
 </pre>
 
-#### :~$ microbar --config --help
+#### $ microbar --config --help
 <pre>
 microbar: usage: microbar --config "/path/to/file"
     # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration
     # environment variables may be used
 </pre>
 
-#### :~$ microbar --workplace --help
+#### $ microbar --workplace --help
 <pre>
 microbar: usage: microbar --workplace "/path/to/directory"
     # if the specified directory doesn't exist, it will not be created
