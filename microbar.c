@@ -81,7 +81,7 @@ static bool createWindows(void){
 						.border_pixel = borderColor,
 						.colormap = XCreateColormap(display, rootWindow, visualInfo.visual, AllocNone)
 					};
-					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
+					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWColormap, &windowAttributes);
 					value = 1;
 				}
 			}
@@ -206,7 +206,7 @@ static void setTopLevelWindowProperties(void){
 			.x = 1,
 			.y = 1
 		},
-		.win_gravity = NorthWestGravity
+		.win_gravity = ForgetGravity
 	};
 	XWMHints WMHints = {
 		.flags = InputHint | StateHint,
@@ -269,7 +269,6 @@ static void setTopLevelWindowProperties(void){
 			data[10] = windowAttributes.x;
 			data[11] = windowAttributes.x;
 			data[11] += windowAttributes.width;
-			data[11] -= 1;
 		}
 		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
 		XSelectInput(display, topLevelWindowArray[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
