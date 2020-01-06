@@ -52,7 +52,7 @@ static unsigned int getUnsignedDecimalNumber(const Window *const restrict window
 static int getDecimalNumber(const Window *const restrict window, const char *const restrict lineArray, unsigned int *const restrict element);
 static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element);
 static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
-static char *getText(const char *const restrict lineArray, unsigned int *const restrict element, const unsigned int addAmpersand);
+static char *getText(const char *const restrict lineArray, unsigned int *const restrict element);
 static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine);
 
 bool readConfigScan(const Window *const restrict parentWindow){
@@ -973,7 +973,7 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								*textPointerArray = getText(line, &element, 0);
+								*textPointerArray = getText(line, &element);
 								hasReadVariable |= TextPosition;
 							}
 							continue;
@@ -995,7 +995,7 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								*commandPointerArray = getText(line, &element, 1);
+								*commandPointerArray = getText(line, &element);
 								hasReadVariable |= CommandPosition;
 							}
 							continue;
@@ -1006,7 +1006,7 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								*drawableCommandPointerArray = getText(line, &element, 0);
+								*drawableCommandPointerArray = getText(line, &element);
 								hasReadVariable |= DrawableCommandPosition;
 							}
 							continue;
@@ -1194,9 +1194,9 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# hideKey: combination of keycode and modifiers to hide the bar\n");
 			fprintf(config, "# text: text label of box\n");
 			fprintf(config, "# textColor: color of box\'s text\n");
-			fprintf(config, "# command: command executed on interaction with box (followed by control operator \'&\')\n");
+			fprintf(config, "# command: command executed on interaction with box\n");
 			fprintf(config, "# drawableCommand: command returning text output executed on interaction with box\n");
-			fprintf(config, "# button: mouse button used for interaction with box\n");
+			fprintf(config, "# button: mouse button used to interact\n");
 			fprintf(config, "# menu: informationless interactionless object, residing in global object\n");
 			fprintf(config, "# box: information object, residing in menu object\n");
 			fprintf(config, "# innerBox: informationless interactionless object, residing in box object\n");
@@ -1208,7 +1208,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# lines: default %u\n", DefaultLinesCount);
 			fprintf(config, "# hideKey: modifiers: Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# text: requires quotation\n");
-			fprintf(config, "# command: requires quotation\n");
+			fprintf(config, "# command: requires quotation, program commands: restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
@@ -1578,7 +1578,7 @@ static void getGrabKey(const Window *const restrict window, const unsigned int *
 	XGrabKey(display, key, masks, *window, True, GrabModeAsync, GrabModeAsync);
 	return;
 }
-static char *getText(const char *const restrict lineArray, unsigned int *const restrict element, const unsigned int addAmpersand){
+static char *getText(const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
 	char *restrict text = NULL;
 	unsigned int length = 0;
@@ -1590,15 +1590,7 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 		}
 	}
 	if(length > 0){
-		{
-			unsigned int extraCharacters;
-			if(addAmpersand){
-				extraCharacters = 1;
-			}else{
-				extraCharacters = 0;
-			}
-			text = (char *)malloc((length + 1 + extraCharacters) * sizeof(char));
-		}
+		text = (char *)malloc((length + 1) * sizeof(char));
 		if(text){
 			unsigned int currentCharacter = 0;
 			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
@@ -1608,10 +1600,6 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 			}
 			if(currentCharacter == length){
 				++dereferencedElement;
-				if(addAmpersand){
-					text[length] = '&';
-					++length;
-				}
 				text[length] = '\0';
 				*element = dereferencedElement;
 			}
