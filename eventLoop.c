@@ -236,9 +236,9 @@ void eventLoop(void){
 							drawCommand(&topLevelWindowArray[currentMonitor], drawableCommand2DRemappedArray + currentBox * drawableCommandMaxWordLength, drawableCommandPath, &box[currentMonitor][currentBox], drawableCommand2DRemappedArray, &textColor[currentBox]);
 						}
 						if(command2DRemappedArray[commandWordBeginning]){
-							if(isCommand("Restart&", &command2DRemappedArray[commandWordBeginning])){
+							if(isCommand("Restart", &command2DRemappedArray[commandWordBeginning])){
 								mode = ModeRestart;
-							}else if(isCommand("Exit&", &command2DRemappedArray[commandWordBeginning])){
+							}else if(isCommand("Exit", &command2DRemappedArray[commandWordBeginning])){
 								mode = ModeExit;
 							}else{
 								system(&command2DRemappedArray[commandWordBeginning]);
