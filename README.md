@@ -45,7 +45,10 @@ Somebody could argue that the CPU power being used in updating the bar is as tri
 
 ## Configuration
 
-Before compilation, while possible to edit all files, it is important to pay a visit to headers/defines.h. Through it, you can set the tab size, the amount of characters to read per line and the default number of lines to read, which can be changed at runtime. You can also change the "bytes4" type in case of a compile-time error. microbar is made with 64 bit machines in mind. If integers are not 4 bytes on the user's machine, there is the capability to change the type used. The program name is read at runtime.
+Before compilation, while possible to edit all files, it is important to pay a visit to headers/defines.h. Through it, you can set the tab size, the amount of characters to read per line and the default number of lines to read. You can also change the "bytes4" type in case of a compile-time error. microbar is made with 64 bit machines in mind so if integers are not 4 bytes (or more) on the user's machine, there is the capability to change the type used.
+<br>
+<br>
+The program name is read at runtime. The first argument passed to the program, that being the name used to execute it, will be the name of the program.
 
 
 
