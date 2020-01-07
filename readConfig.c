@@ -53,7 +53,7 @@ static int getDecimalNumber(const Window *const restrict window, const char *con
 static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element);
 static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
 static char *getText(const char *const restrict lineArray, unsigned int *const restrict element);
-static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine);
+static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine);
 
 bool readConfigScan(const Window *const restrict parentWindow){
 	bool value = 0;
@@ -110,7 +110,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 					   !isVariable("HideKey",                   line, &element) &&
 					   !isVariable("Menu",                      line, &element) &&
 					   !isVariable("}",                         line, &element)){
-						printLineError(line, &element, &currentLine);
+						printLineError(line, &currentLine);
 						continue;
 					}
 				}else if(!(hasReadVariable & BoxPosition)){
@@ -138,7 +138,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 					   !isVariable("GlobalTextColor",          line, &element) &&
 					   !isVariable("Box",                      line, &element) &&
 					   !isVariable("}",                        line, &element)){
-						printLineError(line, &element, &currentLine);
+						printLineError(line, &currentLine);
 						continue;
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
@@ -167,7 +167,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 					   !isVariable("Button",          line, &element) &&
 					   !isVariable("InnerBox",        line, &element) &&
 					   !isVariable("}",               line, &element)){
-						printLineError(line, &element, &currentLine);
+						printLineError(line, &currentLine);
 						continue;
 					}
 				}else{
@@ -183,7 +183,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 					   !isVariable("BorderColor",     line, &element) &&
 					   !isVariable("BackgroundColor", line, &element) &&
 					   !isVariable("}",               line, &element)){
-						printLineError(line, &element, &currentLine);
+						printLineError(line, &currentLine);
 						continue;
 					}
 				}
@@ -1609,15 +1609,15 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 	}
 	return text;
 }
-static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict element, const unsigned int *const restrict currentLine){
+static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine){
 	bool value = 0;
-	if(lineArray[*element] != '\n'){
-		unsigned int length = 0;
-		while(lineArray[length] != '\n'){
-			++length;
-		}
+	unsigned int length = 0;
+	while(lineArray[length] != '\n'){
+		++length;
+	}
+	if(length){
 		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine);
-		for(unsigned int currentCharacter = *element; currentCharacter < length; ++currentCharacter){
+		for(unsigned int currentCharacter = 0; currentCharacter < length; ++currentCharacter){
 			fprintf(stderr, "%c", lineArray[currentCharacter]);
 		}
 		fprintf(stderr, "\" not recognized as an internal variable\n");
