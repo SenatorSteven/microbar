@@ -2,7 +2,6 @@
 #define DEFINES_H
 
 /* # /user-defined constants start # # # */
-#define ProgramName /*------------*/ "microbar"
 #define Tab /*--------------------*/ "    "
 #define DefaultCharactersCount /*-*/ ((unsigned int)200)
 #define DefaultLinesCount /*------*/ ((unsigned int)100)
