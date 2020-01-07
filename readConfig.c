@@ -36,6 +36,7 @@
 #define OperationMultiplication /*---------------*/ ((unsigned int)3)
 #define OperationDivision /*---------------------*/ ((unsigned int)4)
 
+extern const char *restrict programName;
 extern const char *restrict configPath;
 extern Display *restrict display;
 extern const XRRMonitorInfo *restrict monitorInfo;
@@ -1288,7 +1289,7 @@ static FILE *getConfigFile(void){
 			fclose(config);
 			config = fopen(configPath, "r");
 		}else{
-			fprintf(stderr, "%s: could not create config file\n", ProgramName);
+			fprintf(stderr, "%s: could not create config file\n", programName);
 		}
 	}
 	return config;
@@ -1338,7 +1339,7 @@ static bool isVariable(const char *const restrict variable, const char *const re
 static unsigned int getUnsignedDecimalNumber(const Window *const restrict parentWindow, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int number = getDecimalNumber(parentWindow, lineArray, element);
 	if((int)number < 0){
-		fprintf(stderr, "%s: line %u: %i is not an unsigned integer\n", ProgramName, *currentLine, (int)number);
+		fprintf(stderr, "%s: line %u: %i is not an unsigned integer\n", programName, *currentLine, (int)number);
 		number = 0;
 	}
 	return number;
@@ -1520,7 +1521,7 @@ static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const 
 			color += lineArray[dereferencedElement];
 			color -= 87;
 		}else{
-			fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", ProgramName, lineArray[dereferencedElement]);
+			fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", programName, lineArray[dereferencedElement]);
 			color = 0x00000000;
 			break;
 		}
@@ -1604,7 +1605,7 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 				*element = dereferencedElement;
 			}
 		}else{
-			fprintf(stderr, "%s: could not allocate space for text\n", ProgramName);
+			fprintf(stderr, "%s: could not allocate space for text\n", programName);
 		}
 	}
 	return text;
@@ -1616,7 +1617,7 @@ static bool printLineError(const char *const restrict lineArray, const unsigned 
 		++length;
 	}
 	if(length){
-		fprintf(stderr, "%s: line %u: \"", ProgramName, *currentLine);
+		fprintf(stderr, "%s: line %u: \"", programName, *currentLine);
 		for(unsigned int currentCharacter = 0; currentCharacter < length; ++currentCharacter){
 			fprintf(stderr, "%c", lineArray[currentCharacter]);
 		}
