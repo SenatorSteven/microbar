@@ -91,9 +91,9 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 				}
 			}
 			if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
-				fprintf(stdout, "%s: the config parameter has already been specified\n", programName);
+				fprintf(stderr, "%s: the config parameter has already been specified\n", programName);
 			}else if(isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){
-				fprintf(stdout, "%s: the workplace parameter has already been specified\n", programName);
+				fprintf(stderr, "%s: the workplace parameter has already been specified\n", programName);
 			}else{
 				fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", programName, argumentVector[currentArgument]);
 			}
