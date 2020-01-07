@@ -309,7 +309,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 			XFreeGC(display, gc);
 		}
 	}else{
-		fprintf(stdout, "%s: could not read temporary file (drawableCommand)\n", programName);
+		fprintf(stderr, "%s: could not read temporary file (drawableCommand)\n", programName);
 	}
 	return;
 }
