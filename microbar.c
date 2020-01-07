@@ -7,6 +7,7 @@
 #include "headers/readConfig.h"
 #include "headers/eventLoop.h"
 
+const char *restrict programName;
 const char *restrict configPath;
 const char *restrict workplacePath = NULL;
 unsigned int mode = ModeContinue;
@@ -42,12 +43,12 @@ int main(const int argumentCount, const char *const restrict *const restrict arg
 					eventLoop();
 					cleanupWindows();
 				}else{
-					fprintf(stderr, "%s: could not create windows\n", ProgramName);
+					fprintf(stderr, "%s: could not create windows\n", programName);
 					mode = ModeExit;
 				}
 				XCloseDisplay(display);
 			}else{
-				fprintf(stderr, "%s: could not connect to server\n", ProgramName);
+				fprintf(stderr, "%s: could not connect to server\n", programName);
 				break;
 			}
 		}
@@ -188,7 +189,7 @@ static bool createWindows(void){
 }
 static void setTopLevelWindowProperties(void){
 	XTextProperty textProperty = {
-		.value = (unsigned char *)ProgramName,
+		.value = (unsigned char *)programName,
 		.encoding = XA_STRING,
 		.format = 8,
 		.nitems = 8
@@ -214,8 +215,8 @@ static void setTopLevelWindowProperties(void){
 		.initial_state = NormalState
 	};
 	XClassHint classHint = {
-		.res_name = ProgramName,
-		.res_class = ProgramName
+		.res_name = (char *)programName,
+		.res_class = (char *)programName
 	};
 	long unsigned int data[12];
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
@@ -234,8 +235,8 @@ static void setTopLevelWindowProperties(void){
 		XSetWMNormalHints(display, topLevelWindowArray[currentMonitor], &sizeHints);
 		XSetWMHints(display, topLevelWindowArray[currentMonitor], &WMHints);
 		XSetClassHint(display, topLevelWindowArray[currentMonitor], &classHint);
-		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
-		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)ProgramName, 8);
+		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, 8);
+		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, 8);
 		data[0] = 0xFFFFFFFF;
 		data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
 		data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
