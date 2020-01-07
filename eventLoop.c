@@ -5,6 +5,7 @@
 #include "headers/readConfig.h"
 #include "headers/defines.h"
 
+extern const char *restrict programName;
 extern const char *restrict configPath;
 extern const char *restrict workplacePath;
 extern unsigned int mode;
@@ -308,7 +309,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 			XFreeGC(display, gc);
 		}
 	}else{
-		fprintf(stdout, "%s: could not read temporary file (drawableCommand)\n", ProgramName);
+		fprintf(stdout, "%s: could not read temporary file (drawableCommand)\n", programName);
 	}
 	return;
 }
