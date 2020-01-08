@@ -19,6 +19,7 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 	bool value = 0;
 	programName = argumentVector[0];
 	if(dereferencedArgumentCount > 1){
+		workplacePath = NULL;
 		unsigned int hasReadVariable = NoPositions;
 		for(unsigned int currentArgument = 1; currentArgument < dereferencedArgumentCount; ++currentArgument){
 			if(!(hasReadVariable & ConfigPosition)){
