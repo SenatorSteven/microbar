@@ -263,7 +263,6 @@ void eventLoop(void){
 			break;
 		}
 	}
-	XUngrabKeyboard(display, CurrentTime);
 	return;
 }
 static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor){
