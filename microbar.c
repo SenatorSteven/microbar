@@ -9,7 +9,7 @@
 
 const char *restrict programName;
 const char *restrict configPath;
-const char *restrict workplacePath = NULL;
+const char *restrict workplacePath;
 unsigned int mode = ModeContinue;
 Display *restrict display;
 unsigned int monitorAmount;
@@ -24,7 +24,7 @@ unsigned int currentMonitor;
 
 static bool createWindows(void);
 static void setTopLevelWindowProperties(void);
-static void cleanupWindows(void);
+static void cleanup(void);
 
 int main(const int argumentCount, const char *const restrict *const restrict argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
@@ -41,7 +41,7 @@ int main(const int argumentCount, const char *const restrict *const restrict arg
 				if(createWindows()){
 					setTopLevelWindowProperties();
 					eventLoop();
-					cleanupWindows();
+					cleanup();
 				}else{
 					fprintf(stderr, "%s: could not create windows\n", programName);
 					mode = ModeExit;
@@ -277,7 +277,8 @@ static void setTopLevelWindowProperties(void){
 	}
 	return;
 }
-static void cleanupWindows(void){
+static void cleanup(void){
+	XUngrabKeyboard(display, CurrentTime);
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
 		XDestroySubwindows(display, topLevelWindowArray[currentMonitor]);
