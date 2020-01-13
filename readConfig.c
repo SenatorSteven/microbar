@@ -43,7 +43,7 @@ extern const XRRMonitorInfo *restrict monitorInfo;
 extern FILE *restrict file;
 extern size_t characters;
 extern unsigned int totalBoxAmount;
-extern char *line;
+extern char *restrict line;
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
@@ -65,7 +65,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -213,7 +213,7 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -391,7 +391,7 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 		unsigned int menuAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -573,7 +573,7 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -753,7 +753,7 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 		unsigned int innerBoxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -905,7 +905,7 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -1046,7 +1046,7 @@ bool readConfigButton(const Window *const restrict window, const unsigned int *c
 		unsigned int button = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
-			getline(&line, &characters, file);
+			getline((char **)&line, &characters, file);
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
