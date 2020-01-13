@@ -20,15 +20,16 @@
 #define GlobalInnerBoxBorderColorPosition /*-----*/ (1 << 12)
 #define GlobalInnerBoxBackgroundColorPosition /*-*/ (1 << 13)
 #define HideKeyPosition /*-----------------------*/ (1 << 14)
-#define TextPosition /*--------------------------*/ (1 << 15)
-#define TextColorPosition /*---------------------*/ (1 << 16)
-#define GlobalTextColorPosition /*---------------*/ (1 << 17)
-#define CommandPosition /*-----------------------*/ (1 << 18)
-#define DrawableCommandPosition /*---------------*/ (1 << 19)
-#define ButtonPosition /*------------------------*/ (1 << 20)
-#define MenuPosition /*--------------------------*/ (1 << 21)
-#define BoxPosition /*---------------------------*/ (1 << 22)
-#define InnerBoxPosition /*----------------------*/ (1 << 23)
+#define FontPosition /*--------------------------*/ (1 << 15)
+#define TextPosition /*--------------------------*/ (1 << 16)
+#define TextColorPosition /*---------------------*/ (1 << 17)
+#define GlobalTextColorPosition /*---------------*/ (1 << 18)
+#define CommandPosition /*-----------------------*/ (1 << 19)
+#define DrawableCommandPosition /*---------------*/ (1 << 20)
+#define ButtonPosition /*------------------------*/ (1 << 21)
+#define MenuPosition /*--------------------------*/ (1 << 22)
+#define BoxPosition /*---------------------------*/ (1 << 23)
+#define InnerBoxPosition /*----------------------*/ (1 << 24)
 
 #define NoOperation /*---------------------------*/ ((unsigned int)0)
 #define OperationAddition /*---------------------*/ ((unsigned int)1)
@@ -43,6 +44,7 @@ extern const XRRMonitorInfo *restrict monitorInfo;
 extern FILE *restrict file;
 extern size_t characters;
 extern unsigned int totalBoxAmount;
+extern XFontStruct *restrict fontStruct;
 extern char *restrict line;
 extern unsigned int currentMonitor;
 
@@ -63,6 +65,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		bytes4 hasReadVariable = NoPositions;
+		char *fontName = NULL;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			element = 0;
 			getline((char **)&line, &characters, file);
@@ -87,6 +90,17 @@ bool readConfigScan(const Window *const restrict parentWindow){
 								pushSpaces(line, &element);
 								getGrabKey(parentWindow, &currentLine, line, &element);
 								hasReadVariable |= HideKeyPosition;
+							}
+							continue;
+						}
+					}
+					if(!(hasReadVariable & FontPosition)){
+						if(isVariable("Font", line, &element)){
+							pushSpaces(line, &element);
+							if(isVariable("=", line, &element)){
+								pushSpaces(line, &element);
+								fontName = getText(line, &element);
+								hasReadVariable |= FontPosition;
 							}
 							continue;
 						}
@@ -189,6 +203,14 @@ bool readConfigScan(const Window *const restrict parentWindow){
 					}
 				}
 			}
+		}
+		if(fontName){
+			if(!(fontStruct = XLoadQueryFont(display, fontName))){
+				fontStruct = XLoadQueryFont(display, "fixed");
+			}
+			free(fontName);
+		}else{
+			fontStruct = XLoadQueryFont(display, "fixed");
 		}
 		fclose(file);
 		value = 1;
