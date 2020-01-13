@@ -7,20 +7,15 @@
 #include "headers/readConfig.h"
 #include "headers/eventLoop.h"
 
-const char *restrict programName;
-const char *restrict configPath;
-const char *restrict workplacePath;
-unsigned int mode = ModeContinue;
-Display *restrict display;
-unsigned int monitorAmount;
-const XRRMonitorInfo *restrict monitorInfo;
-FILE *restrict file;
-size_t characters = DefaultCharactersCount;
-unsigned int totalBoxAmount;
-char fileBuffer[DefaultCharactersCount];
-char *line = fileBuffer;
-Window *restrict topLevelWindowArray;
-unsigned int currentMonitor;
+extern const char *restrict programName;
+extern const char *restrict configPath;
+extern const char *restrict workplacePath;
+extern unsigned int mode;
+extern Display *restrict display;
+extern unsigned int monitorAmount;
+extern const XRRMonitorInfo *restrict monitorInfo;
+extern Window *restrict topLevelWindowArray;
+extern unsigned int currentMonitor;
 
 static bool createWindows(void);
 static void setTopLevelWindowProperties(void);
