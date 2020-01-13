@@ -13,6 +13,7 @@ const XRRMonitorInfo *restrict monitorInfo;
 FILE *restrict file;
 size_t characters = DefaultCharactersCount;
 unsigned int totalBoxAmount;
+XFontStruct *restrict fontStruct;
 char fileBuffer[DefaultCharactersCount];
 char *restrict line = fileBuffer;
 Window *restrict topLevelWindowArray;
