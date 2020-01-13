@@ -14,6 +14,7 @@ extern unsigned int mode;
 extern Display *restrict display;
 extern unsigned int monitorAmount;
 extern const XRRMonitorInfo *restrict monitorInfo;
+extern XFontStruct *restrict fontStruct;
 extern Window *restrict topLevelWindowArray;
 extern unsigned int currentMonitor;
 
@@ -274,6 +275,9 @@ static void setTopLevelWindowProperties(void){
 	return;
 }
 static void cleanup(void){
+	if(fontStruct){
+		XFreeFont(display, fontStruct);
+	}
 	XUngrabKeyboard(display, CurrentTime);
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
