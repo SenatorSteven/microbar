@@ -56,7 +56,7 @@ static int getDecimalNumber(const Window *const restrict window, const char *con
 static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element);
 static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
 static char *getText(const char *const restrict lineArray, unsigned int *const restrict element);
-static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine);
+static void printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine);
 
 bool readConfigScan(const Window *const restrict parentWindow){
 	bool value = 0;
@@ -1632,19 +1632,15 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 	}
 	return text;
 }
-static bool printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine){
-	bool value = 0;
-	unsigned int length = 0;
-	while(lineArray[length] != '\n'){
-		++length;
-	}
-	if(length){
+static void printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine){
+	if(lineArray[0] != '\n'){
+		unsigned int element = 0;
 		fprintf(stderr, "%s: line %u: \"", programName, *currentLine);
-		for(unsigned int currentCharacter = 0; currentCharacter < length; ++currentCharacter){
-			fprintf(stderr, "%c", lineArray[currentCharacter]);
+		while(lineArray[element] != '\n'){
+			fprintf(stderr, "%c", lineArray[element]);
+			++element;
 		}
 		fprintf(stderr, "\" not recognized as an internal variable\n");
-		value = 1;
 	}
-	return value;
+	return;
 }
