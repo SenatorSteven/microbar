@@ -1612,9 +1612,8 @@ static char *getText(const char *const restrict lineArray, unsigned int *const r
 			++length;
 		}
 	}
-	if(length > 0){
-		text = (char *)malloc((length + 1) * sizeof(char));
-		if(text){
+	if(length){
+		if((text = (char *)malloc((length + 1) * sizeof(char)))){
 			unsigned int currentCharacter = 0;
 			while(lineArray[dereferencedElement] != '\n' && currentCharacter < length){
 				text[currentCharacter] = lineArray[dereferencedElement];
