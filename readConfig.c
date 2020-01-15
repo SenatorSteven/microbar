@@ -54,7 +54,7 @@ static bool isVariable(const char *const restrict variableArray, const char *con
 static unsigned int getUnsignedDecimalNumber(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
 static int getDecimalNumber(const Window *const restrict window, const char *const restrict lineArray, unsigned int *const restrict element);
 static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element);
-static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
+static void grabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element);
 static char *getText(const char *const restrict lineArray, unsigned int *const restrict element);
 static void printLineError(const char *const restrict lineArray, const unsigned int *const restrict currentLine);
 
@@ -88,7 +88,7 @@ bool readConfigScan(const Window *const restrict parentWindow){
 							pushSpaces(line, &element);
 							if(isVariable("=", line, &element)){
 								pushSpaces(line, &element);
-								getGrabKey(parentWindow, &currentLine, line, &element);
+								grabKey(parentWindow, &currentLine, line, &element);
 								hasReadVariable |= HideKeyPosition;
 							}
 							continue;
@@ -211,6 +211,9 @@ bool readConfigScan(const Window *const restrict parentWindow){
 			free(fontName);
 		}else{
 			fontStruct = XLoadQueryFont(display, "fixed");
+		}
+		if(!fontStruct){
+			fprintf(stderr, "%s: \n", programName);
 		}
 		fclose(file);
 		value = 1;
@@ -1526,7 +1529,7 @@ static int getDecimalNumber(const Window *const restrict parentWindow, const cha
 }
 static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
-	int color = 0x00000000;
+	bytes4 color = 0x00000000;
 	if(lineArray[dereferencedElement] == '#'){
 		++dereferencedElement;
 	}
@@ -1543,8 +1546,10 @@ static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const 
 			color += lineArray[dereferencedElement];
 			color -= 87;
 		}else{
-			fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", programName, lineArray[dereferencedElement]);
-			color = 0x00000000;
+			if(lineArray[dereferencedElement] != ' '){
+				fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", programName, lineArray[dereferencedElement]);
+				color = 0x00000000;
+			}
 			break;
 		}
 		++dereferencedElement;
@@ -1555,7 +1560,7 @@ static bytes4 getARGB(const char *const restrict lineArray, unsigned int *const 
 	}
 	return color;
 }
-static void getGrabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element){
+static void grabKey(const Window *const restrict window, const unsigned int *const restrict currentLine, const char *const restrict lineArray, unsigned int *const restrict element){
 	unsigned int dereferencedElement = *element;
 	unsigned int key = 0;
 	int masks = 0;
