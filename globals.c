@@ -14,7 +14,7 @@ FILE *restrict file;
 size_t characters = DefaultCharactersCount;
 unsigned int totalBoxAmount;
 XFontStruct *restrict fontStruct;
-char fileBuffer[DefaultCharactersCount];
+static char fileBuffer[DefaultCharactersCount];
 char *restrict line = fileBuffer;
 Window *restrict topLevelWindowArray;
 unsigned int currentMonitor;
