@@ -118,7 +118,7 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 static bool isArgument(const char *const restrict argument, const char *const restrict argumentArray){
 	bool value = 0;
 	unsigned int element = 0;
-	while(argument[element] != '\0'){
+	while(argument[element]){
 		if(argument[element] >= 'A' && argument[element] <= 'Z'){
 			if(!(argumentArray[element] == argument[element] || argumentArray[element] == argument[element] + 32)){
 				element = 0;
