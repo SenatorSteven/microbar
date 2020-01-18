@@ -316,7 +316,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 static bool isCommand(const char *const restrict command, const char *const restrict commandArray){
 	bool value = 0;
 	unsigned int element = 0;
-	while(command[element] != '\0'){
+	while(command[element]){
 		if(command[element] >= 'A' && command[element] <= 'Z'){
 			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] + 32)){
 				element = 0;
