@@ -71,7 +71,14 @@ static bool createWindows(void){
 				if(width > 0 && height > 0){
 					x += monitorInfo[currentMonitor].x;
 					y += monitorInfo[currentMonitor].y;
-					topLevelWindowArray[currentMonitor] = XCreateSimpleWindow(display, rootWindow, x, y, width, height, border, borderColor, backgroundColor);
+					XVisualInfo visualInfo;
+					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
+					XSetWindowAttributes windowAttributes = {
+						.background_pixel = backgroundColor,
+						.border_pixel = borderColor,
+						.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
+					};
+					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
 					value = 1;
 				}
 			}
