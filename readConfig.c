@@ -1335,7 +1335,7 @@ static bool isVariable(const char *const restrict variable, const char *const re
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
 	unsigned int currentCharacter = 0;
-	while(lineArray[dereferencedElement] != '\n' && variable[currentCharacter] != '\0'){
+	while(lineArray[dereferencedElement] != '\n' && variable[currentCharacter]){
 		if(variable[currentCharacter] >= 'A' && variable[currentCharacter] <= 'Z'){
 			if(!(lineArray[dereferencedElement] == variable[currentCharacter] || lineArray[dereferencedElement] == variable[currentCharacter] + 32)){
 				currentCharacter = 0;
