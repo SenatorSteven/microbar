@@ -12,7 +12,6 @@ extern unsigned int mode;
 extern Display *restrict display;
 extern unsigned int monitorAmount;
 extern FILE *restrict file;
-extern size_t characters;
 extern unsigned int totalBoxAmount;
 extern XFontStruct *restrict fontStruct;
 extern char *restrict line;
