@@ -42,7 +42,6 @@ extern const char *restrict configPath;
 extern Display *restrict display;
 extern const XRRMonitorInfo *restrict monitorInfo;
 extern FILE *restrict file;
-extern size_t characters;
 extern unsigned int totalBoxAmount;
 extern XFontStruct *restrict fontStruct;
 extern char *restrict line;
@@ -64,11 +63,21 @@ bool readConfigScan(const Window *const restrict parentWindow){
 		totalBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		char *fontName = NULL;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -235,10 +244,20 @@ bool readConfigTopLevelWindow(const Window *const restrict parentWindow, int *co
 		*menuAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -412,11 +431,21 @@ bool readConfigMenuWindow(const Window *const restrict parentWindow, const unsig
 		*boxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -593,12 +622,22 @@ bool readConfigBoxWindow(const Window *const restrict parentWindow, const unsign
 		*innerBoxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -772,13 +811,23 @@ bool readConfigInnerBoxWindow(const Window *const restrict parentWindow, const u
 		*backgroundColor = 0x00000000;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int menuAmountRead = 0;
 		unsigned int boxAmountRead = 0;
 		unsigned int innerBoxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -926,11 +975,21 @@ bool readConfigTextCommands(const Window *const restrict window, const unsigned 
 		*drawableCommandPointerArray = NULL;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
@@ -1066,12 +1125,22 @@ bool readConfigButton(const Window *const restrict window, const unsigned int *c
 	if((file = getConfigFile())){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
+		char characterRead;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
 		unsigned int button = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			characterRead = '\0';
 			element = 0;
-			getline((char **)&line, &characters, file);
+			while(characterRead != '\n'){
+				characterRead = fgetc(file);
+				if(element < DefaultCharactersCount){
+					line[element] = characterRead;
+					++element;
+				}
+			}
+			line[element] = '\0';
+			element = 0;
 			pushSpaces(line, &element);
 			if(!isVariable("#", line, &element)){
 				if(!(hasReadVariable & MenuPosition)){
