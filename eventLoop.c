@@ -270,14 +270,17 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 	if(fontStruct){
 		system(systemCommandArray);
 		if((file = fopen(drawableCommandPathArray, "r"))){
-			getline((char **)&line, &characters, file);
-			fclose(file);
-			unsigned int lineLength = 0;
-			while(line[lineLength] != '\0'){
-				++lineLength;
+			unsigned int length = 0;
+			while(length < DefaultCharactersCount){
+				line[length] = fgetc(file);
+				if(line[length] == '\n' || feof(file)){
+					line[length] = '\0';
+					break;
+				}
+				++length;
 			}
-			if(lineLength > 1){
-				--lineLength;
+			fclose(file);
+			if(length > 0){
 				GC gc;
 				{
 					XGCValues gcValues = {
@@ -292,7 +295,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 					XCharStruct charStruct;
 					{
 						int direction;
-						XTextExtents(fontStruct, drawableCommand2DRemappedArray, lineLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
+						XTextExtents(fontStruct, drawableCommand2DRemappedArray, length, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
 					}
 					XWindowAttributes windowAttributes;
 					XGetWindowAttributes(display, *box, &windowAttributes);
@@ -304,7 +307,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 					y /= 2;
 				}
 				XClearWindow(display, *box);
-				XDrawString(display, *box, gc, x, y, line, lineLength);
+				XDrawString(display, *box, gc, x, y, line, length);
 				XFreeGC(display, gc);
 			}
 		}else{
