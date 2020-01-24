@@ -11,7 +11,6 @@ Display *restrict display;
 unsigned int monitorAmount;
 const XRRMonitorInfo *restrict monitorInfo;
 FILE *restrict file;
-size_t characters = DefaultCharactersCount;
 unsigned int totalBoxAmount;
 XFontStruct *restrict fontStruct;
 static char fileBuffer[DefaultCharactersCount];
