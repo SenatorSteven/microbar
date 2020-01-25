@@ -184,11 +184,15 @@ static bool createWindows(void){
 	return value;
 }
 static void setTopLevelWindowProperties(void){
+	unsigned int programNameLength = 0;
+	while(programName[programNameLength] != '\0'){
+		++programNameLength;
+	}
 	XTextProperty textProperty = {
 		.value = (unsigned char *)programName,
 		.encoding = XA_STRING,
 		.format = 8,
-		.nitems = 8
+		.nitems = programNameLength
 	};
 	XWindowAttributes windowAttributes;
 	XSizeHints sizeHints = {
@@ -231,8 +235,8 @@ static void setTopLevelWindowProperties(void){
 		XSetWMNormalHints(display, topLevelWindowArray[currentMonitor], &sizeHints);
 		XSetWMHints(display, topLevelWindowArray[currentMonitor], &WMHints);
 		XSetClassHint(display, topLevelWindowArray[currentMonitor], &classHint);
-		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, 8);
-		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, 8);
+		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
+		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
 		data[0] = 0xFFFFFFFF;
 		data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
 		data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
