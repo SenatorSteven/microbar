@@ -3,17 +3,17 @@
 #include <X11/extensions/Xrandr.h>
 #include "headers/defines.h"
 
-const char *restrict programName;
-const char *restrict configPath;
-const char *restrict workplacePath;
+const char *programName;
+const char *configPath;
+const char *workplacePath;
 unsigned int mode = ModeContinue;
-Display *restrict display;
+Display *display;
 unsigned int monitorAmount;
-const XRRMonitorInfo *restrict monitorInfo;
-FILE *restrict file;
+const XRRMonitorInfo *monitorInfo;
+FILE *file;
 unsigned int totalBoxAmount;
-XFontStruct *restrict fontStruct;
+XFontStruct *fontStruct;
 static char fileBuffer[DefaultCharactersCount];
-char *restrict line = fileBuffer;
-Window *restrict topLevelWindowArray;
+char *line = fileBuffer;
+Window *topLevelWindowArray;
 unsigned int currentMonitor;
