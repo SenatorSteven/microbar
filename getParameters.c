@@ -8,13 +8,13 @@
 #define HelpPosition /*------*/ (1 << 2)
 #define ExitPosition /*------*/ (1 << 3)
 
-extern const char *restrict programName;
-extern const char *restrict configPath;
-extern const char *restrict workplacePath;
+extern const char *programName;
+extern const char *configPath;
+extern const char *workplacePath;
 
-static bool isArgument(const char *const restrict argument, const char *const restrict argumentArray);
+static bool isArgument(const char *const argument, const char *const argumentArray);
 
-bool getParameters(const unsigned int *const restrict argumentCount, const char *const restrict *const restrict argumentVector){
+bool getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector){
 	const unsigned int dereferencedArgumentCount = *argumentCount;
 	bool value = 0;
 	programName = argumentVector[0];
@@ -115,7 +115,7 @@ bool getParameters(const unsigned int *const restrict argumentCount, const char 
 	}
 	return value;
 }
-static bool isArgument(const char *const restrict argument, const char *const restrict argumentArray){
+static bool isArgument(const char *const argument, const char *const argumentArray){
 	bool value = 0;
 	unsigned int element = 0;
 	while(argument[element]){
