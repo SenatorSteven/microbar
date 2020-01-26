@@ -7,22 +7,22 @@
 #include "headers/readConfig.h"
 #include "headers/eventLoop.h"
 
-extern const char *restrict programName;
-extern const char *restrict configPath;
-extern const char *restrict workplacePath;
+extern const char *programName;
+extern const char *configPath;
+extern const char *workplacePath;
 extern unsigned int mode;
-extern Display *restrict display;
+extern Display *display;
 extern unsigned int monitorAmount;
-extern const XRRMonitorInfo *restrict monitorInfo;
-extern XFontStruct *restrict fontStruct;
-extern Window *restrict topLevelWindowArray;
+extern const XRRMonitorInfo *monitorInfo;
+extern XFontStruct *fontStruct;
+extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
 static bool createWindows(void);
 static void setTopLevelWindowProperties(void);
 static void cleanup(void);
 
-int main(const int argumentCount, const char *const restrict *const restrict argumentVector){
+int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
 		while(mode == ModeContinue || mode == ModeRestart){
 			mode = ModeContinue;
