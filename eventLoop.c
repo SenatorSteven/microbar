@@ -5,22 +5,22 @@
 #include "headers/readConfig.h"
 #include "headers/defines.h"
 
-extern const char *restrict programName;
-extern const char *restrict configPath;
-extern const char *restrict workplacePath;
+extern const char *programName;
+extern const char *configPath;
+extern const char *workplacePath;
 extern unsigned int mode;
-extern Display *restrict display;
+extern Display *display;
 extern unsigned int monitorAmount;
-extern FILE *restrict file;
+extern FILE *file;
 extern unsigned int totalBoxAmount;
-extern XFontStruct *restrict fontStruct;
-extern char *restrict line;
-extern Window *restrict topLevelWindowArray;
+extern XFontStruct *fontStruct;
+extern char *line;
+extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
-static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor);
-static bool isCommand(const char *const restrict command, const char *const restrict commandArray);
-static void onExpose(const Window *const restrict topLevelWindow, const Window *const restrict boxArray, const char *const restrict text2DRemappedArray, const unsigned int *const restrict textMaxWordLength, const bytes4 *const restrict textColorArray);
+static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor);
+static bool isCommand(const char *const command, const char *const commandArray);
+static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray);
 
 void eventLoop(void){
 	unsigned int currentBox;
@@ -265,7 +265,7 @@ void eventLoop(void){
 	}
 	return;
 }
-static void drawCommand(const Window *const restrict topLevelWindow, const char *const restrict systemCommandArray, const char *const restrict drawableCommandPathArray, const Window *const restrict box, const char *const restrict drawableCommand2DRemappedArray, const bytes4 *const restrict textColor){
+static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor){
 	if(fontStruct){
 		system(systemCommandArray);
 		if((file = fopen(drawableCommandPathArray, "r"))){
@@ -315,7 +315,7 @@ static void drawCommand(const Window *const restrict topLevelWindow, const char 
 	}
 	return;
 }
-static bool isCommand(const char *const restrict command, const char *const restrict commandArray){
+static bool isCommand(const char *const command, const char *const commandArray){
 	bool value = 0;
 	unsigned int element = 0;
 	while(command[element]){
@@ -342,7 +342,7 @@ static bool isCommand(const char *const restrict command, const char *const rest
 	}
 	return value;
 }
-static void onExpose(const Window *const restrict topLevelWindow, const Window *const restrict boxArray, const char *const restrict text2DRemappedArray, const unsigned int *const restrict textMaxWordLength, const bytes4 *const restrict textColorArray){
+static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
 	if(totalBoxAmount > 0){
 		if(fontStruct){
 			GC gc;
