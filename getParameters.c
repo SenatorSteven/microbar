@@ -56,7 +56,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
-							fprintf(stdout, "%s# if not specified, workspace directory will be the directory of config\n", Tab);
+							fprintf(stdout, "%s# if not specified, workplace directory will be the directory of config\n", Tab);
 							fprintf(stdout, "%s# environment variables may be used\n", Tab);
 							hasReadVariable |= HelpPosition;
 							break;
@@ -66,10 +66,11 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 							break;
 						}else{
 							workplacePath = (char *)argumentVector[currentArgument];
-							if((workplacePath = realpath(workplacePath, NULL))){
+							if(realpath(workplacePath, NULL)){
 								continue;
 							}else{
-								fprintf(stderr, "%s: workplace value is not valid\n", programName);
+								fprintf(stderr, "%s: \"%s\" workplace value is not valid\n", programName, workplacePath);
+								workplacePath = NULL;
 								hasReadVariable |= ExitPosition;
 								break;
 							}
@@ -81,15 +82,13 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 					}
 				}
 			}
-			if(!(hasReadVariable & HelpPosition)){
-				if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
-					fprintf(stdout, "%s: usage: %s [parameters] or %s [parameter] [--help]\n", programName, programName, programName);
-					fprintf(stdout, "%s[-h], [--help]     %sdisplay this message\n", Tab, Tab);
-					fprintf(stdout, "%s[-c], [--config]   %sspecify path to config, necessary\n", Tab, Tab);
-					fprintf(stdout, "%s[-w], [--workplace]%sspecify path to directory used for temporary files, optional\n", Tab, Tab);
-					hasReadVariable |= HelpPosition;
-					break;
-				}
+			if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
+				fprintf(stdout, "%s: usage: %s [parameters] or %s [parameter] [--help]\n", programName, programName, programName);
+				fprintf(stdout, "%s[-h], [--help]     %sdisplay this message\n", Tab, Tab);
+				fprintf(stdout, "%s[-c], [--config]   %sspecify path to config, necessary\n", Tab, Tab);
+				fprintf(stdout, "%s[-w], [--workplace]%sspecify path to directory used for temporary files, optional\n", Tab, Tab);
+				hasReadVariable |= HelpPosition;
+				break;
 			}
 			if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
 				fprintf(stderr, "%s: the config parameter has already been specified\n", programName);
