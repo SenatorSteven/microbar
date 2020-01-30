@@ -38,7 +38,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 							hasReadVariable |= ExitPosition;
 							break;
 						}else{
-							configPath = (char *)argumentVector[currentArgument];
+							configPath = argumentVector[currentArgument];
 							continue;
 						}
 					}else{
@@ -65,7 +65,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 							hasReadVariable |= ExitPosition;
 							break;
 						}else{
-							workplacePath = (char *)argumentVector[currentArgument];
+							workplacePath = argumentVector[currentArgument];
 							if(realpath(workplacePath, NULL)){
 								continue;
 							}else{
