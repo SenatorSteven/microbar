@@ -37,7 +37,6 @@ const XRRMonitorInfo *monitorInfo;
 FILE *file;
 unsigned int totalBoxAmount;
 XFontStruct *fontStruct;
-static char fileBuffer[DefaultCharactersCount];
-char *line = fileBuffer;
+char line[DefaultCharactersCount];
 Window *topLevelWindowArray;
 unsigned int currentMonitor;
