@@ -38,7 +38,7 @@ extern unsigned int monitorAmount;
 extern FILE *file;
 extern unsigned int totalBoxAmount;
 extern XFontStruct *fontStruct;
-extern char *line;
+extern char line[DefaultCharactersCount];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
