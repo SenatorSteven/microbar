@@ -69,7 +69,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 				XCloseDisplay(display);
 			}else{
 				fprintf(stderr, "%s: could not connect to server\n", programName);
-				break;
+				mode = ModeExit;
 			}
 		}
 	}
