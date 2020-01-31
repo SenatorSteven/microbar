@@ -68,7 +68,7 @@ extern const XRRMonitorInfo *monitorInfo;
 extern FILE *file;
 extern unsigned int totalBoxAmount;
 extern XFontStruct *fontStruct;
-extern char *line;
+extern char line[DefaultCharactersCount];
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
