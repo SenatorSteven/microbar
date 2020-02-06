@@ -1370,10 +1370,10 @@ static bool getLine(void){
 			++element;
 		}
 	}
+	line[element] = '\0';
 	if(!feof(file)){
 		value = 1;
 	}
-	line[element] = '\0';
 	return value;
 }
 static bool pushSpaces(unsigned int *const element){
