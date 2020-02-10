@@ -1620,7 +1620,7 @@ static bytes4 getARGB(unsigned int *const element){
 static bool grabKey(const Window *const window, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
-	unsigned int key = None;
+	unsigned int key = AnyKey;
 	int masks = None;
 	unsigned int lookingForValue = 1;
 	while(line[dereferencedElement] != '\n'){
@@ -1662,7 +1662,7 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 			}
 		}
 	}
-	if(key != None){
+	if(key != AnyKey){
 		*element = dereferencedElement;
 		XGrabKey(display, key, masks, *window, True, GrabModeAsync, GrabModeAsync);
 		value = 1;
