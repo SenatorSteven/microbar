@@ -78,7 +78,7 @@ static bool isVariable(const char *const variableArray, unsigned int *const elem
 static unsigned int getUnsignedDecimalNumber(const Window *const window, const unsigned int *const currentLine, unsigned int *const element);
 static int getDecimalNumber(const Window *const window, unsigned int *const element);
 static bytes4 getARGB(unsigned int *const element);
-static void grabKey(const Window *const window, const unsigned int *const currentLine, unsigned int *const element);
+static bool grabKey(const Window *const window, unsigned int *const element);
 static char *getText(unsigned int *const element);
 static void printLineError(const unsigned int *const currentLine);
 
@@ -99,7 +99,7 @@ bool readConfigScan(const Window *const parentWindow){
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -110,18 +110,18 @@ bool readConfigScan(const Window *const parentWindow){
 						}
 					}
 					if(!(hasReadVariable & HideKeyPosition)){
-						if(isVariable("HideKey", &element)){
+						if(isVariable("hideKey", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								grabKey(parentWindow, &currentLine, &element);
+								grabKey(parentWindow, &element);
 								hasReadVariable |= HideKeyPosition;
 							}
 							continue;
 						}
 					}
 					if(!(hasReadVariable & FontPosition)){
-						if(isVariable("Font", &element)){
+						if(isVariable("font", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -131,31 +131,31 @@ bool readConfigScan(const Window *const parentWindow){
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= MenuPosition;
 						}
 						continue;
 					}
-					if(!isVariable("Lines",                     &element) &&
-					   !isVariable("X",                         &element) &&
-					   !isVariable("Y",                         &element) &&
-					   !isVariable("Width",                     &element) &&
-					   !isVariable("Height",                    &element) &&
-					   !isVariable("Border",                    &element) &&
-					   !isVariable("BorderColor",               &element) &&
-					   !isVariable("BackgroundColor",           &element) &&
-					   !isVariable("GlobalMenuBorderColor",     &element) &&
-					   !isVariable("GlobalMenuBackgroundColor", &element) &&
-					   !isVariable("HideKey",                   &element) &&
-					   !isVariable("Menu",                      &element) &&
+					if(!isVariable("lines",                     &element) &&
+					   !isVariable("x",                         &element) &&
+					   !isVariable("y",                         &element) &&
+					   !isVariable("width",                     &element) &&
+					   !isVariable("height",                    &element) &&
+					   !isVariable("border",                    &element) &&
+					   !isVariable("borderColor",               &element) &&
+					   !isVariable("backgroundColor",           &element) &&
+					   !isVariable("globalMenuBorderColor",     &element) &&
+					   !isVariable("globalMenuBackgroundColor", &element) &&
+					   !isVariable("hideKey",                   &element) &&
+					   !isVariable("menu",                      &element) &&
 					   !isVariable("}",                         &element)){
 						printLineError(&currentLine);
 						continue;
 					}
 				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							++totalBoxAmount;
@@ -167,23 +167,23 @@ bool readConfigScan(const Window *const parentWindow){
 						hasReadVariable ^= MenuPosition;
 						continue;
 					}
-					if(!isVariable("X",                        &element) &&
-					   !isVariable("Y",                        &element) &&
-					   !isVariable("Width",                    &element) &&
-					   !isVariable("Height",                   &element) &&
-					   !isVariable("Border",                   &element) &&
-					   !isVariable("BorderColor",              &element) &&
-					   !isVariable("BackgroundColor",          &element) &&
-					   !isVariable("GlobalBoxBorderColor",     &element) &&
-					   !isVariable("GlobalBoxBackgroundColor", &element) &&
-					   !isVariable("GlobalTextColor",          &element) &&
-					   !isVariable("Box",                      &element) &&
+					if(!isVariable("x",                        &element) &&
+					   !isVariable("y",                        &element) &&
+					   !isVariable("width",                    &element) &&
+					   !isVariable("height",                   &element) &&
+					   !isVariable("border",                   &element) &&
+					   !isVariable("borderColor",              &element) &&
+					   !isVariable("backgroundColor",          &element) &&
+					   !isVariable("globalBoxBorderColor",     &element) &&
+					   !isVariable("globalBoxBackgroundColor", &element) &&
+					   !isVariable("globalTextColor",          &element) &&
+					   !isVariable("box",                      &element) &&
 					   !isVariable("}",                        &element)){
 						printLineError(&currentLine);
 						continue;
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -194,19 +194,19 @@ bool readConfigScan(const Window *const parentWindow){
 						hasReadVariable ^= BoxPosition;
 						continue;
 					}
-					if(!isVariable("X",               &element) &&
-					   !isVariable("Y",               &element) &&
-					   !isVariable("Width",           &element) &&
-					   !isVariable("Height",          &element) &&
-					   !isVariable("Border",          &element) &&
-					   !isVariable("BorderColor",     &element) &&
-					   !isVariable("BackgroundColor", &element) &&
-					   !isVariable("Text",            &element) &&
-					   !isVariable("TextColor",       &element) &&
-					   !isVariable("Command",         &element) &&
-					   !isVariable("DrawableCommand", &element) &&
-					   !isVariable("Button",          &element) &&
-					   !isVariable("InnerBox",        &element) &&
+					if(!isVariable("x",               &element) &&
+					   !isVariable("y",               &element) &&
+					   !isVariable("width",           &element) &&
+					   !isVariable("height",          &element) &&
+					   !isVariable("border",          &element) &&
+					   !isVariable("borderColor",     &element) &&
+					   !isVariable("backgroundColor", &element) &&
+					   !isVariable("text",            &element) &&
+					   !isVariable("textColor",       &element) &&
+					   !isVariable("command",         &element) &&
+					   !isVariable("drawableCommand", &element) &&
+					   !isVariable("button",          &element) &&
+					   !isVariable("innerBox",        &element) &&
 					   !isVariable("}",               &element)){
 						printLineError(&currentLine);
 						continue;
@@ -216,13 +216,13 @@ bool readConfigScan(const Window *const parentWindow){
 						hasReadVariable ^= InnerBoxPosition;
 						continue;
 					}
-					if(!isVariable("X",               &element) &&
-					   !isVariable("Y",               &element) &&
-					   !isVariable("Width",           &element) &&
-					   !isVariable("Height",          &element) &&
-					   !isVariable("Border",          &element) &&
-					   !isVariable("BorderColor",     &element) &&
-					   !isVariable("BackgroundColor", &element) &&
+					if(!isVariable("x",               &element) &&
+					   !isVariable("y",               &element) &&
+					   !isVariable("width",           &element) &&
+					   !isVariable("height",          &element) &&
+					   !isVariable("border",          &element) &&
+					   !isVariable("borderColor",     &element) &&
+					   !isVariable("backgroundColor", &element) &&
 					   !isVariable("}",               &element)){
 						printLineError(&currentLine);
 						continue;
@@ -271,7 +271,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -282,7 +282,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & XPosition)){
-						if(isVariable("X", &element)){
+						if(isVariable("x", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -293,7 +293,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & YPosition)){
-						if(isVariable("Y", &element)){
+						if(isVariable("y", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -304,7 +304,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & WidthPosition)){
-						if(isVariable("Width", &element)){
+						if(isVariable("width", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -315,7 +315,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & HeightPosition)){
-						if(isVariable("Height", &element)){
+						if(isVariable("height", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -326,7 +326,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & BorderColorPosition)){
-						if(isVariable("BorderColor", &element)){
+						if(isVariable("borderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -337,7 +337,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & BorderPosition)){
-						if(isVariable("Border", &element)){
+						if(isVariable("border", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -348,7 +348,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & BackgroundColorPosition)){
-						if(isVariable("BackgroundColor", &element)){
+						if(isVariable("backgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -359,7 +359,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & GlobalMenuBorderColorPosition)){
-						if(isVariable("GlobalMenuBorderColor", &element)){
+						if(isVariable("globalMenuBorderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -370,7 +370,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						}
 					}
 					if(!(hasReadVariable & GlobalMenuBackgroundColorPosition)){
-						if(isVariable("GlobalMenuBackgroundColor", &element)){
+						if(isVariable("globalMenuBackgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -380,7 +380,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							++(*menuAmount);
@@ -389,7 +389,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						continue;
 					}
 				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= BoxPosition;
@@ -401,7 +401,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 						continue;
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -451,7 +451,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -461,7 +461,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							if(menuAmountRead == *currentMenu){
@@ -474,7 +474,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 					}
 				}else if(!(hasReadVariable & BoxPosition)){
 					if(!(hasReadVariable & XPosition)){
-						if(isVariable("X", &element)){
+						if(isVariable("x", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -485,7 +485,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & YPosition)){
-						if(isVariable("Y", &element)){
+						if(isVariable("y", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -496,7 +496,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & WidthPosition)){
-						if(isVariable("Width", &element)){
+						if(isVariable("width", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -507,7 +507,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & HeightPosition)){
-						if(isVariable("Height", &element)){
+						if(isVariable("height", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -518,7 +518,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & BorderColorPosition)){
-						if(isVariable("BorderColor", &element)){
+						if(isVariable("borderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -529,7 +529,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & BorderPosition)){
-						if(isVariable("Border", &element)){
+						if(isVariable("border", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -540,7 +540,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & BackgroundColorPosition)){
-						if(isVariable("BackgroundColor", &element)){
+						if(isVariable("backgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -551,7 +551,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & GlobalBoxBorderColorPosition)){
-						if(isVariable("GlobalBoxBorderColor", &element)){
+						if(isVariable("globalBoxBorderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -562,7 +562,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						}
 					}
 					if(!(hasReadVariable & GlobalBoxBackgroundColorPosition)){
-						if(isVariable("GlobalBoxBackgroundColor", &element)){
+						if(isVariable("globalBoxBackgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -572,7 +572,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 							continue;
 						}
 					}
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							++(*boxAmount);
@@ -584,7 +584,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 						break;
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -635,7 +635,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -645,7 +645,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							if(menuAmountRead == *currentMenu){
@@ -657,7 +657,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						continue;
 					}
 				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							if(boxAmountRead == *currentBox){
@@ -670,7 +670,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
 					if(!(hasReadVariable & XPosition)){
-						if(isVariable("X", &element)){
+						if(isVariable("x", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -681,7 +681,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & YPosition)){
-						if(isVariable("Y", &element)){
+						if(isVariable("y", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -692,7 +692,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & WidthPosition)){
-						if(isVariable("Width", &element)){
+						if(isVariable("width", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -703,7 +703,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & HeightPosition)){
-						if(isVariable("Height", &element)){
+						if(isVariable("height", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -714,7 +714,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & BorderColorPosition)){
-						if(isVariable("BorderColor", &element)){
+						if(isVariable("borderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -725,7 +725,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & BorderPosition)){
-						if(isVariable("Border", &element)){
+						if(isVariable("border", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -736,7 +736,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & BackgroundColorPosition)){
-						if(isVariable("BackgroundColor", &element)){
+						if(isVariable("backgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -747,7 +747,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & GlobalInnerBoxBorderColorPosition)){
-						if(isVariable("GlobalInnerBoxBorderColor", &element)){
+						if(isVariable("globalInnerBoxBorderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -758,7 +758,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 						}
 					}
 					if(!(hasReadVariable & GlobalInnerBoxBackgroundColorPosition)){
-						if(isVariable("GlobalInnerBoxBackgroundColor", &element)){
+						if(isVariable("globalInnerBoxBackgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -768,7 +768,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 							continue;
 						}
 					}
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							++(*innerBoxAmount);
@@ -817,7 +817,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -827,7 +827,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							if(menuAmountRead == *currentMenu){
@@ -839,7 +839,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						continue;
 					}
 				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							if(boxAmountRead == *currentBox){
@@ -851,7 +851,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						continue;
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							if(innerBoxAmountRead == *currentInnerBox){
@@ -864,7 +864,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 					}
 				}else{
 					if(!(hasReadVariable & XPosition)){
-						if(isVariable("X", &element)){
+						if(isVariable("x", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -875,7 +875,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						}
 					}
 					if(!(hasReadVariable & YPosition)){
-						if(isVariable("Y", &element)){
+						if(isVariable("y", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -886,7 +886,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						}
 					}
 					if(!(hasReadVariable & WidthPosition)){
-						if(isVariable("Width", &element)){
+						if(isVariable("width", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -897,7 +897,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						}
 					}
 					if(!(hasReadVariable & HeightPosition)){
-						if(isVariable("Height", &element)){
+						if(isVariable("height", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -908,7 +908,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						}
 					}
 					if(!(hasReadVariable & BorderColorPosition)){
-						if(isVariable("BorderColor", &element)){
+						if(isVariable("borderColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -919,7 +919,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						}
 					}
 					if(!(hasReadVariable & BorderPosition)){
-						if(isVariable("Border", &element)){
+						if(isVariable("border", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -930,7 +930,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 						}
 					}
 					if(!(hasReadVariable & BackgroundColorPosition)){
-						if(isVariable("BackgroundColor", &element)){
+						if(isVariable("backgroundColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -971,7 +971,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -981,7 +981,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= MenuPosition;
@@ -990,7 +990,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 					}
 				}else if(boxAmountRead <= *currentBox){
 					if(!(hasReadVariable & GlobalTextColorPosition)){
-						if(isVariable("GlobalTextColor", &element)){
+						if(isVariable("globalTextColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1000,7 +1000,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 							continue;
 						}
 					}
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							++boxAmountRead;
@@ -1008,7 +1008,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 						}
 						continue;
 					}
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -1031,7 +1031,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
 					if(!(hasReadVariable & TextPosition)){
-						if(isVariable("Text", &element)){
+						if(isVariable("text", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1042,7 +1042,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 						}
 					}
 					if(!(hasReadVariable & TextColorPosition)){
-						if(isVariable("TextColor", &element)){
+						if(isVariable("textColor", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1053,7 +1053,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 						}
 					}
 					if(!(hasReadVariable & CommandPosition)){
-						if(isVariable("Command", &element)){
+						if(isVariable("command", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1064,7 +1064,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 						}
 					}
 					if(!(hasReadVariable & DrawableCommandPosition)){
-						if(isVariable("DrawableCommand", &element)){
+						if(isVariable("drawableCommand", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1074,7 +1074,7 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 							continue;
 						}
 					}
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -1114,7 +1114,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 			if(!isVariable("#", &element)){
 				if(!(hasReadVariable & MenuPosition)){
 					if(!(hasReadVariable & LinesPosition)){
-						if(isVariable("Lines", &element)){
+						if(isVariable("lines", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1124,7 +1124,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 							continue;
 						}
 					}
-					if(isVariable("Menu", &element)){
+					if(isVariable("menu", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= MenuPosition;
@@ -1132,7 +1132,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 						continue;
 					}
 				}else if(boxAmountRead <= *currentBox){
-					if(isVariable("Box", &element)){
+					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							++boxAmountRead;
@@ -1140,7 +1140,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 						}
 						continue;
 					}
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -1159,7 +1159,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 					}
 				}else if(!(hasReadVariable & InnerBoxPosition)){
 					if(!(hasReadVariable & ButtonPosition)){
-						if(isVariable("Button", &element)){
+						if(isVariable("button", &element)){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
@@ -1169,7 +1169,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 							continue;
 						}
 					}
-					if(isVariable("InnerBox", &element)){
+					if(isVariable("innerBox", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
 							hasReadVariable |= InnerBoxPosition;
@@ -1617,19 +1617,22 @@ static bytes4 getARGB(unsigned int *const element){
 	}
 	return color;
 }
-static void grabKey(const Window *const window, const unsigned int *const currentLine, unsigned int *const element){
+static bool grabKey(const Window *const window, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
-	unsigned int key = 0;
-	int masks = 0;
+	bool value = 0;
+	unsigned int key = None;
+	int masks = None;
 	unsigned int lookingForValue = 1;
 	while(line[dereferencedElement] != '\n'){
 		pushSpaces(&dereferencedElement);
 		if(lookingForValue){
 			if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
-				key = getUnsignedDecimalNumber(window, currentLine, &dereferencedElement);
-				if((line[dereferencedElement] >= 'A' && line[dereferencedElement] <= 'Z') || (line[dereferencedElement] >= 'a' && line[dereferencedElement] <= 'z')){
-					--dereferencedElement;
-				}
+				do{
+					key *= 10;
+					key += line[dereferencedElement];
+					key -= 48;
+					++dereferencedElement;
+				}while(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9');
 			}else if(isVariable("Shift", &dereferencedElement)){
 				masks |= ShiftMask;
 			}else if(isVariable("Lock", &dereferencedElement)){
@@ -1659,9 +1662,12 @@ static void grabKey(const Window *const window, const unsigned int *const curren
 			}
 		}
 	}
-	*element = dereferencedElement;
-	XGrabKey(display, key, masks, *window, True, GrabModeAsync, GrabModeAsync);
-	return;
+	if(key != None){
+		*element = dereferencedElement;
+		XGrabKey(display, key, masks, *window, True, GrabModeAsync, GrabModeAsync);
+		value = 1;
+	}
+	return value;
 }
 static char *getText(unsigned int *const element){
 	unsigned int dereferencedElement = *element;
