@@ -80,7 +80,7 @@ static int getDecimalNumber(const Window *const window, unsigned int *const elem
 static bytes4 getARGB(unsigned int *const element);
 static bool grabKey(const Window *const window, unsigned int *const element);
 static char *getText(unsigned int *const element);
-static void printLineError(const unsigned int *const currentLine);
+static bool printLineError(const unsigned int *const currentLine);
 
 bool readConfigScan(const Window *const parentWindow){
 	bool value = 0;
@@ -1620,17 +1620,17 @@ static bytes4 getARGB(unsigned int *const element){
 static bool grabKey(const Window *const window, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
-	unsigned int key = AnyKey;
-	int masks = None;
+	unsigned int keycode = AnyKey;
+	bytes4 masks = None;
 	unsigned int lookingForValue = 1;
 	while(line[dereferencedElement] != '\n'){
 		pushSpaces(&dereferencedElement);
 		if(lookingForValue){
 			if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
 				do{
-					key *= 10;
-					key += line[dereferencedElement];
-					key -= 48;
+					keycode *= 10;
+					keycode += line[dereferencedElement];
+					keycode -= 48;
 					++dereferencedElement;
 				}while(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9');
 			}else if(isVariable("Shift", &dereferencedElement)){
@@ -1662,9 +1662,9 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 			}
 		}
 	}
-	if(key != AnyKey){
+	if(keycode != AnyKey){
 		*element = dereferencedElement;
-		XGrabKey(display, key, masks, *window, True, GrabModeAsync, GrabModeAsync);
+		XGrabKey(display, keycode, masks, *window, True, GrabModeAsync, GrabModeAsync);
 		value = 1;
 	}
 	return value;
@@ -1699,7 +1699,8 @@ static char *getText(unsigned int *const element){
 	}
 	return text;
 }
-static void printLineError(const unsigned int *const currentLine){
+static bool printLineError(const unsigned int *const currentLine){
+	bool value = 0;
 	if(line[0] != '\n'){
 		unsigned int element = 0;
 		fprintf(stderr, "%s: line %u: \"", programName, *currentLine);
@@ -1708,6 +1709,7 @@ static void printLineError(const unsigned int *const currentLine){
 			++element;
 		}
 		fprintf(stderr, "\" not recognized as an internal variable\n");
+		value = 1;
 	}
-	return;
+	return value;
 }
