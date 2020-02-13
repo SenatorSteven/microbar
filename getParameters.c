@@ -50,7 +50,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
 					hasReadVariable |= ConfigPosition;
 					++currentArgument;
-					if(argumentVector[currentArgument]){
+					if(currentArgument < dereferencedArgumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n", Tab);
@@ -76,7 +76,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 				if(isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){
 					hasReadVariable |= WorkplacePosition;
 					++currentArgument;
-					if(argumentVector[currentArgument]){
+					if(currentArgument < dereferencedArgumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
