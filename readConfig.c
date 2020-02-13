@@ -1676,14 +1676,16 @@ static char *getText(unsigned int *const element){
 	{
 		const char quotation = line[dereferencedElement];
 		++dereferencedElement;
-		while(line[dereferencedElement + length] != '\n' && line[dereferencedElement + length] != quotation){
+		while(line[dereferencedElement] != quotation && line[dereferencedElement] != '\n' && dereferencedElement < DefaultCharactersCount){
 			++length;
+			++dereferencedElement;
 		}
+		dereferencedElement -= length;
 	}
 	if(length){
 		if((text = (char *)malloc((length + 1) * sizeof(char)))){
 			unsigned int currentCharacter = 0;
-			while(line[dereferencedElement] != '\n' && currentCharacter < length){
+			while(currentCharacter < length){
 				text[currentCharacter] = line[dereferencedElement];
 				++dereferencedElement;
 				++currentCharacter;
