@@ -1359,11 +1359,11 @@ static FILE *getConfigFile(void){
 }
 static bool getLine(void){
 	bool value = 0;
-	char characterRead = '\0';
+	char characterRead;
 	unsigned int element = 0;
-	while(characterRead != '\n'){
+	for(;;){
 		characterRead = fgetc(file);
-		if(feof(file)){
+		if(characterRead == '\n' || feof(file)){
 			break;
 		}else if(element < DefaultCharactersCount){
 			line[element] = characterRead;
@@ -1371,6 +1371,7 @@ static bool getLine(void){
 		}
 	}
 	line[element] = '\0';
+	++element;
 	if(!feof(file)){
 		value = 1;
 	}
@@ -1379,7 +1380,7 @@ static bool getLine(void){
 static bool pushSpaces(unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
-	while(line[dereferencedElement] != '\n' && (line[dereferencedElement] == ' ' || line[dereferencedElement] == '	')){
+	while(line[dereferencedElement] && (line[dereferencedElement] == ' ' || line[dereferencedElement] == '	')){
 		++dereferencedElement;
 	}
 	if(dereferencedElement > *element){
@@ -1392,7 +1393,7 @@ static bool isVariable(const char *const variable, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
 	unsigned int currentCharacter = 0;
-	while(line[dereferencedElement] != '\n' && variable[currentCharacter]){
+	while(line[dereferencedElement] && variable[currentCharacter]){
 		if(variable[currentCharacter] >= 'A' && variable[currentCharacter] <= 'Z'){
 			if(!(line[dereferencedElement] == variable[currentCharacter] || line[dereferencedElement] == variable[currentCharacter] + 32)){
 				currentCharacter = 0;
@@ -1439,7 +1440,7 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 		windowAttributes.width = monitorInfo[currentMonitor].width;
 		windowAttributes.height = monitorInfo[currentMonitor].height;
 	}
-	while(line[dereferencedElement] != '\n'){
+	while(line[dereferencedElement]){
 		pushSpaces(&dereferencedElement);
 		if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
 			numberRead *= 10;
@@ -1591,7 +1592,7 @@ static bytes4 getARGB(unsigned int *const element){
 		++dereferencedElement;
 	}
 	unsigned int currentCharacter = 0;
-	while(line[dereferencedElement] != '\n' && currentCharacter < 8){
+	while(line[dereferencedElement] && currentCharacter < 8){
 		color *= 16;
 		if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
 			color += line[dereferencedElement];
@@ -1623,7 +1624,7 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 	unsigned int keycode = AnyKey;
 	bytes4 masks = None;
 	unsigned int lookingForValue = 1;
-	while(line[dereferencedElement] != '\n'){
+	while(line[dereferencedElement]){
 		pushSpaces(&dereferencedElement);
 		if(lookingForValue){
 			if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
@@ -1676,7 +1677,7 @@ static char *getText(unsigned int *const element){
 	{
 		const char quotation = line[dereferencedElement];
 		++dereferencedElement;
-		while(line[dereferencedElement] != quotation && line[dereferencedElement] != '\n' && dereferencedElement < DefaultCharactersCount){
+		while(line[dereferencedElement] && line[dereferencedElement] != quotation && dereferencedElement < DefaultCharactersCount){
 			++length;
 			++dereferencedElement;
 		}
@@ -1703,10 +1704,10 @@ static char *getText(unsigned int *const element){
 }
 static bool printLineError(const unsigned int *const currentLine){
 	bool value = 0;
-	if(line[0] != '\n'){
+	if(line[0]){
 		unsigned int element = 0;
 		fprintf(stderr, "%s: line %u: \"", programName, *currentLine);
-		while(line[element] != '\n'){
+		while(line[element]){
 			fprintf(stderr, "%c", line[element]);
 			++element;
 		}
