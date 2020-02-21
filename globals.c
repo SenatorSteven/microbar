@@ -36,7 +36,6 @@ unsigned int monitorAmount;
 const XRRMonitorInfo *monitorInfo;
 FILE *file;
 unsigned int totalBoxAmount;
-XFontStruct *fontStruct;
 char line[DefaultCharactersCount];
 Window *topLevelWindowArray;
 unsigned int currentMonitor;
