@@ -24,6 +24,7 @@ SOFTWARE. */
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <dirent.h>
 #include "headers/defines.h"
 
 #define NoPositions /*-------*/ 0
@@ -36,7 +37,7 @@ extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
 
-static bool isArgument(const char *const argument, const char *const argumentArray);
+static bool isArgument(const char *const argument, const char *const vector);
 
 bool getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector){
 	const unsigned int dereferencedArgumentCount = *argumentCount;
@@ -49,8 +50,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
 					hasReadVariable |= ConfigPosition;
-					++currentArgument;
-					if(currentArgument < dereferencedArgumentCount){
+					if(++currentArgument < dereferencedArgumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n", Tab);
@@ -75,8 +75,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 			if(!(hasReadVariable & WorkplacePosition)){
 				if(isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){
 					hasReadVariable |= WorkplacePosition;
-					++currentArgument;
-					if(currentArgument < dereferencedArgumentCount){
+					if(++currentArgument < dereferencedArgumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
@@ -90,7 +89,9 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 							break;
 						}else{
 							workplacePath = argumentVector[currentArgument];
-							if(realpath(workplacePath, NULL)){
+							DIR *dir = opendir(workplacePath);
+							if(dir){
+								closedir(dir);
 								continue;
 							}else{
 								fprintf(stderr, "%s: \"%s\" workplace value is not valid\n", programName, workplacePath);
@@ -120,6 +121,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 				fprintf(stderr, "%s: the workplace parameter has already been specified\n", programName);
 			}else{
 				fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", programName, argumentVector[currentArgument]);
+				hasReadVariable |= HelpPosition;
 			}
 			hasReadVariable |= ExitPosition;
 			break;
@@ -138,22 +140,22 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 	}
 	return value;
 }
-static bool isArgument(const char *const argument, const char *const argumentArray){
+static bool isArgument(const char *const argument, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
-	while(argument[element]){
+	while(argument[element] || vector[element]){
 		if(argument[element] >= 'A' && argument[element] <= 'Z'){
-			if(!(argumentArray[element] == argument[element] || argumentArray[element] == argument[element] + 32)){
+			if(!(argument[element] == vector[element] || argument[element] == vector[element] - 32)){
 				element = 0;
 				break;
 			}
 		}else if(argument[element] >= 'a' && argument[element] <= 'z'){
-			if(!(argumentArray[element] == argument[element] || argumentArray[element] == argument[element] - 32)){
+			if(!(argument[element] == vector[element] || argument[element] == vector[element] + 32)){
 				element = 0;
 				break;
 			}
 		}else{
-			if(!(argumentArray[element] == argument[element])){
+			if(!(argument[element] == vector[element])){
 				element = 0;
 				break;
 			}
