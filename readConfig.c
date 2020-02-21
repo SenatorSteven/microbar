@@ -44,16 +44,15 @@ SOFTWARE. */
 #define GlobalInnerBoxBorderColorPosition /*-----*/ (1 << 12)
 #define GlobalInnerBoxBackgroundColorPosition /*-*/ (1 << 13)
 #define HideKeyPosition /*-----------------------*/ (1 << 14)
-#define FontPosition /*--------------------------*/ (1 << 15)
-#define TextPosition /*--------------------------*/ (1 << 16)
-#define TextColorPosition /*---------------------*/ (1 << 17)
-#define GlobalTextColorPosition /*---------------*/ (1 << 18)
-#define CommandPosition /*-----------------------*/ (1 << 19)
-#define DrawableCommandPosition /*---------------*/ (1 << 20)
-#define ButtonPosition /*------------------------*/ (1 << 21)
-#define MenuPosition /*--------------------------*/ (1 << 22)
-#define BoxPosition /*---------------------------*/ (1 << 23)
-#define InnerBoxPosition /*----------------------*/ (1 << 24)
+#define TextPosition /*--------------------------*/ (1 << 15)
+#define TextColorPosition /*---------------------*/ (1 << 16)
+#define GlobalTextColorPosition /*---------------*/ (1 << 17)
+#define CommandPosition /*-----------------------*/ (1 << 18)
+#define DrawableCommandPosition /*---------------*/ (1 << 19)
+#define ButtonPosition /*------------------------*/ (1 << 20)
+#define MenuPosition /*--------------------------*/ (1 << 21)
+#define BoxPosition /*---------------------------*/ (1 << 22)
+#define InnerBoxPosition /*----------------------*/ (1 << 23)
 
 #define NoOperation /*---------------------------*/ ((unsigned int)0)
 #define OperationAddition /*---------------------*/ ((unsigned int)1)
@@ -67,7 +66,6 @@ extern Display *display;
 extern const XRRMonitorInfo *monitorInfo;
 extern FILE *file;
 extern unsigned int totalBoxAmount;
-extern XFontStruct *fontStruct;
 extern char line[DefaultCharactersCount];
 extern unsigned int currentMonitor;
 
@@ -89,7 +87,6 @@ bool readConfigScan(const Window *const parentWindow){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		bytes4 hasReadVariable = NoPositions;
-		char *fontName = NULL;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
 				break;
@@ -116,17 +113,6 @@ bool readConfigScan(const Window *const parentWindow){
 								pushSpaces(&element);
 								grabKey(parentWindow, &element);
 								hasReadVariable |= HideKeyPosition;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & FontPosition)){
-						if(isVariable("font", &element)){
-							pushSpaces(&element);
-							if(isVariable("=", &element)){
-								pushSpaces(&element);
-								fontName = getText(&element);
-								hasReadVariable |= FontPosition;
 							}
 							continue;
 						}
@@ -229,17 +215,6 @@ bool readConfigScan(const Window *const parentWindow){
 					}
 				}
 			}
-		}
-		if(fontName){
-			if(!(fontStruct = XLoadQueryFont(display, fontName))){
-				fontStruct = XLoadQueryFont(display, "fixed");
-			}
-			free(fontName);
-		}else{
-			fontStruct = XLoadQueryFont(display, "fixed");
-		}
-		if(!fontStruct){
-			fprintf(stderr, "%s: \n", programName);
 		}
 		fclose(file);
 		value = 1;
@@ -1270,7 +1245,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# extra #\n");
 			fprintf(config, "# # # # #\n\n");
 			fprintf(config, "# lines: default %u\n", DefaultLinesCount);
-			fprintf(config, "# hideKey: modifiers: Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
+			fprintf(config, "# hideKey: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# text: requires quotation\n");
 			fprintf(config, "# command: requires quotation, program commands: restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
@@ -1380,7 +1355,7 @@ static bool getLine(void){
 static bool pushSpaces(unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
-	while(line[dereferencedElement] && (line[dereferencedElement] == ' ' || line[dereferencedElement] == '	')){
+	while(line[dereferencedElement] == ' ' || line[dereferencedElement] == '	'){
 		++dereferencedElement;
 	}
 	if(dereferencedElement > *element){
@@ -1393,19 +1368,19 @@ static bool isVariable(const char *const variable, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
 	unsigned int currentCharacter = 0;
-	while(line[dereferencedElement] && variable[currentCharacter]){
+	while(variable[currentCharacter] && line[dereferencedElement]){
 		if(variable[currentCharacter] >= 'A' && variable[currentCharacter] <= 'Z'){
-			if(!(line[dereferencedElement] == variable[currentCharacter] || line[dereferencedElement] == variable[currentCharacter] + 32)){
+			if(!(variable[currentCharacter] == line[dereferencedElement] || variable[currentCharacter] == line[dereferencedElement] - 32)){
 				currentCharacter = 0;
 				break;
 			}
 		}else if(variable[currentCharacter] >= 'a' && variable[currentCharacter] <= 'z'){
-			if(!(line[dereferencedElement] == variable[currentCharacter] || line[dereferencedElement] == variable[currentCharacter] - 32)){
+			if(!(variable[currentCharacter] == line[dereferencedElement] || variable[currentCharacter] == line[dereferencedElement] + 32)){
 				currentCharacter = 0;
 				break;
 			}
 		}else{
-			if(!(line[dereferencedElement] == variable[currentCharacter])){
+			if(!(variable[currentCharacter] == line[dereferencedElement])){
 				currentCharacter = 0;
 				break;
 			}
@@ -1623,7 +1598,7 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 	bool value = 0;
 	unsigned int keycode = AnyKey;
 	bytes4 masks = None;
-	unsigned int lookingForValue = 1;
+	bool lookingForValue = 1;
 	while(line[dereferencedElement]){
 		pushSpaces(&dereferencedElement);
 		if(lookingForValue){
@@ -1634,6 +1609,8 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 					keycode -= 48;
 					++dereferencedElement;
 				}while(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9');
+			}else if(isVariable("AnyModifier", &dereferencedElement)){
+				masks |= AnyModifier;
 			}else if(isVariable("Shift", &dereferencedElement)){
 				masks |= ShiftMask;
 			}else if(isVariable("Lock", &dereferencedElement)){
