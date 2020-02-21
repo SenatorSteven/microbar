@@ -42,38 +42,64 @@ extern XFontStruct *fontStruct;
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
+static void start(void);
 static bool createWindows(void);
 static void setTopLevelWindowProperties(void);
 static void cleanup(void);
 
 int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
-		while(mode == ModeContinue || mode == ModeRestart){
-			mode = ModeContinue;
-			if((display = XOpenDisplay(NULL))){
-				{
-					const Window rootWindow = XDefaultRootWindow(display);
-					monitorInfo = XRRGetMonitors(display, rootWindow, True, (int *)&monitorAmount);
-					readConfigScan(&rootWindow);
-				}
-				Window topLevelWindow[monitorAmount];
-				topLevelWindowArray = topLevelWindow;
-				if(createWindows()){
-					setTopLevelWindowProperties();
-					eventLoop();
-					cleanup();
-				}else{
-					fprintf(stderr, "%s: could not create windows\n", programName);
-					mode = ModeExit;
-				}
-				XCloseDisplay(display);
-			}else{
-				fprintf(stderr, "%s: could not connect to server\n", programName);
-				mode = ModeExit;
+		if(workplacePath){
+			start();
+		}else{
+			unsigned int workplacePathLength = 0;
+			while(configPath[workplacePathLength] != '\0'){
+				++workplacePathLength;
 			}
+			do{
+				--workplacePathLength;
+			}while(configPath[workplacePathLength] != '/');
+			++workplacePathLength;
+			char _workplacePath[workplacePathLength + 1];
+			{
+				unsigned int element;
+				for(element = 0; element < workplacePathLength; ++element){
+					_workplacePath[element] = configPath[element];
+				}
+				_workplacePath[element] = '\0';
+			}
+			workplacePath = _workplacePath;
+			start();
 		}
 	}
 	return 0;
+}
+static void start(void){
+	while(mode == ModeContinue || mode == ModeRestart){
+		mode = ModeContinue;
+		if((display = XOpenDisplay(NULL))){
+			{
+				const Window rootWindow = XDefaultRootWindow(display);
+				monitorInfo = XRRGetMonitors(display, rootWindow, True, (int *)&monitorAmount);
+				readConfigScan(&rootWindow);
+			}
+			Window topLevelWindow[monitorAmount];
+			topLevelWindowArray = topLevelWindow;
+			if(createWindows()){
+				setTopLevelWindowProperties();
+				eventLoop();
+				cleanup();
+			}else{
+				fprintf(stderr, "%s: could not create windows\n", programName);
+				mode = ModeExit;
+			}
+			XCloseDisplay(display);
+		}else{
+			fprintf(stderr, "%s: could not connect to server\n", programName);
+			mode = ModeExit;
+		}
+	}
+	return;
 }
 static bool createWindows(void){
 	bool value;
@@ -303,9 +329,6 @@ static void setTopLevelWindowProperties(void){
 	return;
 }
 static void cleanup(void){
-	if(fontStruct){
-		XFreeFont(display, fontStruct);
-	}
 	XUngrabKeyboard(display, CurrentTime);
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XUnmapSubwindows(display, topLevelWindowArray[currentMonitor]);
