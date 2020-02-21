@@ -37,7 +37,6 @@ extern Display *display;
 extern unsigned int monitorAmount;
 extern FILE *file;
 extern unsigned int totalBoxAmount;
-extern XFontStruct *fontStruct;
 extern char line[DefaultCharactersCount];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
@@ -123,27 +122,21 @@ void eventLoop(void){
 	}
 	unsigned int drawableCommandPathLength = 0;
 	{
-		if(workplacePath){
-			while(workplacePath[drawableCommandPathLength] != '\0'){
-				++drawableCommandPathLength;
-			}
-		}else{
-			while(configPath[drawableCommandPathLength] != '\0'){
-				++drawableCommandPathLength;
-			}
-			while(configPath[drawableCommandPathLength] != '/'){
-				--drawableCommandPathLength;
-			}
+		while(workplacePath[drawableCommandPathLength] != '\0'){
+			++drawableCommandPathLength;
 		}
-		drawableCommandPathLength += 17;
+		if(workplacePath[drawableCommandPathLength - 1] == '/'){
+			--drawableCommandPathLength;
+		}
+		drawableCommandPathLength += 16;
 	}
-	char drawableCommandPath[drawableCommandPathLength];
+	char drawableCommandPath[drawableCommandPathLength + 1];
 	{
 		unsigned int currentCharacter = 0;
 		{
-			unsigned int lastSlash = drawableCommandPathLength - 17;
-			while(currentCharacter < lastSlash){
-				drawableCommandPath[currentCharacter] = configPath[currentCharacter];
+			const unsigned int lastCharacter = drawableCommandPathLength - 16;
+			while(currentCharacter < lastCharacter){
+				drawableCommandPath[currentCharacter] = workplacePath[currentCharacter];
 				++currentCharacter;
 			}
 		}
@@ -165,6 +158,7 @@ void eventLoop(void){
 		drawableCommandPath[++currentCharacter] = 'd';
 		drawableCommandPath[++currentCharacter] = '\0';
 		drawableCommandMaxWordLength += drawableCommandPathLength;
+		drawableCommandMaxWordLength += 1;
 	}
 	char text2DRemappedArray[totalBoxAmount * textMaxWordLength];
 	char command2DRemappedArray[totalBoxAmount * commandMaxWordLength];
@@ -236,7 +230,7 @@ void eventLoop(void){
 		int rrErrorBase;
 		XRRQueryExtension(display, &rrEventBase, &rrErrorBase);
 	}
-	unsigned int topLevelWindowArrayMapped = 1;
+	bool topLevelWindowArrayMapped = 1;
 	unsigned int commandWordBeginning;
 	for(;;){
 		XNextEvent(display, &event);
@@ -290,71 +284,70 @@ void eventLoop(void){
 	return;
 }
 static void drawCommand(const Window *const topLevelWindow, const char *const systemCommandArray, const char *const drawableCommandPathArray, const Window *const box, const char *const drawableCommand2DRemappedArray, const bytes4 *const textColor){
-	if(fontStruct){
-		system(systemCommandArray);
-		if((file = fopen(drawableCommandPathArray, "r"))){
-			unsigned int length = 0;
-			while(length < DefaultCharactersCount){
-				line[length] = fgetc(file);
-				if(line[length] == '\n' || feof(file)){
-					line[length] = '\0';
-					break;
-				}
+	system(systemCommandArray);
+	if((file = fopen(drawableCommandPathArray, "r"))){
+		unsigned int length = 0;
+		while(length < DefaultCharactersCount){
+			line[length] = fgetc(file);
+			if(line[length] == '\n' || feof(file)){
+				line[length] = '\0';
+				break;
+			}else{
 				++length;
 			}
-			fclose(file);
-			if(length > 0){
-				GC gc;
-				{
-					XGCValues gcValues = {
-						.foreground = *textColor,
-						.subwindow_mode = IncludeInferiors
-					};
-					gc = XCreateGC(display, *topLevelWindow, GCForeground | GCSubwindowMode, &gcValues);
-				}
-				int x;
-				int y;
-				{
-					XCharStruct charStruct;
-					{
-						int direction;
-						XTextExtents(fontStruct, drawableCommand2DRemappedArray, length, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
-					}
-					XWindowAttributes windowAttributes;
-					XGetWindowAttributes(display, *box, &windowAttributes);
-					x = windowAttributes.width;
-					x -= charStruct.width;
-					x /= 2;
-					y = windowAttributes.height;
-					y += charStruct.ascent;
-					y /= 2;
-				}
-				XClearWindow(display, *box);
-				XDrawString(display, *box, gc, x, y, line, length);
-				XFreeGC(display, gc);
-			}
-		}else{
-			fprintf(stderr, "%s: could not read temporary file (drawableCommand)\n", programName);
 		}
+		fclose(file);
+		if(length > 0){
+			GC gc;
+			{
+				XGCValues gcValues = {
+					.foreground = *textColor,
+					.subwindow_mode = IncludeInferiors
+				};
+				gc = XCreateGC(display, *topLevelWindow, GCForeground | GCSubwindowMode, &gcValues);
+			}
+			int x;
+			int y;
+			XCharStruct charStruct;
+			{
+				XFontStruct *fontStruct = XLoadQueryFont(display, "fixed");
+				int direction;
+				XTextExtents(fontStruct, drawableCommand2DRemappedArray, length, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
+				XFreeFont(display, fontStruct);
+			}
+			XWindowAttributes windowAttributes;
+			XGetWindowAttributes(display, *box, &windowAttributes);
+			x = windowAttributes.width;
+			x -= charStruct.width;
+			x /= 2;
+			y = windowAttributes.height;
+			y += charStruct.ascent;
+			y /= 2;
+			XClearWindow(display, *box);
+			XDrawString(display, *box, gc, x, y, line, length);
+			XFreeGC(display, gc);
+		}
+	}else{
+		fprintf(stderr, "%s: could not read temporary file (drawableCommand)\n", programName);
 	}
 	return;
 }
 static bool isCommand(const char *const command, const char *const commandArray){
 	bool value = 0;
 	unsigned int element = 0;
-	while(command[element]){
+	while(command[element] || commandArray[element]){
 		if(command[element] >= 'A' && command[element] <= 'Z'){
-			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] + 32)){
+			if(!(command[element] == commandArray[element] || command[element] == commandArray[element] - 32)){
 				element = 0;
 				break;
 			}
 		}else if(command[element] >= 'a' && command[element] <= 'z'){
-			if(!(commandArray[element] == command[element] || commandArray[element] == command[element] - 32)){
+			if(!(command[element] == commandArray[element] || command[element] == commandArray[element] + 32)){
 				element = 0;
 				break;
 			}
 		}else{
-			if(!(commandArray[element] == command[element])){
+			if(!(command[element] == commandArray[element])){
 				element = 0;
 				break;
 			}
@@ -368,44 +361,44 @@ static bool isCommand(const char *const command, const char *const commandArray)
 }
 static void onExpose(const Window *const topLevelWindow, const Window *const boxArray, const char *const text2DRemappedArray, const unsigned int *const textMaxWordLength, const bytes4 *const textColorArray){
 	if(totalBoxAmount > 0){
-		if(fontStruct){
-			GC gc;
-			{
-				XGCValues gcValues = {
-					.subwindow_mode = IncludeInferiors
-				};
-				gc = XCreateGC(display, *topLevelWindow, GCSubwindowMode, &gcValues);
-			}
-			const unsigned int dereferencedTextMaxWordLength = *textMaxWordLength;
-			unsigned int wordBeginning = 0;
-			unsigned int actualWordLength;
-			int direction;
-			XCharStruct charStruct;
-			XWindowAttributes windowAttributes;
-			int x;
-			int y;
-			for(unsigned int currentBox = 0; currentBox < totalBoxAmount; ++currentBox){
-				if(text2DRemappedArray[wordBeginning]){
-					XSetForeground(display, gc, textColorArray[currentBox]);
-					actualWordLength = 0;
-					while(text2DRemappedArray[wordBeginning + actualWordLength] != '\0'){
-						++actualWordLength;
-					}
-					XTextExtents(fontStruct, &text2DRemappedArray[wordBeginning], actualWordLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
-					XGetWindowAttributes(display, boxArray[currentBox], &windowAttributes);
-					x = windowAttributes.width;
-					x -= charStruct.width;
-					x /= 2;
-					y = windowAttributes.height;
-					y += charStruct.ascent;
-					y /= 2;
-					XClearWindow(display, boxArray[currentBox]);
-					XDrawString(display, boxArray[currentBox], gc, x, y, &text2DRemappedArray[wordBeginning], actualWordLength);
-				}
-				wordBeginning += dereferencedTextMaxWordLength;
-			}
-			XFreeGC(display, gc);
+		GC gc;
+		{
+			XGCValues GCValues = {
+				.subwindow_mode = IncludeInferiors
+			};
+			gc = XCreateGC(display, *topLevelWindow, GCSubwindowMode, &GCValues);
 		}
+		const unsigned int dereferencedTextMaxWordLength = *textMaxWordLength;
+		unsigned int wordBeginning = 0;
+		unsigned int actualWordLength;
+		XFontStruct *fontStruct = XLoadQueryFont(display, "fixed");
+		int direction;
+		XCharStruct charStruct;
+		XWindowAttributes windowAttributes;
+		int x;
+		int y;
+		for(unsigned int currentBox = 0; currentBox < totalBoxAmount; ++currentBox){
+			if(text2DRemappedArray[wordBeginning]){
+				XSetForeground(display, gc, textColorArray[currentBox]);
+				actualWordLength = 0;
+				while(text2DRemappedArray[wordBeginning + actualWordLength] != '\0'){
+					++actualWordLength;
+				}
+				XTextExtents(fontStruct, &text2DRemappedArray[wordBeginning], actualWordLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
+				XGetWindowAttributes(display, boxArray[currentBox], &windowAttributes);
+				x = windowAttributes.width;
+				x -= charStruct.width;
+				x /= 2;
+				y = windowAttributes.height;
+				y += charStruct.ascent;
+				y /= 2;
+				XClearWindow(display, boxArray[currentBox]);
+				XDrawString(display, boxArray[currentBox], gc, x, y, &text2DRemappedArray[wordBeginning], actualWordLength);
+			}
+			wordBeginning += dereferencedTextMaxWordLength;
+		}
+		XFreeFont(display, fontStruct);
+		XFreeGC(display, gc);
 	}
 	return;
 }
