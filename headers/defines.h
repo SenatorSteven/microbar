@@ -28,7 +28,7 @@ SOFTWARE. */
 /* # /user-defined constants start # # # */
 #define Tab /*--------------------*/ "    "
 #define DefaultCharactersCount /*-*/ ((unsigned int)200)
-#define DefaultLinesCount /*------*/ ((unsigned int)100)
+#define DefaultLinesCount /*------*/ ((unsigned int)200)
 
 typedef int bytes4;
 /* # /user-defined constants end # # # # */
