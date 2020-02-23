@@ -65,8 +65,9 @@ extern const char *configPath;
 extern Display *display;
 extern const XRRMonitorInfo *monitorInfo;
 extern FILE *file;
-extern unsigned int totalBoxAmount;
+extern unsigned int boxAmount;
 extern char line[DefaultCharactersCount];
+extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
@@ -77,13 +78,12 @@ static unsigned int getUnsignedDecimalNumber(const Window *const window, const u
 static int getDecimalNumber(const Window *const window, unsigned int *const element);
 static bytes4 getARGB(unsigned int *const element);
 static bool grabKey(const Window *const window, unsigned int *const element);
-static char *getText(unsigned int *const element);
 static bool printLineError(const unsigned int *const currentLine);
 
 bool readConfigScan(const Window *const parentWindow){
 	bool value = 0;
 	if((file = getConfigFile())){
-		totalBoxAmount = 0;
+		boxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		bytes4 hasReadVariable = NoPositions;
@@ -144,7 +144,7 @@ bool readConfigScan(const Window *const parentWindow){
 					if(isVariable("box", &element)){
 						pushSpaces(&element);
 						if(isVariable("{", &element)){
-							++totalBoxAmount;
+							++boxAmount;
 							hasReadVariable |= BoxPosition;
 						}
 						continue;
@@ -926,13 +926,154 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 	}
 	return value;
 }
-bool readConfigTextCommands(const Window *const window, const unsigned int *const currentBox, char **const textPointerArray, bytes4 *const textColor, char **const commandPointerArray, char **const drawableCommandPointerArray){
+bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int *const commandMaxWordLength, unsigned int *const drawableCommandMaxWordLength){
 	bool value = 0;
 	if((file = getConfigFile())){
-		*textPointerArray = NULL;
+		*textMaxWordLength = 0;
+		*commandMaxWordLength = 0;
+		*drawableCommandMaxWordLength = 0;
+		unsigned int maxLinesCount = DefaultLinesCount;
+		unsigned int element;
+		bytes4 hasReadVariable = NoPositions;
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			if(!getLine()){
+				break;
+			}
+			element = 0;
+			pushSpaces(&element);
+			if(!isVariable("#", &element)){
+				if(!(hasReadVariable & MenuPosition)){
+					if(!(hasReadVariable & LinesPosition)){
+						if(isVariable("lines", &element)){
+							pushSpaces(&element);
+							if(isVariable("=", &element)){
+								pushSpaces(&element);
+								maxLinesCount = getUnsignedDecimalNumber(&topLevelWindowArray[0], &currentLine, &element);
+								hasReadVariable |= LinesPosition;
+							}
+							continue;
+						}
+					}
+					if(isVariable("menu", &element)){
+						pushSpaces(&element);
+						if(isVariable("{", &element)){
+							hasReadVariable |= MenuPosition;
+						}
+						continue;
+					}
+				}else if(!(hasReadVariable & BoxPosition)){
+					if(isVariable("box", &element)){
+						pushSpaces(&element);
+						if(isVariable("{", &element)){
+							hasReadVariable |= BoxPosition;
+						}
+						continue;
+					}
+					if(isVariable("}", &element)){
+						hasReadVariable ^= MenuPosition;
+						continue;
+					}
+				}else if(!(hasReadVariable & InnerBoxPosition)){
+					if(!(hasReadVariable & TextPosition)){
+						if(isVariable("text", &element)){
+							pushSpaces(&element);
+							if(isVariable("=", &element)){
+								pushSpaces(&element);
+								const char quotation = line[element];
+								++element;
+								unsigned int length = 0;
+								while(line[element] != quotation && line[element]){
+									++length;
+									++element;
+								}
+								if(length > *textMaxWordLength){
+									*textMaxWordLength = length;
+								}
+								hasReadVariable |= TextPosition;
+							}
+							continue;
+						}
+					}
+					if(!(hasReadVariable & CommandPosition)){
+						if(isVariable("command", &element)){
+							pushSpaces(&element);
+							if(isVariable("=", &element)){
+								pushSpaces(&element);
+								const char quotation = line[element];
+								++element;
+								unsigned int length = 0;
+								while(line[element] != quotation && line[element]){
+									++length;
+									++element;
+								}
+								if(length > *commandMaxWordLength){
+									*commandMaxWordLength = length;
+								}
+								hasReadVariable |= CommandPosition;
+							}
+							continue;
+						}
+					}
+					if(!(hasReadVariable & DrawableCommandPosition)){
+						if(isVariable("drawableCommand", &element)){
+							pushSpaces(&element);
+							if(isVariable("=", &element)){
+								pushSpaces(&element);
+								const char quotation = line[element];
+								++element;
+								unsigned int length = 0;
+								while(line[element] != quotation && line[element]){
+									++length;
+									++element;
+								}
+								if(length > *drawableCommandMaxWordLength){
+									*drawableCommandMaxWordLength = length;
+								}
+								hasReadVariable |= DrawableCommandPosition;
+							}
+							continue;
+						}
+					}
+					if(isVariable("innerBox", &element)){
+						pushSpaces(&element);
+						if(isVariable("{", &element)){
+							hasReadVariable |= InnerBoxPosition;
+						}
+						continue;
+					}
+					if(isVariable("}", &element)){
+						if(hasReadVariable & TextPosition){
+							hasReadVariable ^= TextPosition;
+						}
+						if(hasReadVariable & CommandPosition){
+							hasReadVariable ^= CommandPosition;
+						}
+						if(hasReadVariable & DrawableCommandPosition){
+							hasReadVariable ^= DrawableCommandPosition;
+						}
+						hasReadVariable ^= BoxPosition;
+						continue;
+					}
+				}else{
+					if(isVariable("}", &element)){
+						hasReadVariable ^= InnerBoxPosition;
+						continue;
+					}
+				}
+			}
+		}
+		fclose(file);
+		value = 1;
+	}
+	return value;
+}
+bool readConfigFillArrays(const Window *const window, const unsigned int *const currentBox, char *const text, bytes4 *const textColor, char *const command, char *const drawableCommand){
+	bool value = 0;
+	if((file = getConfigFile())){
+		*text = '\0';
 		*textColor = 0x00000000;
-		*commandPointerArray = NULL;
-		*drawableCommandPointerArray = NULL;
+		*command = '\0';
+		*drawableCommand = '\0';
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		bytes4 hasReadVariable = NoPositions;
@@ -1010,7 +1151,15 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								*textPointerArray = getText(&element);
+								const char quotation = line[element];
+								++element;
+								unsigned int currentCharacter = 0;
+								while(line[element] != quotation && line[element]){
+									text[currentCharacter] = line[element];
+									++currentCharacter;
+									++element;
+								}
+								text[currentCharacter] = '\0';
 								hasReadVariable |= TextPosition;
 							}
 							continue;
@@ -1032,7 +1181,15 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								*commandPointerArray = getText(&element);
+								const char quotation = line[element];
+								++element;
+								unsigned int currentCharacter = 0;
+								while(line[element] != quotation && line[element]){
+									command[currentCharacter] = line[element];
+									++currentCharacter;
+									++element;
+								}
+								command[currentCharacter] = '\0';
 								hasReadVariable |= CommandPosition;
 							}
 							continue;
@@ -1043,7 +1200,15 @@ bool readConfigTextCommands(const Window *const window, const unsigned int *cons
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								*drawableCommandPointerArray = getText(&element);
+								const char quotation = line[element];
+								++element;
+								unsigned int currentCharacter = 0;
+								while(line[element] != quotation && line[element]){
+									drawableCommand[currentCharacter] = line[element];
+									++currentCharacter;
+									++element;
+								}
+								drawableCommand[currentCharacter] = '\0';
 								hasReadVariable |= DrawableCommandPosition;
 							}
 							continue;
@@ -1646,38 +1811,6 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 		value = 1;
 	}
 	return value;
-}
-static char *getText(unsigned int *const element){
-	unsigned int dereferencedElement = *element;
-	char *text = NULL;
-	unsigned int length = 0;
-	{
-		const char quotation = line[dereferencedElement];
-		++dereferencedElement;
-		while(line[dereferencedElement] && line[dereferencedElement] != quotation && dereferencedElement < DefaultCharactersCount){
-			++length;
-			++dereferencedElement;
-		}
-		dereferencedElement -= length;
-	}
-	if(length){
-		if((text = (char *)malloc((length + 1) * sizeof(char)))){
-			unsigned int currentCharacter = 0;
-			while(currentCharacter < length){
-				text[currentCharacter] = line[dereferencedElement];
-				++dereferencedElement;
-				++currentCharacter;
-			}
-			if(currentCharacter == length){
-				++dereferencedElement;
-				text[length] = '\0';
-				*element = dereferencedElement;
-			}
-		}else{
-			fprintf(stderr, "%s: could not allocate space for text\n", programName);
-		}
-	}
-	return text;
 }
 static bool printLineError(const unsigned int *const currentLine){
 	bool value = 0;
