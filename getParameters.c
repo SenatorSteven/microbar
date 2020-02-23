@@ -36,6 +36,7 @@ SOFTWARE. */
 extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
+extern FILE *file;
 
 static bool isArgument(const char *const argument, const char *const vector);
 
@@ -63,7 +64,22 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 							break;
 						}else{
 							configPath = argumentVector[currentArgument];
-							continue;
+							file = fopen(configPath, "r");
+							if(file){
+								fclose(file);
+								continue;
+							}else{
+								file = fopen(configPath, "w");
+								if(file){
+									fclose(file);
+									remove(configPath);
+									continue;
+								}else{
+									fprintf(stderr, "%s: \"%s\" config value is not valid\n", programName, configPath);
+									hasReadVariable |= ExitPosition;
+									break;
+								}
+							}
 						}
 					}else{
 						fprintf(stderr, "%s: no config value specified\n", programName);
@@ -77,7 +93,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 					hasReadVariable |= WorkplacePosition;
 					if(++currentArgument < dereferencedArgumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
-							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory\"\n", programName, programName);
+							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory/\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
 							fprintf(stdout, "%s# if not specified, workplace directory will be the directory of config\n", Tab);
 							fprintf(stdout, "%s# environment variables may be used\n", Tab);
@@ -121,7 +137,6 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 				fprintf(stderr, "%s: the workplace parameter has already been specified\n", programName);
 			}else{
 				fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", programName, argumentVector[currentArgument]);
-				hasReadVariable |= HelpPosition;
 			}
 			hasReadVariable |= ExitPosition;
 			break;
