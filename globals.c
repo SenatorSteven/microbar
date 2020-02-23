@@ -30,12 +30,12 @@ SOFTWARE. */
 const char *programName;
 const char *configPath;
 const char *workplacePath;
+FILE *file;
 unsigned int mode = ModeContinue;
 Display *display;
 unsigned int monitorAmount;
 const XRRMonitorInfo *monitorInfo;
-FILE *file;
-unsigned int totalBoxAmount;
+unsigned int boxAmount;
 char line[DefaultCharactersCount];
 Window *topLevelWindowArray;
 unsigned int currentMonitor;
