@@ -38,7 +38,6 @@ extern unsigned int mode;
 extern Display *display;
 extern unsigned int monitorAmount;
 extern const XRRMonitorInfo *monitorInfo;
-extern XFontStruct *fontStruct;
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
