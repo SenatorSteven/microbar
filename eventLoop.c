@@ -24,10 +24,10 @@ SOFTWARE. */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <X11/Xutil.h>
+#include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
-#include "headers/readConfig.h"
 #include "headers/defines.h"
+#include "headers/readConfig.h"
 
 extern const char *programName;
 extern const char *configPath;
@@ -92,11 +92,11 @@ void eventLoop(void){
 		text[currentBox] = _text[currentBox];
 		command[currentBox] = _command[currentBox];
 		drawableCommand[currentBox] = _drawableCommand[currentBox];
-		readConfigFillArrays(&box[0][currentBox], &currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
+		readConfigFillArrays(&currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
 	}
 	unsigned int drawableCommandPathLength = 0;
 	{
-		while(workplacePath[drawableCommandPathLength] != '\0'){
+		while(workplacePath[drawableCommandPathLength]){
 			++drawableCommandPathLength;
 		}
 		if(workplacePath[drawableCommandPathLength - 1] == '/'){
@@ -142,7 +142,7 @@ void eventLoop(void){
 			element = 0;
 			currentCharacter = 0;
 			if(drawableCommand[currentBox][currentCharacter]){
-				while(drawableCommand[currentBox][currentCharacter] != '\0'){
+				while(drawableCommand[currentBox][currentCharacter]){
 					systemCommand[currentBox][element] = drawableCommand[currentBox][currentCharacter];
 					++element;
 					++currentCharacter;
@@ -312,7 +312,8 @@ static void onExpose(Window *const *const box, char *const *const text, const by
 		XGCValues GCValues = {
 			.subwindow_mode = IncludeInferiors
 		};
-		unsigned int wordLength;
+		unsigned int currentBox;
+		unsigned int length;
 		XFontStruct *fontStruct = XLoadQueryFont(display, "fixed");
 		int direction;
 		XCharStruct charStruct;
@@ -321,14 +322,14 @@ static void onExpose(Window *const *const box, char *const *const text, const by
 		int y;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			gc = XCreateGC(display, topLevelWindowArray[currentMonitor], GCSubwindowMode, &GCValues);
-			for(unsigned int currentBox = 0; currentBox < boxAmount; ++currentBox){
-				wordLength = 0;
-				if(text[wordLength]){
+			for(currentBox = 0; currentBox < boxAmount; ++currentBox){
+				if(text[currentBox]){
 					XSetForeground(display, gc, textColor[currentBox]);
-					while(text[currentBox][wordLength] != '\0'){
-						++wordLength;
+					length = 0;
+					while(text[currentBox][length]){
+						++length;
 					}
-					XTextExtents(fontStruct, text[currentBox], wordLength, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
+					XTextExtents(fontStruct, text[currentBox], length, &direction, (int *)&charStruct.ascent, (int *)&charStruct.descent, &charStruct);
 					XGetWindowAttributes(display, box[currentMonitor][currentBox], &windowAttributes);
 					x = windowAttributes.width;
 					x -= charStruct.width;
@@ -337,7 +338,7 @@ static void onExpose(Window *const *const box, char *const *const text, const by
 					y += charStruct.ascent;
 					y /= 2;
 					XClearWindow(display, box[currentMonitor][currentBox]);
-					XDrawString(display, box[currentMonitor][currentBox], gc, x, y, text[currentBox], wordLength);
+					XDrawString(display, box[currentMonitor][currentBox], gc, x, y, text[currentBox], length);
 				}
 			}
 			XFreeGC(display, gc);
