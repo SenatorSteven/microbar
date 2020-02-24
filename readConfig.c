@@ -23,7 +23,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 #include "headers/defines.h"
@@ -78,6 +77,7 @@ static unsigned int getUnsignedDecimalNumber(const Window *const window, const u
 static int getDecimalNumber(const Window *const window, unsigned int *const element);
 static bytes4 getARGB(unsigned int *const element);
 static bool grabKey(const Window *const window, unsigned int *const element);
+static bool getButton(unsigned int *const element, unsigned int *const button, bytes4 *const masks);
 static bool printLineError(const unsigned int *const currentLine);
 
 bool readConfigScan(const Window *const parentWindow){
@@ -100,7 +100,7 @@ bool readConfigScan(const Window *const parentWindow){
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(parentWindow, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -250,7 +250,7 @@ bool readConfigTopLevelWindow(const Window *const parentWindow, int *const x, in
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(parentWindow, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -430,7 +430,7 @@ bool readConfigMenuWindow(const Window *const parentWindow, const unsigned int *
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(parentWindow, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -614,7 +614,7 @@ bool readConfigBoxWindow(const Window *const parentWindow, const unsigned int *c
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(parentWindow, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -796,7 +796,7 @@ bool readConfigInnerBoxWindow(const Window *const parentWindow, const unsigned i
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(parentWindow, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -948,7 +948,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(&topLevelWindowArray[0], &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1067,7 +1067,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 	}
 	return value;
 }
-bool readConfigFillArrays(const Window *const window, const unsigned int *const currentBox, char *const text, bytes4 *const textColor, char *const command, char *const drawableCommand){
+bool readConfigFillArrays(const unsigned int *const currentBox, char *const text, bytes4 *const textColor, char *const command, char *const drawableCommand){
 	bool value = 0;
 	if((file = getConfigFile())){
 		*text = '\0';
@@ -1091,7 +1091,7 @@ bool readConfigFillArrays(const Window *const window, const unsigned int *const 
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(window, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1244,7 +1244,6 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 		unsigned int element;
 		bytes4 hasReadVariable = NoPositions;
 		unsigned int boxAmountRead = 0;
-		unsigned int button = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
 				break;
@@ -1258,7 +1257,7 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								maxLinesCount = getUnsignedDecimalNumber(window, &currentLine, &element);
+								maxLinesCount = getUnsignedDecimalNumber(NULL, &currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1303,7 +1302,12 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 							pushSpaces(&element);
 							if(isVariable("=", &element)){
 								pushSpaces(&element);
-								button = getUnsignedDecimalNumber(window, &currentLine, &element);
+								unsigned int button = AnyButton;
+								bytes4 masks = None;
+								getButton(&element, &button, &masks);
+								if(button != AnyButton){
+									XGrabButton(display, button, AnyModifier, *window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
+								}
 								hasReadVariable |= ButtonPosition;
 							}
 							continue;
@@ -1325,11 +1329,6 @@ bool readConfigButton(const Window *const window, const unsigned int *const curr
 						continue;
 					}
 				}
-			}
-		}
-		if(hasReadVariable & ButtonPosition){
-			if(button < 6){
-				XGrabButton(display, button, AnyModifier, *window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 			}
 		}
 		fclose(file);
@@ -1395,17 +1394,17 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# globalInnerBoxBorderColor: color of all innerBoxes\' border\n");
 			fprintf(config, "# globalInnerBoxBackgroundColor: color of all innerBoxes\' background\n");
 			fprintf(config, "# globalTextColor: color of all boxes\' text\n");
-			fprintf(config, "# hideKey: combination of keycode and modifiers to hide the bar\n");
+			fprintf(config, "# hideKey: combination of keycode and modifiers used to hide the bar\n");
 			fprintf(config, "# text: text label of box\n");
 			fprintf(config, "# textColor: color of box\'s text\n");
 			fprintf(config, "# command: command executed on interaction with box\n");
 			fprintf(config, "# drawableCommand: command returning text output executed on interaction with box\n");
-			fprintf(config, "# button: mouse button used to interact\n");
+			fprintf(config, "# button: combination of mouse button and modifiers used to interact\n");
 			fprintf(config, "# menu: informationless interactionless object, residing in global object\n");
 			fprintf(config, "# box: information object, residing in menu object\n");
 			fprintf(config, "# innerBox: informationless interactionless object, residing in box object\n");
-			fprintf(config, "# ParentWidth: size of parent object\'s width\n");
-			fprintf(config, "# ParentHeight: size of parent object\'s height\n\n\n\n");
+			fprintf(config, "# ParentWidth: size of parent object\'s width, if applicable\n");
+			fprintf(config, "# ParentHeight: size of parent object\'s height, if applicable\n\n\n\n");
 			fprintf(config, "# # # # #\n");
 			fprintf(config, "# extra #\n");
 			fprintf(config, "# # # # #\n\n");
@@ -1414,9 +1413,10 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# text: requires quotation\n");
 			fprintf(config, "# command: requires quotation, program commands: restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
-			fprintf(config, "# button: default 0 = any button, 1 = left click, 2 = middle click, 3 = right click, 4 = wheel up, 5 = wheel down\n\n\n\n");
+			fprintf(config, "# button: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
+			fprintf(config, "# button: buttons: Button1 = left click, Button2 = middle click, Button3 = right click, Button4 = wheel up, Button5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 167\n");
+			fprintf(config, "lines = 168\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -1444,7 +1444,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		text = \"restart\"\n");
 			fprintf(config, "		textColor = #FF00FF00\n");
 			fprintf(config, "		command = \"restart\"\n");
-			fprintf(config, "		button = 1\n");
+			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
 			fprintf(config, "menu{\n");
@@ -1464,7 +1464,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"date\"\n");
 			fprintf(config, "		drawableCommand = \"date \'+D%%d/M%%m/Y%%y\'\"\n");
-			fprintf(config, "		button = 1\n");
+			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	box{\n");
 			fprintf(config, "		x = ParentWidth - 123\n");
@@ -1474,7 +1474,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"time\"\n");
 			fprintf(config, "		drawableCommand = \"date \'+%%H:%%M:%%S %%Z\'\"\n");
-			fprintf(config, "		button = 1\n");
+			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	box{\n");
 			fprintf(config, "		x = ParentWidth - 34\n");
@@ -1485,7 +1485,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		text = \"exit\"\n");
 			fprintf(config, "		textColor = #FFFF0000\n");
 			fprintf(config, "		command = \"exit\"\n");
-			fprintf(config, "		button = 1\n");
+			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
 			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
@@ -1575,10 +1575,12 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 	unsigned int operation = NoOperation;
 	unsigned int lastOperation = NoOperation;
 	XWindowAttributes windowAttributes;
-	XGetWindowAttributes(display, *parentWindow, &windowAttributes);
-	if(*parentWindow == XDefaultRootWindow(display)){
-		windowAttributes.width = monitorInfo[currentMonitor].width;
-		windowAttributes.height = monitorInfo[currentMonitor].height;
+	if(parentWindow){
+		XGetWindowAttributes(display, *parentWindow, &windowAttributes);
+		if(*parentWindow == XDefaultRootWindow(display)){
+			windowAttributes.width = monitorInfo[currentMonitor].width;
+			windowAttributes.height = monitorInfo[currentMonitor].height;
+		}
 	}
 	while(line[dereferencedElement]){
 		pushSpaces(&dereferencedElement);
@@ -1588,9 +1590,13 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 			numberRead -= 48;
 			++dereferencedElement;
 		}else if(isVariable("ParentWidth", &dereferencedElement)){
-			numberRead = windowAttributes.width;
+			if(parentWindow){
+				numberRead = windowAttributes.width;
+			}
 		}else if(isVariable("ParentHeight", &dereferencedElement)){
-			numberRead = windowAttributes.height;
+			if(parentWindow){
+				numberRead = windowAttributes.height;
+			}
 		}else if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-' || line[dereferencedElement] == '*' || line[dereferencedElement] == '/'){
 			if(number == 0 && numberRead == 0){
 				if(line[dereferencedElement] == '/'){
@@ -1808,6 +1814,64 @@ static bool grabKey(const Window *const window, unsigned int *const element){
 	if(keycode != AnyKey){
 		*element = dereferencedElement;
 		XGrabKey(display, keycode, masks, *window, True, GrabModeAsync, GrabModeAsync);
+		value = 1;
+	}
+	return value;
+}
+static bool getButton(unsigned int *const element, unsigned int *const button, bytes4 *const masks){
+	unsigned int dereferencedElement = *element;
+	unsigned int dereferencedButton = AnyButton;
+	bytes4 dereferencedMasks = None;
+	bool value = 0;
+	unsigned int lookingForValue = 1;
+	while(line[dereferencedElement]){
+		pushSpaces(&dereferencedElement);
+		if(lookingForValue){
+			if(isVariable("Button1", &dereferencedElement)){
+				dereferencedButton = Button1;
+			}else if(isVariable("Button2", &dereferencedElement)){
+				dereferencedButton = Button2;
+			}else if(isVariable("Button3", &dereferencedElement)){
+				dereferencedButton = Button3;
+			}else if(isVariable("Button4", &dereferencedElement)){
+				dereferencedButton = Button4;
+			}else if(isVariable("Button5", &dereferencedElement)){
+				dereferencedButton = Button5;
+			}else if(isVariable("AnyModifier", &dereferencedElement)){
+				dereferencedMasks |= AnyModifier;
+			}else if(isVariable("Shift", &dereferencedElement)){
+				dereferencedMasks |= ShiftMask;
+			}else if(isVariable("Lock", &dereferencedElement)){
+				dereferencedMasks |= LockMask;
+			}else if(isVariable("Control", &dereferencedElement)){
+				dereferencedMasks |= ControlMask;
+			}else if(isVariable("Mod1", &dereferencedElement)){
+				dereferencedMasks |= Mod1Mask;
+			}else if(isVariable("Mod2", &dereferencedElement)){
+				dereferencedMasks |= Mod2Mask;
+			}else if(isVariable("Mod3", &dereferencedElement)){
+				dereferencedMasks |= Mod3Mask;
+			}else if(isVariable("Mod4", &dereferencedElement)){
+				dereferencedMasks |= Mod4Mask;
+			}else if(isVariable("Mod5", &dereferencedElement)){
+				dereferencedMasks |= Mod5Mask;
+			}else{
+				break;
+			}
+			lookingForValue = 0;
+		}else{
+			if(line[dereferencedElement] == '+'){
+				++dereferencedElement;
+				lookingForValue = 1;
+			}else{
+				break;
+			}
+		}
+	}
+	if(dereferencedButton != AnyButton){
+		*element = dereferencedElement;
+		*button = dereferencedButton;
+		*masks = dereferencedMasks;
 		value = 1;
 	}
 	return value;
