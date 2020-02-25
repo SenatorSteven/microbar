@@ -1504,14 +1504,14 @@ static bool getLine(void){
 	for(;;){
 		characterRead = fgetc(file);
 		if(characterRead == '\n' || feof(file)){
+			line[element] = '\0';
+			++element;
 			break;
 		}else if(element < DefaultCharactersCount){
 			line[element] = characterRead;
 			++element;
 		}
 	}
-	line[element] = '\0';
-	++element;
 	if(!feof(file)){
 		value = 1;
 	}
