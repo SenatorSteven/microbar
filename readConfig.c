@@ -1737,8 +1737,8 @@ static bytes4 getARGB(unsigned int *const element){
 	if(line[dereferencedElement] == '#'){
 		++dereferencedElement;
 	}
-	unsigned int currentCharacter = 0;
-	while(line[dereferencedElement] && currentCharacter < 8){
+	unsigned int charactersRead = 0;
+	while(line[dereferencedElement] && charactersRead < 8){
 		color *= 16;
 		if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
 			color += line[dereferencedElement];
@@ -1757,9 +1757,9 @@ static bytes4 getARGB(unsigned int *const element){
 			break;
 		}
 		++dereferencedElement;
-		++currentCharacter;
+		++charactersRead;
 	}
-	if(currentCharacter == 8){
+	if(charactersRead == 8){
 		*element = dereferencedElement;
 	}
 	return color;
