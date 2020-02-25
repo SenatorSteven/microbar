@@ -61,9 +61,9 @@ SOFTWARE. */
 
 extern const char *programName;
 extern const char *configPath;
+extern FILE *file;
 extern Display *display;
 extern const XRRMonitorInfo *monitorInfo;
-extern FILE *file;
 extern unsigned int boxAmount;
 extern char line[DefaultCharactersCount];
 extern Window *topLevelWindowArray;
