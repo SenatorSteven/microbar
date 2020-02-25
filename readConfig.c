@@ -54,10 +54,10 @@ SOFTWARE. */
 #define InnerBoxPosition /*----------------------*/ (1 << 23)
 
 #define NoOperation /*---------------------------*/ ((unsigned int)0)
-#define OperationAddition /*---------------------*/ ((unsigned int)1)
-#define OperationSubtraction /*------------------*/ ((unsigned int)2)
-#define OperationMultiplication /*---------------*/ ((unsigned int)3)
-#define OperationDivision /*---------------------*/ ((unsigned int)4)
+#define AdditionOperation /*---------------------*/ ((unsigned int)1)
+#define SubtractionOperation /*------------------*/ ((unsigned int)2)
+#define MultiplicationOperation /*---------------*/ ((unsigned int)3)
+#define DivisionOperation /*---------------------*/ ((unsigned int)4)
 
 extern const char *programName;
 extern const char *configPath;
@@ -1603,14 +1603,14 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 					break;
 				}
 			}
-			if(operation == OperationAddition){
+			if(operation == AdditionOperation){
 				if(line[dereferencedElement] != '*' && line[dereferencedElement] != '/'){
 					if(numberOperatedOn == 0){
 						number += numberRead;
 					}else{
-						if(lastOperation == OperationAddition){
+						if(lastOperation == AdditionOperation){
 							number += numberOperatedOn;
-						}else if(lastOperation == OperationSubtraction){
+						}else if(lastOperation == SubtractionOperation){
 							number -= numberOperatedOn;
 						}
 					}
@@ -1618,14 +1618,14 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 					numberOperatedOn = numberRead;
 					lastOperation = operation;
 				}
-			}else if(operation == OperationSubtraction){
+			}else if(operation == SubtractionOperation){
 				if(line[dereferencedElement] != '*' && line[dereferencedElement] != '/'){
 					if(numberOperatedOn == 0){
 						number -= numberRead;
 					}else{
-						if(lastOperation == OperationAddition){
+						if(lastOperation == AdditionOperation){
 							number += numberOperatedOn;
-						}else if(lastOperation == OperationSubtraction){
+						}else if(lastOperation == SubtractionOperation){
 							number -= numberOperatedOn;
 						}
 					}
@@ -1633,30 +1633,30 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 					numberOperatedOn = numberRead;
 					lastOperation = operation;
 				}
-			}else if(operation == OperationMultiplication){
+			}else if(operation == MultiplicationOperation){
 				if(numberOperatedOn == 0){
 					number *= numberRead;
 				}else{
 					numberOperatedOn *= numberRead;
 				}
 				if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-'){
-					if(lastOperation == OperationAddition){
+					if(lastOperation == AdditionOperation){
 						number += numberOperatedOn;
-					}else if(lastOperation == OperationSubtraction){
+					}else if(lastOperation == SubtractionOperation){
 						number -= numberOperatedOn;
 					}
 					numberOperatedOn = 0;
 				}
-			}else if(operation == OperationDivision){
+			}else if(operation == DivisionOperation){
 				if(numberOperatedOn == 0){
 					number /= numberRead;
 				}else{
 					numberOperatedOn /= numberRead;
 				}
 				if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-'){
-					if(lastOperation == OperationAddition){
+					if(lastOperation == AdditionOperation){
 						number += numberOperatedOn;
-					}else if(lastOperation == OperationSubtraction){
+					}else if(lastOperation == SubtractionOperation){
 						number -= numberOperatedOn;
 					}
 					numberOperatedOn = 0;
@@ -1667,13 +1667,13 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 				}
 			}
 			if(line[dereferencedElement] == '+'){
-				operation = OperationAddition;
+				operation = AdditionOperation;
 			}else if(line[dereferencedElement] == '-'){
-				operation = OperationSubtraction;
+				operation = SubtractionOperation;
 			}else if(line[dereferencedElement] == '*'){
-				operation = OperationMultiplication;
+				operation = MultiplicationOperation;
 			}else if(line[dereferencedElement] == '/'){
-				operation = OperationDivision;
+				operation = DivisionOperation;
 			}
 			numberRead = 0;
 			++dereferencedElement;
@@ -1681,44 +1681,44 @@ static int getDecimalNumber(const Window *const parentWindow, unsigned int *cons
 			break;
 		}
 	}
-	if(operation == OperationAddition){
+	if(operation == AdditionOperation){
 		if(numberOperatedOn > 0){
-			if(lastOperation == OperationAddition){
+			if(lastOperation == AdditionOperation){
 				number += numberOperatedOn;
-			}else if(lastOperation == OperationSubtraction){
+			}else if(lastOperation == SubtractionOperation){
 				number -= numberOperatedOn;
 			}
 		}
 		number += numberRead;
-	}else if(operation == OperationSubtraction){
+	}else if(operation == SubtractionOperation){
 		if(numberOperatedOn > 0){
-			if(lastOperation == OperationAddition){
+			if(lastOperation == AdditionOperation){
 				number += numberOperatedOn;
-			}else if(lastOperation == OperationSubtraction){
+			}else if(lastOperation == SubtractionOperation){
 				number -= numberOperatedOn;
 			}
 		}
 		number -= numberRead;
-	}else if(operation == OperationMultiplication){
+	}else if(operation == MultiplicationOperation){
 		if(numberOperatedOn == 0){
 			number *= numberRead;
 		}else{
 			numberOperatedOn *= numberRead;
-			if(lastOperation == OperationAddition){
+			if(lastOperation == AdditionOperation){
 				number += numberOperatedOn;
-			}else if(lastOperation == OperationSubtraction){
+			}else if(lastOperation == SubtractionOperation){
 				number -= numberOperatedOn;
 			}
 		}
-	}else if(operation == OperationDivision){
+	}else if(operation == DivisionOperation){
 		if(number > 0 || numberOperatedOn > 0){
 			if(numberOperatedOn == 0){
 				number /= numberRead;
 			}else{
 				numberOperatedOn /= numberRead;
-				if(lastOperation == OperationAddition){
+				if(lastOperation == AdditionOperation){
 					number += numberOperatedOn;
-				}else if(lastOperation == OperationSubtraction){
+				}else if(lastOperation == SubtractionOperation){
 					number -= numberOperatedOn;
 				}
 			}
