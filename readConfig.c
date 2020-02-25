@@ -1426,7 +1426,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "backgroundColor = #FF000000\n");
 			fprintf(config, "globalMenuBorderColor = #00000000\n");
 			fprintf(config, "globalMenuBackgroundColor = #FF000000\n");
-			fprintf(config, "hideKey = Mod4 + 116\n");
+			fprintf(config, "hideKey = 116 + Mod4\n");
 			fprintf(config, "menu{\n");
 			fprintf(config, "	x = 0\n");
 			fprintf(config, "	y = 0\n");
