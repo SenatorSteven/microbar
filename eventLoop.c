@@ -41,9 +41,9 @@ extern char line[DefaultCharactersCount];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
-static void drawCommand(const Window *const topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window *const box, const bytes4 *const textColor);
+static bool drawCommand(const Window *const topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window *const box, const bytes4 *const textColor);
 static bool isCommand(const char *const command, const char *const vector);
-static void onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor);
+static bool onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor);
 
 void eventLoop(void){
 	unsigned int currentBox;
@@ -230,7 +230,8 @@ void eventLoop(void){
 	}
 	return;
 }
-static void drawCommand(const Window *const topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window *const box, const bytes4 *const textColor){
+static bool drawCommand(const Window *const topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window *const box, const bytes4 *const textColor){
+	bool value = 0;
 	system(systemCommand);
 	if((file = fopen(drawableCommandPath, "r"))){
 		unsigned int length = 0;
@@ -273,11 +274,12 @@ static void drawCommand(const Window *const topLevelWindow, const char *const sy
 			XClearWindow(display, *box);
 			XDrawString(display, *box, gc, x, y, line, length);
 			XFreeGC(display, gc);
+			value = 1;
 		}
 	}else{
 		fprintf(stderr, "%s: could not read temporary file (drawableCommand)\n", programName);
 	}
-	return;
+	return value;
 }
 static bool isCommand(const char *const command, const char *const vector){
 	bool value = 0;
@@ -306,7 +308,8 @@ static bool isCommand(const char *const command, const char *const vector){
 	}
 	return value;
 }
-static void onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor){
+static bool onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor){
+	bool value = 0;
 	if(boxAmount > 0){
 		GC gc;
 		XGCValues GCValues = {
@@ -344,6 +347,7 @@ static void onExpose(Window *const *const box, char *const *const text, const by
 			XFreeGC(display, gc);
 		}
 		XFreeFont(display, fontStruct);
+		value = 1;
 	}
-	return;
+	return value;
 }
