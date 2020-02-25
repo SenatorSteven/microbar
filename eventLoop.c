@@ -77,13 +77,13 @@ void eventLoop(void){
 			}
 		}
 	}
-	unsigned int textMaxWordLength;
-	unsigned int commandMaxWordLength;
-	unsigned int drawableCommandMaxWordLength;
-	readConfigArrayLengths(&textMaxWordLength, &commandMaxWordLength, &drawableCommandMaxWordLength);
-	char _text[boxAmount][textMaxWordLength + 1];
-	char _command[boxAmount][commandMaxWordLength + 1];
-	char _drawableCommand[boxAmount][drawableCommandMaxWordLength + 1];
+	unsigned int textMaxLength;
+	unsigned int commandMaxLength;
+	unsigned int drawableCommandMaxLength;
+	readConfigArrayLengths(&textMaxLength, &commandMaxLength, &drawableCommandMaxLength);
+	char _text[boxAmount][textMaxLength + 1];
+	char _command[boxAmount][commandMaxLength + 1];
+	char _drawableCommand[boxAmount][drawableCommandMaxLength + 1];
 	char *text[boxAmount];
 	bytes4 textColor[boxAmount];
 	char *command[boxAmount];
@@ -132,7 +132,7 @@ void eventLoop(void){
 		drawableCommandPath[++currentCharacter] = 'd';
 		drawableCommandPath[++currentCharacter] = '\0';
 	}
-	char _systemCommand[boxAmount][drawableCommandMaxWordLength + 1 + drawableCommandPathLength + 1];
+	char _systemCommand[boxAmount][drawableCommandMaxLength + 1 + drawableCommandPathLength + 1];
 	char *systemCommand[boxAmount];
 	{
 		unsigned int element;
