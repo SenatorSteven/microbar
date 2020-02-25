@@ -237,7 +237,7 @@ static bool drawCommand(const Window *const topLevelWindow, const char *const sy
 		unsigned int length = 0;
 		while(length < DefaultCharactersCount){
 			line[length] = fgetc(file);
-			if(line[length] == '\n' || feof(file)){
+			if(line[length] == '\n'){
 				line[length] = '\0';
 				break;
 			}else{
