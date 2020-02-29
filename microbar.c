@@ -48,7 +48,7 @@ static void setTopLevelWindowProperties(void);
 static void cleanup(void);
 
 int main(const int argumentCount, const char *const *const argumentVector){
-	if(getParameters((unsigned int *)&argumentCount, argumentVector)){
+	if(getParameters((unsigned int)argumentCount, argumentVector)){
 		if(workplacePath){
 			start();
 		}else{
@@ -78,11 +78,8 @@ static void start(void){
 	while(mode == ModeContinue || mode == ModeRestart){
 		mode = ModeContinue;
 		if((display = XOpenDisplay(NULL))){
-			{
-				const Window rootWindow = XDefaultRootWindow(display);
-				monitorInfo = XRRGetMonitors(display, rootWindow, True, (int *)&monitorAmount);
-				readConfigScan(&rootWindow);
-			}
+			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+			readConfigScan(XDefaultRootWindow(display));
 			Window topLevelWindow[monitorAmount];
 			topLevelWindowArray = topLevelWindow;
 			if(createWindows()){
@@ -113,28 +110,25 @@ static bool createWindows(void){
 	bytes4 globalMenuBorderColor;
 	bytes4 globalMenuBackgroundColor;
 	unsigned int menuAmount;
-	{
-		const Window rootWindow = XDefaultRootWindow(display);
-		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			value = 0;
-			if(readConfigTopLevelWindow(&rootWindow, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
-				if(width > 0 && height > 0){
-					x += monitorInfo[currentMonitor].x;
-					y += monitorInfo[currentMonitor].y;
-					XVisualInfo visualInfo;
-					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
-					XSetWindowAttributes windowAttributes = {
-						.background_pixel = backgroundColor,
-						.border_pixel = borderColor,
-						.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
-					};
-					topLevelWindowArray[currentMonitor] = XCreateWindow(display, rootWindow, x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
-					value = 1;
-				}
+	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+		value = 0;
+		if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
+			if(width > 0 && height > 0){
+				x += monitorInfo[currentMonitor].x;
+				y += monitorInfo[currentMonitor].y;
+				XVisualInfo visualInfo;
+				XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
+				XSetWindowAttributes windowAttributes = {
+					.background_pixel = backgroundColor,
+					.border_pixel = borderColor,
+					.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
+				};
+				topLevelWindowArray[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
+				value = 1;
 			}
-			if(!value){
-				break;
-			}
+		}
+		if(!value){
+			break;
 		}
 	}
 	if(value){
@@ -154,7 +148,7 @@ static bool createWindows(void){
 			value = 0;
 			currentMenu = 0;
 			while(currentMenu < menuAmount){
-				if(readConfigMenuWindow(&topLevelWindowArray[currentMonitor], &currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+				if(readConfigMenuWindow(topLevelWindowArray[currentMonitor], currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
 							borderColor = globalMenuBorderColor;
@@ -170,7 +164,7 @@ static bool createWindows(void){
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(&menu, &currentMenu, &currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalInnerBoxBorderColor, &globalInnerBoxBackgroundColor, &innerBoxAmount)){
+						if(readConfigBoxWindow(menu, currentMenu, currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalInnerBoxBorderColor, &globalInnerBoxBackgroundColor, &innerBoxAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -186,7 +180,7 @@ static bool createWindows(void){
 							value = 0;
 							currentInnerBox = 0;
 							while(currentInnerBox < innerBoxAmount){
-								if(readConfigInnerBoxWindow(&box, &currentMenu, &currentBox, &currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+								if(readConfigInnerBoxWindow(box, currentMenu, currentBox, currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
 										if(borderColor == 0x00000000){
 											borderColor = globalInnerBoxBorderColor;
