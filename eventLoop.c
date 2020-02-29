@@ -41,9 +41,9 @@ extern char line[DefaultCharactersCount];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
-static bool drawCommand(const Window *const topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window *const box, const bytes4 *const textColor);
+static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const bytes4 textColor);
 static bool isCommand(const char *const command, const char *const vector);
-static bool onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor);
+static void onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor);
 
 void eventLoop(void){
 	unsigned int currentBox;
@@ -92,7 +92,7 @@ void eventLoop(void){
 		text[currentBox] = _text[currentBox];
 		command[currentBox] = _command[currentBox];
 		drawableCommand[currentBox] = _drawableCommand[currentBox];
-		readConfigFillArrays(&currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
+		readConfigFillArrays(currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
 	}
 	unsigned int drawableCommandPathLength = 0;
 	{
@@ -161,7 +161,7 @@ void eventLoop(void){
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-			readConfigButton(&box[currentMonitor][currentBox], &currentBox);
+			readConfigButton(box[currentMonitor][currentBox], currentBox);
 		}
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
@@ -202,7 +202,7 @@ void eventLoop(void){
 				for(currentBox = 0; currentBox < boxAmount; ++currentBox){
 					if(event.xbutton.window == box[currentMonitor][currentBox]){
 						if(*drawableCommand[currentBox]){
-							drawCommand(&topLevelWindowArray[currentMonitor], systemCommand[currentBox], drawableCommandPath, &box[currentMonitor][currentBox], &textColor[currentBox]);
+							drawCommand(topLevelWindowArray[currentMonitor], systemCommand[currentBox], drawableCommandPath, box[currentMonitor][currentBox], textColor[currentBox]);
 						}
 						if(command[currentBox]){
 							if(isCommand("Restart", command[currentBox])){
@@ -230,7 +230,7 @@ void eventLoop(void){
 	}
 	return;
 }
-static bool drawCommand(const Window *const topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window *const box, const bytes4 *const textColor){
+static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const bytes4 textColor){
 	bool value = 0;
 	system(systemCommand);
 	if((file = fopen(drawableCommandPath, "r"))){
@@ -249,10 +249,10 @@ static bool drawCommand(const Window *const topLevelWindow, const char *const sy
 			GC gc;
 			{
 				XGCValues gcValues = {
-					.foreground = *textColor,
+					.foreground = textColor,
 					.subwindow_mode = IncludeInferiors
 				};
-				gc = XCreateGC(display, *topLevelWindow, GCForeground | GCSubwindowMode, &gcValues);
+				gc = XCreateGC(display, topLevelWindow, GCForeground | GCSubwindowMode, &gcValues);
 			}
 			int x;
 			int y;
@@ -264,15 +264,15 @@ static bool drawCommand(const Window *const topLevelWindow, const char *const sy
 				XFreeFont(display, fontStruct);
 			}
 			XWindowAttributes windowAttributes;
-			XGetWindowAttributes(display, *box, &windowAttributes);
+			XGetWindowAttributes(display, box, &windowAttributes);
 			x = windowAttributes.width;
 			x -= charStruct.width;
 			x /= 2;
 			y = windowAttributes.height;
 			y += charStruct.ascent;
 			y /= 2;
-			XClearWindow(display, *box);
-			XDrawString(display, *box, gc, x, y, line, length);
+			XClearWindow(display, box);
+			XDrawString(display, box, gc, x, y, line, length);
 			XFreeGC(display, gc);
 			value = 1;
 		}
@@ -308,8 +308,7 @@ static bool isCommand(const char *const command, const char *const vector){
 	}
 	return value;
 }
-static bool onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor){
-	bool value = 0;
+static void onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor){
 	if(boxAmount > 0){
 		GC gc;
 		XGCValues GCValues = {
@@ -347,7 +346,6 @@ static bool onExpose(Window *const *const box, char *const *const text, const by
 			XFreeGC(display, gc);
 		}
 		XFreeFont(display, fontStruct);
-		value = 1;
 	}
-	return value;
+	return;
 }
