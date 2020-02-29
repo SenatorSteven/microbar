@@ -39,18 +39,17 @@ extern FILE *file;
 
 static bool isArgument(const char *const argument, const char *const vector);
 
-bool getParameters(const unsigned int *const argumentCount, const char *const *const argumentVector){
-	const unsigned int dereferencedArgumentCount = *argumentCount;
+bool getParameters(const unsigned int argumentCount, const char *const *const argumentVector){
 	bool value = 0;
 	programName = argumentVector[0];
-	if(dereferencedArgumentCount > 1){
+	if(argumentCount > 1){
 		workplacePath = NULL;
 		unsigned int hasReadVariable = NoPositions;
-		for(unsigned int currentArgument = 1; currentArgument < dereferencedArgumentCount; ++currentArgument){
+		for(unsigned int currentArgument = 1; currentArgument < argumentCount; ++currentArgument){
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
 					hasReadVariable |= ConfigPosition;
-					if(++currentArgument < dereferencedArgumentCount){
+					if(++currentArgument < argumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n", Tab);
@@ -90,7 +89,7 @@ bool getParameters(const unsigned int *const argumentCount, const char *const *c
 			if(!(hasReadVariable & WorkplacePosition)){
 				if(isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){
 					hasReadVariable |= WorkplacePosition;
-					if(++currentArgument < dereferencedArgumentCount){
+					if(++currentArgument < argumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory/\"\n", programName, programName);
 							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
