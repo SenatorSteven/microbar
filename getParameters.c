@@ -22,8 +22,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
-#include <stdio.h>
 #include <dirent.h>
+#include <stdint.h>
+#include <stdio.h>
 #include "headers/defines.h"
 
 #define NoPositions /*-------*/ 0
@@ -44,7 +45,7 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 	programName = argumentVector[0];
 	if(argumentCount > 1){
 		workplacePath = NULL;
-		unsigned int hasReadVariable = NoPositions;
+		uint8_t hasReadVariable = NoPositions;
 		for(unsigned int currentArgument = 1; currentArgument < argumentCount; ++currentArgument){
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
@@ -158,17 +159,17 @@ static bool isArgument(const char *const argument, const char *const vector){
 	unsigned int element = 0;
 	while(argument[element] || vector[element]){
 		if(argument[element] >= 'A' && argument[element] <= 'Z'){
-			if(!(argument[element] == vector[element] || argument[element] == vector[element] - 32)){
+			if(!(vector[element] == argument[element] || vector[element] == argument[element] + 32)){
 				element = 0;
 				break;
 			}
 		}else if(argument[element] >= 'a' && argument[element] <= 'z'){
-			if(!(argument[element] == vector[element] || argument[element] == vector[element] + 32)){
+			if(!(vector[element] == argument[element] || vector[element] == argument[element] - 32)){
 				element = 0;
 				break;
 			}
 		}else{
-			if(!(argument[element] == vector[element])){
+			if(!(vector[element] == argument[element])){
 				element = 0;
 				break;
 			}
