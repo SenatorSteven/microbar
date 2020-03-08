@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xlib.h>
@@ -33,17 +34,18 @@ extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
 extern FILE *file;
-extern unsigned int mode;
+extern unsigned int workplacePathLength;
+extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
 extern unsigned int boxAmount;
-extern char line[DefaultCharactersCount];
+extern char line[DefaultCharactersCount + 1];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
-static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const bytes4 textColor);
+static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const uint32_t textColor);
 static bool isCommand(const char *const command, const char *const vector);
-static void onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor);
+static void onExpose(Window *const *const box, char *const *const text, const uint32_t *const textColor);
 
 void eventLoop(void){
 	unsigned int currentBox;
@@ -85,7 +87,7 @@ void eventLoop(void){
 	char _command[boxAmount][commandMaxLength + 1];
 	char _drawableCommand[boxAmount][drawableCommandMaxLength + 1];
 	char *text[boxAmount];
-	bytes4 textColor[boxAmount];
+	uint32_t textColor[boxAmount];
 	char *command[boxAmount];
 	char *drawableCommand[boxAmount];
 	for(currentBox = 0; currentBox < boxAmount; ++currentBox){
@@ -94,45 +96,33 @@ void eventLoop(void){
 		drawableCommand[currentBox] = _drawableCommand[currentBox];
 		readConfigFillArrays(currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
 	}
-	unsigned int drawableCommandPathLength = 0;
-	{
-		while(workplacePath[drawableCommandPathLength]){
-			++drawableCommandPathLength;
-		}
-		if(workplacePath[drawableCommandPathLength - 1] == '/'){
-			--drawableCommandPathLength;
-		}
-		drawableCommandPathLength += 16;
-	}
+	unsigned int drawableCommandPathLength = workplacePathLength;
+	drawableCommandPathLength += 16;
 	char drawableCommandPath[drawableCommandPathLength + 1];
 	{
-		unsigned int currentCharacter = 0;
-		{
-			const unsigned int lastCharacter = drawableCommandPathLength - 16;
-			while(currentCharacter < lastCharacter){
-				drawableCommandPath[currentCharacter] = workplacePath[currentCharacter];
-				++currentCharacter;
-			}
+		unsigned int element = 0;
+		for(element = 0; element < workplacePathLength; ++element){
+			drawableCommandPath[element] = workplacePath[element];
 		}
-		drawableCommandPath[currentCharacter] = '/';
-		drawableCommandPath[++currentCharacter] = 'd';
-		drawableCommandPath[++currentCharacter] = 'r';
-		drawableCommandPath[++currentCharacter] = 'a';
-		drawableCommandPath[++currentCharacter] = 'w';
-		drawableCommandPath[++currentCharacter] = 'a';
-		drawableCommandPath[++currentCharacter] = 'b';
-		drawableCommandPath[++currentCharacter] = 'l';
-		drawableCommandPath[++currentCharacter] = 'e';
-		drawableCommandPath[++currentCharacter] = 'C';
-		drawableCommandPath[++currentCharacter] = 'o';
-		drawableCommandPath[++currentCharacter] = 'm';
-		drawableCommandPath[++currentCharacter] = 'm';
-		drawableCommandPath[++currentCharacter] = 'a';
-		drawableCommandPath[++currentCharacter] = 'n';
-		drawableCommandPath[++currentCharacter] = 'd';
-		drawableCommandPath[++currentCharacter] = '\0';
+		drawableCommandPath[element] = '/';
+		drawableCommandPath[++element] = 'd';
+		drawableCommandPath[++element] = 'r';
+		drawableCommandPath[++element] = 'a';
+		drawableCommandPath[++element] = 'w';
+		drawableCommandPath[++element] = 'a';
+		drawableCommandPath[++element] = 'b';
+		drawableCommandPath[++element] = 'l';
+		drawableCommandPath[++element] = 'e';
+		drawableCommandPath[++element] = 'C';
+		drawableCommandPath[++element] = 'o';
+		drawableCommandPath[++element] = 'm';
+		drawableCommandPath[++element] = 'm';
+		drawableCommandPath[++element] = 'a';
+		drawableCommandPath[++element] = 'n';
+		drawableCommandPath[++element] = 'd';
+		drawableCommandPath[++element] = '\0';
 	}
-	char _systemCommand[boxAmount][drawableCommandMaxLength + 1 + drawableCommandPathLength + 1];
+	char _systemCommand[boxAmount][drawableCommandMaxLength + drawableCommandPathLength + 2];
 	char *systemCommand[boxAmount];
 	{
 		unsigned int element;
@@ -230,7 +220,7 @@ void eventLoop(void){
 	}
 	return;
 }
-static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const bytes4 textColor){
+static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const uint32_t textColor){
 	bool value = 0;
 	system(systemCommand);
 	if((file = fopen(drawableCommandPath, "r"))){
@@ -308,7 +298,7 @@ static bool isCommand(const char *const command, const char *const vector){
 	}
 	return value;
 }
-static void onExpose(Window *const *const box, char *const *const text, const bytes4 *const textColor){
+static void onExpose(Window *const *const box, char *const *const text, const uint32_t *const textColor){
 	if(boxAmount > 0){
 		GC gc;
 		XGCValues GCValues = {
