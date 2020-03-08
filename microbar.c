@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -35,7 +36,8 @@ SOFTWARE. */
 extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
-extern unsigned int mode;
+extern unsigned int workplacePathLength;
+extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
 extern const XRRMonitorInfo *monitorInfo;
@@ -50,16 +52,22 @@ static void cleanup(void);
 int main(const int argumentCount, const char *const *const argumentVector){
 	if(getParameters((unsigned int)argumentCount, argumentVector)){
 		if(workplacePath){
+			workplacePathLength = 1;
+			while(workplacePath[workplacePathLength]){
+				++workplacePathLength;
+			}
+			if(workplacePath[workplacePathLength - 1] == '/'){
+				--workplacePathLength;
+			}
 			start();
 		}else{
-			unsigned int workplacePathLength = 0;
-			while(configPath[workplacePathLength] != '\0'){
+			workplacePathLength = 1;
+			while(configPath[workplacePathLength]){
 				++workplacePathLength;
 			}
 			do{
 				--workplacePathLength;
 			}while(configPath[workplacePathLength] != '/');
-			++workplacePathLength;
 			char _workplacePath[workplacePathLength + 1];
 			{
 				unsigned int element;
@@ -75,6 +83,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	return 0;
 }
 static void start(void){
+	mode = ModeContinue;
 	while(mode == ModeContinue || mode == ModeRestart){
 		mode = ModeContinue;
 		if((display = XOpenDisplay(NULL))){
@@ -105,10 +114,10 @@ static bool createWindows(void){
 	unsigned int width;
 	unsigned int height;
 	unsigned int border;
-	bytes4 borderColor;
-	bytes4 backgroundColor;
-	bytes4 globalMenuBorderColor;
-	bytes4 globalMenuBackgroundColor;
+	uint32_t borderColor;
+	uint32_t backgroundColor;
+	uint32_t globalMenuBorderColor;
+	uint32_t globalMenuBackgroundColor;
 	unsigned int menuAmount;
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		value = 0;
@@ -134,13 +143,13 @@ static bool createWindows(void){
 	if(value){
 		unsigned int currentMenu;
 		Window menu;
-		bytes4 globalBoxBorderColor;
-		bytes4 globalBoxBackgroundColor;
+		uint32_t globalBoxBorderColor;
+		uint32_t globalBoxBackgroundColor;
 		unsigned int boxAmount;
 		unsigned int currentBox;
 		Window box;
-		bytes4 globalInnerBoxBorderColor;
-		bytes4 globalInnerBoxBackgroundColor;
+		uint32_t globalInnerBoxBorderColor;
+		uint32_t globalInnerBoxBackgroundColor;
 		unsigned int innerBoxAmount;
 		unsigned int currentInnerBox;
 		Window innerBox;
