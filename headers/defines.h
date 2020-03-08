@@ -25,18 +25,18 @@ SOFTWARE. */
 #ifndef DEFINES_H
 #define DEFINES_H
 
+#include <stdint.h>
+
 /* # /user-defined constants start # # # */
 #define Tab /*--------------------*/ "    "
-#define DefaultCharactersCount /*-*/ ((unsigned int)200)
-#define DefaultLinesCount /*------*/ ((unsigned int)200)
-
-typedef int bytes4;
+#define DefaultCharactersCount /*-*/ 200
+#define DefaultLinesCount /*------*/ 200
 /* # /user-defined constants end # # # # */
 
-#define ModeContinue /*-----------*/ ((unsigned int)0)
-#define ModeRestart /*------------*/ ((unsigned int)1)
-#define ModeExit /*---------------*/ ((unsigned int)2)
+#define ModeContinue /*-----------*/ 0
+#define ModeRestart /*------------*/ 1
+#define ModeExit /*---------------*/ 2
 
-typedef unsigned int bool;
+typedef uint8_t bool;
 
 #endif
