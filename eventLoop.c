@@ -98,31 +98,32 @@ void eventLoop(void){
 		drawableCommand[currentBox] = _drawableCommand[currentBox];
 		readConfigFillArrays(currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
 	}
+	
 	char _systemCommand[boxAmount][drawableCommandMaxLength + drawableCommandPathLength + 2];
-	char *systemCommand[boxAmount];
+	const char *systemCommand[boxAmount];
 	{
 		unsigned int element;
 		unsigned int currentCharacter;
 		for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-			systemCommand[currentBox] = _systemCommand[currentBox];
 			element = 0;
 			currentCharacter = 0;
 			if(drawableCommand[currentBox][currentCharacter]){
 				while(drawableCommand[currentBox][currentCharacter]){
-					systemCommand[currentBox][element] = drawableCommand[currentBox][currentCharacter];
+					_systemCommand[currentBox][element] = drawableCommand[currentBox][currentCharacter];
 					++element;
 					++currentCharacter;
 				}
-				systemCommand[currentBox][element] = '>';
+				_systemCommand[currentBox][element] = '>';
 				++element;
 				currentCharacter = 0;
 				while(currentCharacter < drawableCommandPathLength){
-					systemCommand[currentBox][element] = drawableCommandPath[currentCharacter];
+					_systemCommand[currentBox][element] = drawableCommandPath[currentCharacter];
 					++element;
 					++currentCharacter;
 				}
 			}
-			systemCommand[currentBox][element] = '\0';
+			_systemCommand[currentBox][element] = '\0';
+			systemCommand[currentBox] = _systemCommand[currentBox];
 		}
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
