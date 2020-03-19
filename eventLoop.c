@@ -35,6 +35,8 @@ extern const char *configPath;
 extern const char *workplacePath;
 extern FILE *file;
 extern unsigned int workplacePathLength;
+extern unsigned int drawableCommandPathLength;
+extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
@@ -95,32 +97,6 @@ void eventLoop(void){
 		command[currentBox] = _command[currentBox];
 		drawableCommand[currentBox] = _drawableCommand[currentBox];
 		readConfigFillArrays(currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
-	}
-	unsigned int drawableCommandPathLength = workplacePathLength;
-	drawableCommandPathLength += 16;
-	char drawableCommandPath[drawableCommandPathLength + 1];
-	{
-		unsigned int element = 0;
-		for(element = 0; element < workplacePathLength; ++element){
-			drawableCommandPath[element] = workplacePath[element];
-		}
-		drawableCommandPath[element] = '/';
-		drawableCommandPath[++element] = 'd';
-		drawableCommandPath[++element] = 'r';
-		drawableCommandPath[++element] = 'a';
-		drawableCommandPath[++element] = 'w';
-		drawableCommandPath[++element] = 'a';
-		drawableCommandPath[++element] = 'b';
-		drawableCommandPath[++element] = 'l';
-		drawableCommandPath[++element] = 'e';
-		drawableCommandPath[++element] = 'C';
-		drawableCommandPath[++element] = 'o';
-		drawableCommandPath[++element] = 'm';
-		drawableCommandPath[++element] = 'm';
-		drawableCommandPath[++element] = 'a';
-		drawableCommandPath[++element] = 'n';
-		drawableCommandPath[++element] = 'd';
-		drawableCommandPath[++element] = '\0';
 	}
 	char _systemCommand[boxAmount][drawableCommandMaxLength + drawableCommandPathLength + 2];
 	char *systemCommand[boxAmount];
