@@ -253,17 +253,17 @@ static bool isCommand(const char *const command, const char *const vector){
 	unsigned int element = 0;
 	while(command[element] || vector[element]){
 		if(command[element] >= 'A' && command[element] <= 'Z'){
-			if(!(command[element] == vector[element] || command[element] == vector[element] - 32)){
+			if(!(vector[element] == command[element] || vector[element] == command[element] + 32)){
 				element = 0;
 				break;
 			}
 		}else if(command[element] >= 'a' && command[element] <= 'z'){
-			if(!(command[element] == vector[element] || command[element] == vector[element] + 32)){
+			if(!(vector[element] == command[element] || vector[element] == command[element] - 32)){
 				element = 0;
 				break;
 			}
 		}else{
-			if(!(command[element] == vector[element])){
+			if(!(vector[element] == command[element])){
 				element = 0;
 				break;
 			}
