@@ -251,6 +251,7 @@ static bool createWindows(void){
 					if(currentBox == boxAmount + 1){
 						currentMenu = menuAmount;
 					}
+					XSelectInput(display, menu, ExposureMask);
 					XMapWindow(display, menu);
 				}else{
 					currentMenu = menuAmount;
