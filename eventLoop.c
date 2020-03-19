@@ -52,7 +52,7 @@ static void onExpose(const Window *const *const box, char *const *const text, co
 void eventLoop(void){
 	unsigned int currentBox;
 	Window _box[monitorAmount][boxAmount];
-	Window *box[monitorAmount];
+	const Window *box[monitorAmount];
 	{
 		Window rootWindow;
 		Window parentWindow;
