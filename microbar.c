@@ -26,6 +26,7 @@ SOFTWARE. */
 #include <stdio.h>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
+#include <X11/Xlocale.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/Xrandr.h>
 #include "headers/defines.h"
@@ -37,6 +38,8 @@ extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
 extern unsigned int workplacePathLength;
+extern unsigned int drawableCommandPathLength;
+extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
@@ -83,6 +86,33 @@ int main(const int argumentCount, const char *const *const argumentVector){
 	return 0;
 }
 static void start(void){
+	drawableCommandPathLength = workplacePathLength;
+	drawableCommandPathLength += 16;
+	char _drawableCommandPath[drawableCommandPathLength + 1];
+	{
+		unsigned int element = 0;
+		for(element = 0; element < workplacePathLength; ++element){
+			_drawableCommandPath[element] = workplacePath[element];
+		}
+		_drawableCommandPath[element] = '/';
+		_drawableCommandPath[++element] = 'd';
+		_drawableCommandPath[++element] = 'r';
+		_drawableCommandPath[++element] = 'a';
+		_drawableCommandPath[++element] = 'w';
+		_drawableCommandPath[++element] = 'a';
+		_drawableCommandPath[++element] = 'b';
+		_drawableCommandPath[++element] = 'l';
+		_drawableCommandPath[++element] = 'e';
+		_drawableCommandPath[++element] = 'C';
+		_drawableCommandPath[++element] = 'o';
+		_drawableCommandPath[++element] = 'm';
+		_drawableCommandPath[++element] = 'm';
+		_drawableCommandPath[++element] = 'a';
+		_drawableCommandPath[++element] = 'n';
+		_drawableCommandPath[++element] = 'd';
+		_drawableCommandPath[++element] = '\0';
+	}
+	drawableCommandPath = _drawableCommandPath;
 	mode = ModeContinue;
 	while(mode == ModeContinue || mode == ModeRestart){
 		mode = ModeContinue;
