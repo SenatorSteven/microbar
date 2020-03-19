@@ -46,6 +46,7 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 	if(argumentCount > 1){
 		workplacePath = NULL;
 		uint8_t hasReadVariable = NoPositions;
+		DIR *dir;
 		for(unsigned int currentArgument = 1; currentArgument < argumentCount; ++currentArgument){
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){
@@ -63,21 +64,35 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 							break;
 						}else{
 							configPath = argumentVector[currentArgument];
-							file = fopen(configPath, "r");
-							if(file){
-								fclose(file);
-								continue;
-							}else{
-								file = fopen(configPath, "w");
-								if(file){
-									fclose(file);
-									remove(configPath);
-									continue;
+							if(configPath[0] == '/'){
+								dir = opendir(configPath);
+								if(!dir){
+									file = fopen(configPath, "r");
+									if(file){
+										fclose(file);
+										continue;
+									}else{
+										file = fopen(configPath, "w");
+										if(file){
+											fclose(file);
+											remove(configPath);
+											continue;
+										}else{
+											fprintf(stderr, "%s: could not create config file\n", programName);
+											hasReadVariable |= ExitPosition;
+											break;
+										}
+									}
 								}else{
-									fprintf(stderr, "%s: \"%s\" config value is not valid\n", programName, configPath);
+									closedir(dir);
+									fprintf(stderr, "%s: \"%s\" config value is directory\n", programName, configPath);
 									hasReadVariable |= ExitPosition;
 									break;
 								}
+							}else{
+								fprintf(stderr, "%s: \"%s\" config value is not a path\n", programName, configPath);
+								hasReadVariable |= ExitPosition;
+								break;
 							}
 						}
 					}else{
@@ -104,13 +119,12 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 							break;
 						}else{
 							workplacePath = argumentVector[currentArgument];
-							DIR *dir = opendir(workplacePath);
+							dir = opendir(workplacePath);
 							if(dir){
 								closedir(dir);
 								continue;
 							}else{
 								fprintf(stderr, "%s: \"%s\" workplace value is not valid\n", programName, workplacePath);
-								workplacePath = NULL;
 								hasReadVariable |= ExitPosition;
 								break;
 							}
