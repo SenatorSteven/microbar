@@ -47,7 +47,7 @@ extern unsigned int currentMonitor;
 
 static bool drawCommand(const Window topLevelWindow, const char *const systemCommand, const char *const drawableCommandPath, const Window box, const uint32_t textColor);
 static bool isCommand(const char *const command, const char *const vector);
-static void onExpose(Window *const *const box, char *const *const text, const uint32_t *const textColor);
+static void onExpose(const Window *const *const box, char *const *const text, const uint32_t *const textColor);
 
 void eventLoop(void){
 	unsigned int currentBox;
@@ -63,7 +63,6 @@ void eventLoop(void){
 		unsigned int boxNumber;
 		unsigned int currentMenu;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			box[currentMonitor] = _box[currentMonitor];
 			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &menu, &menuAmount);
 			boxNumber = 0;
 			if(menuAmount > 0){
@@ -71,7 +70,7 @@ void eventLoop(void){
 					XQueryTree(display, menu[currentMenu], &rootWindow, &parentWindow, &boxArray, &boxAmount);
 					if(boxAmount > 0){
 						for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-							box[currentMonitor][boxNumber] = boxArray[currentBox];
+							_box[currentMonitor][boxNumber] = boxArray[currentBox];
 							++boxNumber;
 						}
 						XFree(boxArray);
@@ -79,6 +78,7 @@ void eventLoop(void){
 				}
 				XFree(menu);
 			}
+			box[currentMonitor] = _box[currentMonitor];
 		}
 	}
 	unsigned int textMaxLength;
@@ -275,7 +275,7 @@ static bool isCommand(const char *const command, const char *const vector){
 	}
 	return value;
 }
-static void onExpose(Window *const *const box, char *const *const text, const uint32_t *const textColor){
+static void onExpose(const Window *const *const box, char *const *const text, const uint32_t *const textColor){
 	if(boxAmount > 0){
 		GC gc;
 		XGCValues GCValues = {
