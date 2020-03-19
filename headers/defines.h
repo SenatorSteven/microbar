@@ -29,8 +29,8 @@ SOFTWARE. */
 
 /* # /user-defined constants start # # # */
 #define Tab /*--------------------*/ "    "
-#define DefaultCharactersCount /*-*/ 200
-#define DefaultLinesCount /*------*/ 200
+#define DefaultCharactersCount /*-*/ 255
+#define DefaultLinesCount /*------*/ 100
 /* # /user-defined constants end # # # # */
 
 #define ModeContinue /*-----------*/ 0
