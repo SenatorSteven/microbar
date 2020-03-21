@@ -26,12 +26,16 @@ SOFTWARE. */
 #define READCONFIG_H
 
 bool readConfigScan(const Window parentWindow);
-bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalMenuBorderColor, uint32_t *const globalMenuBackgroundColor, unsigned int *const menuAmount);
-bool readConfigMenuWindow(const Window parentWindow, const unsigned int currentMenu, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalBoxBorderColor, uint32_t *const globalBoxBackgroundColor, unsigned int *const boxAmount);
-bool readConfigBoxWindow(const Window parentWindow, const unsigned int currentMenu, const unsigned int currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalInnerBoxBorderColor, uint32_t *const globalInnerBoxBackgroundColor, unsigned int *const innerBoxAmount);
-bool readConfigInnerBoxWindow(const Window parentWindow, const unsigned int currentMenu, const unsigned int currentBox, const unsigned int currentInnerBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor);
+bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalSectionBorderColor, uint32_t *const globalSectionBackgroundColor, unsigned int *const sectionAmount);
+bool readConfigSectionWindow(const Window parentWindow, const unsigned int currentSection, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalBoxBorderColor, uint32_t *const globalBoxBackgroundColor, unsigned int *const boxAmount);
+bool readConfigBoxWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalRectangleBorderColor, uint32_t *const globalRectangleBackgroundColor, unsigned int *const rectangleAmount);
+bool readConfigRectangleWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentBox, const unsigned int currentRectangle, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor);
 bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int *const commandMaxWordLength, unsigned int *const drawableCommandMaxWordLength);
 bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint32_t *const textColor, char *const command, char *const drawableCommand);
 bool readConfigButton(const Window window, const unsigned int currentBox);
+bool readConfigFontAmount(unsigned int *const fontAmount);
+bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const userFontLength);
+bool readConfigFillFontArray(const unsigned int currentFont, char *font);
+bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *const drawableCommandOffsetX, int *const drawableCommandOffsetY);
 
 #endif
