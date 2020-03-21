@@ -117,16 +117,26 @@ static void start(void){
 	while(mode == ModeContinue || mode == ModeRestart){
 		mode = ModeContinue;
 		if((display = XOpenDisplay(NULL))){
-			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
-			readConfigScan(XDefaultRootWindow(display));
-			Window topLevelWindow[monitorAmount];
-			topLevelWindowArray = topLevelWindow;
-			if(createWindows()){
-				setTopLevelWindowProperties();
-				eventLoop();
-				cleanup();
+			if(setlocale(LC_CTYPE, "")){
+				if(!XSupportsLocale()){
+					fprintf(stderr, "%s: locale is not supported\n", programName);
+				}
 			}else{
-				fprintf(stderr, "%s: could not create windows\n", programName);
+				fprintf(stderr, "%s: can't set locale\n", programName);
+			}
+			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+			if(readConfigScan(XDefaultRootWindow(display))){
+				Window topLevelWindow[monitorAmount];
+				topLevelWindowArray = topLevelWindow;
+				if(createWindows()){
+					setTopLevelWindowProperties();
+					eventLoop();
+					cleanup();
+				}else{
+					fprintf(stderr, "%s: could not create windows\n", programName);
+					mode = ModeExit;
+				}
+			}else{
 				mode = ModeExit;
 			}
 			XCloseDisplay(display);
@@ -146,12 +156,12 @@ static bool createWindows(void){
 	unsigned int border;
 	uint32_t borderColor;
 	uint32_t backgroundColor;
-	uint32_t globalMenuBorderColor;
-	uint32_t globalMenuBackgroundColor;
-	unsigned int menuAmount;
+	uint32_t globalSectionBorderColor;
+	uint32_t globalSectionBackgroundColor;
+	unsigned int sectionAmount;
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		value = 0;
-		if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalMenuBorderColor, &globalMenuBackgroundColor, &menuAmount)){
+		if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
 			if(width > 0 && height > 0){
 				x += monitorInfo[currentMonitor].x;
 				y += monitorInfo[currentMonitor].y;
@@ -171,31 +181,31 @@ static bool createWindows(void){
 		}
 	}
 	if(value){
-		unsigned int currentMenu;
-		Window menu;
+		unsigned int currentSection;
+		Window section;
 		uint32_t globalBoxBorderColor;
 		uint32_t globalBoxBackgroundColor;
 		unsigned int boxAmount;
 		unsigned int currentBox;
 		Window box;
-		uint32_t globalInnerBoxBorderColor;
-		uint32_t globalInnerBoxBackgroundColor;
-		unsigned int innerBoxAmount;
-		unsigned int currentInnerBox;
-		Window innerBox;
+		uint32_t globalRectangleBorderColor;
+		uint32_t globalRectangleBackgroundColor;
+		unsigned int rectangleAmount;
+		unsigned int currentRectangle;
+		Window rectangle;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			value = 0;
-			currentMenu = 0;
-			while(currentMenu < menuAmount){
-				if(readConfigMenuWindow(topLevelWindowArray[currentMonitor], currentMenu, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+			currentSection = 0;
+			while(currentSection < sectionAmount){
+				if(readConfigSectionWindow(topLevelWindowArray[currentMonitor], currentSection, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
-							borderColor = globalMenuBorderColor;
+							borderColor = globalSectionBorderColor;
 						}
 						if(backgroundColor == 0x00000000){
-							backgroundColor = globalMenuBackgroundColor;
+							backgroundColor = globalSectionBackgroundColor;
 						}
-						menu = XCreateSimpleWindow(display, topLevelWindowArray[currentMonitor], x, y, width, height, border, borderColor, backgroundColor);
+						section = XCreateSimpleWindow(display, topLevelWindowArray[currentMonitor], x, y, width, height, border, borderColor, backgroundColor);
 						value = 1;
 					}
 				}
@@ -203,7 +213,7 @@ static bool createWindows(void){
 					value = 0;
 					currentBox = 0;
 					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(menu, currentMenu, currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalInnerBoxBorderColor, &globalInnerBoxBackgroundColor, &innerBoxAmount)){
+						if(readConfigBoxWindow(section, currentSection, currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalRectangleBorderColor, &globalRectangleBackgroundColor, &rectangleAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
 									borderColor = globalBoxBorderColor;
@@ -211,35 +221,35 @@ static bool createWindows(void){
 								if(backgroundColor == 0x00000000){
 									backgroundColor = globalBoxBackgroundColor;
 								}
-								box = XCreateSimpleWindow(display, menu, x, y, width, height, border, borderColor, backgroundColor);
+								box = XCreateSimpleWindow(display, section, x, y, width, height, border, borderColor, backgroundColor);
 								value = 1;
 							}
 						}
 						if(value){
 							value = 0;
-							currentInnerBox = 0;
-							while(currentInnerBox < innerBoxAmount){
-								if(readConfigInnerBoxWindow(box, currentMenu, currentBox, currentInnerBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+							currentRectangle = 0;
+							while(currentRectangle < rectangleAmount){
+								if(readConfigRectangleWindow(box, currentSection, currentBox, currentRectangle, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
 										if(borderColor == 0x00000000){
-											borderColor = globalInnerBoxBorderColor;
+											borderColor = globalRectangleBorderColor;
 										}
 										if(backgroundColor == 0x00000000){
-											backgroundColor = globalInnerBoxBackgroundColor;
+											backgroundColor = globalRectangleBackgroundColor;
 										}
-										innerBox = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
+										rectangle = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
 										value = 1;
 									}
 								}
 								if(value){
 									value = 0;
-									XMapWindow(display, innerBox);
+									XMapWindow(display, rectangle);
 								}else{
-									currentInnerBox = innerBoxAmount;
+									currentRectangle = rectangleAmount;
 								}
-								++currentInnerBox;
+								++currentRectangle;
 							}
-							if(currentInnerBox == innerBoxAmount + 1){
+							if(currentRectangle == rectangleAmount + 1){
 								currentBox = boxAmount;
 							}
 							XMapWindow(display, box);
@@ -249,16 +259,16 @@ static bool createWindows(void){
 						++currentBox;
 					}
 					if(currentBox == boxAmount + 1){
-						currentMenu = menuAmount;
+						currentSection = sectionAmount;
 					}
-					XSelectInput(display, menu, ExposureMask);
-					XMapWindow(display, menu);
+					XSelectInput(display, section, ExposureMask);
+					XMapWindow(display, section);
 				}else{
-					currentMenu = menuAmount;
+					currentSection = sectionAmount;
 				}
-				++currentMenu;
+				++currentSection;
 			}
-			if(currentMenu == menuAmount){
+			if(currentSection == sectionAmount){
 				value = 1;
 			}else{
 				break;
