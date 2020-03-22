@@ -43,7 +43,7 @@ extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
-extern const XRRMonitorInfo *monitorInfo;
+extern unsigned int whichMonitor;
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
@@ -124,19 +124,27 @@ static void start(void){
 			}else{
 				fprintf(stderr, "%s: can't set locale\n", programName);
 			}
-			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
-			if(readConfigScan(XDefaultRootWindow(display))){
-				Window topLevelWindow[monitorAmount];
-				topLevelWindowArray = topLevelWindow;
-				if(createWindows()){
-					setTopLevelWindowProperties();
-					eventLoop();
-					cleanup();
+			{
+				XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+				XRRFreeMonitors(monitorInfo);
+			}
+			if(monitorAmount){
+				if(readConfigScan(XDefaultRootWindow(display))){
+					Window topLevelWindow[monitorAmount];
+					topLevelWindowArray = topLevelWindow;
+					if(createWindows()){
+						setTopLevelWindowProperties();
+						eventLoop();
+						cleanup();
+					}else{
+						fprintf(stderr, "%s: could not create windows\n", programName);
+						mode = ModeExit;
+					}
 				}else{
-					fprintf(stderr, "%s: could not create windows\n", programName);
 					mode = ModeExit;
 				}
 			}else{
+				fprintf(stderr, "%s: no monitors\n", programName);
 				mode = ModeExit;
 			}
 			XCloseDisplay(display);
@@ -159,26 +167,39 @@ static bool createWindows(void){
 	uint32_t globalSectionBorderColor;
 	uint32_t globalSectionBackgroundColor;
 	unsigned int sectionAmount;
-	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		value = 0;
-		if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
-			if(width > 0 && height > 0){
-				x += monitorInfo[currentMonitor].x;
-				y += monitorInfo[currentMonitor].y;
-				XVisualInfo visualInfo;
-				XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
-				XSetWindowAttributes windowAttributes = {
-					.background_pixel = backgroundColor,
-					.border_pixel = borderColor,
-					.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
-				};
-				topLevelWindowArray[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
-				value = 1;
+	{
+		XRRMonitorInfo *monitorInfo;
+		{
+			unsigned int monitorAmount;
+			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+		}
+		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+			value = 0;
+			if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
+				if(width > 0 && height > 0){
+					if(monitorAmount == whichMonitor){
+						x += monitorInfo[currentMonitor].x;
+						y += monitorInfo[currentMonitor].y;
+					}else{
+						x += monitorInfo[whichMonitor].x;
+						y += monitorInfo[whichMonitor].y;
+					}
+					XVisualInfo visualInfo;
+					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
+					XSetWindowAttributes windowAttributes = {
+						.background_pixel = backgroundColor,
+						.border_pixel = borderColor,
+						.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
+					};
+					topLevelWindowArray[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
+					value = 1;
+				}
+			}
+			if(!value){
+				break;
 			}
 		}
-		if(!value){
-			break;
-		}
+		XRRFreeMonitors(monitorInfo);
 	}
 	if(value){
 		unsigned int currentSection;
@@ -313,6 +334,12 @@ static void setTopLevelWindowProperties(void){
 		.res_class = (char *)programName
 	};
 	long unsigned int data[12];
+	unsigned int monitor = whichMonitor;
+	XRRMonitorInfo *monitorInfo;
+	{
+		int monitorAmount;
+		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
+	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XGetWindowAttributes(display, topLevelWindowArray[currentMonitor], &windowAttributes);
 		sizeHints.x = windowAttributes.x;
@@ -345,7 +372,10 @@ static void setTopLevelWindowProperties(void){
 		data[5] = 0;
 		data[6] = 0;
 		data[7] = 0;
-		if(windowAttributes.y < monitorInfo[currentMonitor].height / 2){
+		if(monitorAmount == whichMonitor){
+			monitor = currentMonitor;
+		}
+		if(windowAttributes.y < monitorInfo[monitor].height / 2){
 			data[2] = windowAttributes.y;
 			data[2] += windowAttributes.height;
 			data[3] = 0;
@@ -370,6 +400,7 @@ static void setTopLevelWindowProperties(void){
 		XSelectInput(display, topLevelWindowArray[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
 		XRRSelectInput(display, topLevelWindowArray[currentMonitor], RRScreenChangeNotifyMask);
 	}
+	XRRFreeMonitors(monitorInfo);
 	return;
 }
 static void cleanup(void){
