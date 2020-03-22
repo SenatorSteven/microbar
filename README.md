@@ -30,7 +30,9 @@ A simple text-based status bar for the X Window System.
 ## ...But what _is_ microbar?
 Well, if the comment alone does not provide enough information, microbar is a simple, fast and highly customizable information provider and command runner.
 
-![microbar](https://github.com/TheSenatorSteven/microbar/blob/master/sample.png)
+<p align="center">
+  <img width="612" height="38" src="https://github.com/TheSenatorSteven/microbar/blob/master/sample.png">
+</p>
 
 
 
