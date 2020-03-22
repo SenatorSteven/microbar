@@ -40,7 +40,7 @@ Well, if the comment alone does not provide enough information, microbar is a si
 - Ability to execute one-time commands e.g. "firefox"
 - Ability to execute text-returning commands e.g. "date"
 - Ability to restart after a configuration edit
-- Multi-monitor support
+- Multi-monitor support and options
 
 
 
