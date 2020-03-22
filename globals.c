@@ -37,7 +37,7 @@ const char *drawableCommandPath;
 uint8_t mode;
 Display *display;
 unsigned int monitorAmount;
-const XRRMonitorInfo *monitorInfo;
+unsigned int whichMonitor;
 unsigned int boxAmount;
 char line[DefaultCharactersCount + 1];
 Window *topLevelWindowArray;
