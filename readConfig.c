@@ -1746,7 +1746,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
-			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, hideKey, section{}\n");
+			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, hideKey, section{}\n");
 			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalBoxBorderColor, globalBoxBackgroundColor, globalTextColor, box{}\n");
 			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
 			fprintf(config, "# rectangle object: x, y, width, height, border, borderColor, backgroundColor\n");
@@ -1816,13 +1816,13 @@ static FILE *getConfigFile(void){
 			fprintf(config, "	x = 0\n");
 			fprintf(config, "	y = 0\n");
 			fprintf(config, "	width = 58\n");
-			fprintf(config, "	height = 19\n");
+			fprintf(config, "	height = ParentHeight\n");
 			fprintf(config, "	border = 0\n");
 			fprintf(config, "	box{\n");
 			fprintf(config, "		x = 0\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 56\n");
-			fprintf(config, "		height = 17\n");
+			fprintf(config, "		height = ParentHeight - 2\n");
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		borderColor = #FF1F1F1F\n");
 			fprintf(config, "		backgroundColor = #FF000000\n");
@@ -1838,7 +1838,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "	x = ParentWidth - 224\n");
 			fprintf(config, "	y = 0\n");
 			fprintf(config, "	width = 224\n");
-			fprintf(config, "	height = 19\n");
+			fprintf(config, "	height = ParentHeight\n");
 			fprintf(config, "	border = 0\n");
 			fprintf(config, "	globalBoxBorderColor = #FF1F1F1F\n");
 			fprintf(config, "	globalBoxBackgroundColor = #FF000000\n");
@@ -1847,7 +1847,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		x = ParentWidth - 224\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 84\n");
-			fprintf(config, "		height = 17\n");
+			fprintf(config, "		height = ParentHeight - 2\n");
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"date\"\n");
 			fprintf(config, "		textOffsetY = -2\n");
@@ -1860,7 +1860,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		x = ParentWidth - 137\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 97\n");
-			fprintf(config, "		height = 17\n");
+			fprintf(config, "		height = ParentHeight - 2\n");
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"time\"\n");
 			fprintf(config, "		textOffsetX = 1\n");
@@ -1873,7 +1873,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		x = ParentWidth - 37\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 35\n");
-			fprintf(config, "		height = 17\n");
+			fprintf(config, "		height = ParentHeight - 2\n");
 			fprintf(config, "		border = 1\n");
 			fprintf(config, "		text = \"exit\"\n");
 			fprintf(config, "		textColor = #FFFF0000\n");
