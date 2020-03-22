@@ -31,7 +31,7 @@ A simple text-based status bar for the X Window System.
 Well, if the comment alone does not provide enough information, microbar is a simple, fast and highly customizable information provider and command runner.
 
 <p align="center">
-  <img width="612" height="38" src="https://github.com/TheSenatorSteven/microbar/blob/master/sample.png">
+  <img width="612" height="38" src="https://github.com/TheSenatorSteven/microbar/blob/master/sample.png" alt="sample">
 </p>
 
 
