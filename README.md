@@ -36,7 +36,7 @@ Well, if the comment alone does not provide enough information, microbar is a si
 
 ## Features
 - Extremely verbose and helpful default configuration
-- Fully customizable bar, "menus", "boxes" and "innerBoxes"
+- Fully customizable bar, "sections", "boxes" and "rectangles"
 - Ability to execute one-time commands e.g. "firefox"
 - Ability to execute text-returning commands e.g. "date"
 - Ability to restart after a configuration edit
