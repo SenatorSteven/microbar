@@ -43,20 +43,21 @@ SOFTWARE. */
 #define GlobalBoxBackgroundColorPosition /*-------*/ (1 << 11)
 #define GlobalRectangleBorderColorPosition /*-----*/ (1 << 12)
 #define GlobalRectangleBackgroundColorPosition /*-*/ (1 << 13)
-#define HideKeyPosition /*------------------------*/ (1 << 14)
-#define TextPosition /*---------------------------*/ (1 << 15)
-#define TextColorPosition /*----------------------*/ (1 << 16)
-#define GlobalTextColorPosition /*----------------*/ (1 << 17)
-#define CommandPosition /*------------------------*/ (1 << 18)
-#define DrawableCommandPosition /*----------------*/ (1 << 19)
-#define TextOffsetXPosition /*--------------------*/ (1 << 20)
-#define TextOffsetYPosition /*--------------------*/ (1 << 21)
-#define DrawableCommandOffsetXPosition /*---------*/ (1 << 22)
-#define DrawableCommandOffsetYPosition /*---------*/ (1 << 23)
-#define ButtonPosition /*-------------------------*/ (1 << 24)
-#define SectionPosition /*------------------------*/ (1 << 25)
-#define BoxPosition /*----------------------------*/ (1 << 26)
-#define RectanglePosition /*----------------------*/ (1 << 27)
+#define MonitorPosition /*------------------------*/ (1 << 14)
+#define HideKeyPosition /*------------------------*/ (1 << 15)
+#define TextPosition /*---------------------------*/ (1 << 16)
+#define TextColorPosition /*----------------------*/ (1 << 17)
+#define GlobalTextColorPosition /*----------------*/ (1 << 18)
+#define CommandPosition /*------------------------*/ (1 << 19)
+#define DrawableCommandPosition /*----------------*/ (1 << 20)
+#define TextOffsetXPosition /*--------------------*/ (1 << 21)
+#define TextOffsetYPosition /*--------------------*/ (1 << 22)
+#define DrawableCommandOffsetXPosition /*---------*/ (1 << 23)
+#define DrawableCommandOffsetYPosition /*---------*/ (1 << 24)
+#define ButtonPosition /*-------------------------*/ (1 << 25)
+#define SectionPosition /*------------------------*/ (1 << 26)
+#define BoxPosition /*----------------------------*/ (1 << 27)
+#define RectanglePosition /*----------------------*/ (1 << 28)
 
 #define NoOperation /*----------------------------*/ 0
 #define AdditionOperation /*----------------------*/ 1
@@ -68,7 +69,8 @@ extern const char *programName;
 extern const char *configPath;
 extern FILE *file;
 extern Display *display;
-extern const XRRMonitorInfo *monitorInfo;
+extern unsigned int monitorAmount;
+extern unsigned int whichMonitor;
 extern unsigned int boxAmount;
 extern char line[DefaultCharactersCount + 1];
 extern Window *topLevelWindowArray;
@@ -89,6 +91,7 @@ static void printLineError(const unsigned int currentLine);
 bool readConfigScan(const Window parentWindow){
 	bool value = 0;
 	if((file = getConfigFile())){
+		whichMonitor = monitorAmount;
 		boxAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
@@ -108,6 +111,24 @@ bool readConfigScan(const Window parentWindow){
 								pushWhitespace(&element);
 								maxLinesCount = getUnsignedDecimalNumber(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
+							}
+							continue;
+						}
+					}
+					if(!(hasReadVariable & MonitorPosition)){
+						if(isVariable("monitor", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								pushWhitespace(&element);
+								if(!isVariable("all", &element)){
+									whichMonitor = getUnsignedDecimalNumber(None, currentLine, &element);
+									if(whichMonitor >= monitorAmount){
+										whichMonitor = monitorAmount;
+									}else{
+										monitorAmount = 1;
+									}
+								}
+								hasReadVariable |= MonitorPosition;
 							}
 							continue;
 						}
@@ -141,6 +162,7 @@ bool readConfigScan(const Window parentWindow){
 					   !isVariable("globalSectionBorderColor",     &element) &&
 					   !isVariable("globalSectionBackgroundColor", &element) &&
 					   !isVariable("font",                         &element) &&
+					   !isVariable("monitor",                      &element) &&
 					   !isVariable("hideKey",                      &element) &&
 					   !isVariable("section",                      &element) &&
 					   !isVariable("}",                            &element)){
@@ -1746,7 +1768,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
-			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, hideKey, section{}\n");
+			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, monitor, hideKey, section{}\n");
 			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalBoxBorderColor, globalBoxBackgroundColor, globalTextColor, box{}\n");
 			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
 			fprintf(config, "# rectangle object: x, y, width, height, border, borderColor, backgroundColor\n");
@@ -1771,6 +1793,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# globalRectangleBackgroundColor: color of all rectangles\' background\n");
 			fprintf(config, "# globalTextColor: color of all boxes\' text\n");
 			fprintf(config, "# font: font to form part of a font set, multiple fonts allowed and encouraged\n");
+			fprintf(config, "# monitor: monitor to be used\n");
 			fprintf(config, "# hideKey: combination of keycode and modifiers used to hide the bar\n");
 			fprintf(config, "# text: text label of box\n");
 			fprintf(config, "# textColor: color of box\'s text\n");
@@ -1792,6 +1815,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# lines: default %u\n", DefaultLinesCount);
 			fprintf(config, "# font: the xfontsel application is recommended for looking at different available fonts\n");
 			fprintf(config, "# font: requires quotation, there is a font hierarchy from first to last specified\n");
+			fprintf(config, "# monitor: 0 = first, 1 = second, all = all, (>= n) = all\n");
 			fprintf(config, "# hideKey: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# text: requires quotation\n");
 			fprintf(config, "# command: requires quotation, program commands: restart, exit\n");
@@ -1799,7 +1823,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# button: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# button: buttons: Button1 = left click, Button2 = middle click, Button3 = right click, Button4 = wheel up, Button5 = wheel down\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 187\n");
+			fprintf(config, "lines = 190\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -1811,6 +1835,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "globalSectionBackgroundColor = #FF000000\n");
 			fprintf(config, "font = \"-misc-fixed-medium-r-normal-*-13-120-75-75-C-70-iso10646-1\"\n");
 			fprintf(config, "font = \"-*-*-*-*-*-*-*-*-*-*-*-*-gb2312.1980-*\"\n");
+			fprintf(config, "monitor = all\n");
 			fprintf(config, "hideKey = 116 + Mod4\n");
 			fprintf(config, "section{\n");
 			fprintf(config, "	x = 0\n");
@@ -1968,8 +1993,19 @@ static int getDecimalNumber(const Window parentWindow, unsigned int *const eleme
 	if(parentWindow){
 		XGetWindowAttributes(display, parentWindow, &windowAttributes);
 		if(parentWindow == XDefaultRootWindow(display)){
-			windowAttributes.width = monitorInfo[currentMonitor].width;
-			windowAttributes.height = monitorInfo[currentMonitor].height;
+			XRRMonitorInfo *monitorInfo;
+			{
+				int monitorAmount;
+				monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
+			}
+			if(monitorAmount == whichMonitor){
+				windowAttributes.width = monitorInfo[currentMonitor].width;
+				windowAttributes.height = monitorInfo[currentMonitor].height;
+			}else{
+				windowAttributes.width = monitorInfo[whichMonitor].width;
+				windowAttributes.height = monitorInfo[whichMonitor].height;
+			}
+			XRRFreeMonitors(monitorInfo);
 		}
 	}
 	while(line[dereferencedElement]){
