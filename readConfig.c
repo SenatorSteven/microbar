@@ -130,20 +130,20 @@ bool readConfigScan(const Window parentWindow){
 						}
 						continue;
 					}
-					if(!isVariable("lines",                     &element) &&
-					   !isVariable("x",                         &element) &&
-					   !isVariable("y",                         &element) &&
-					   !isVariable("width",                     &element) &&
-					   !isVariable("height",                    &element) &&
-					   !isVariable("border",                    &element) &&
-					   !isVariable("borderColor",               &element) &&
-					   !isVariable("backgroundColor",           &element) &&
+					if(!isVariable("lines",                        &element) &&
+					   !isVariable("x",                            &element) &&
+					   !isVariable("y",                            &element) &&
+					   !isVariable("width",                        &element) &&
+					   !isVariable("height",                       &element) &&
+					   !isVariable("border",                       &element) &&
+					   !isVariable("borderColor",                  &element) &&
+					   !isVariable("backgroundColor",              &element) &&
 					   !isVariable("globalSectionBorderColor",     &element) &&
 					   !isVariable("globalSectionBackgroundColor", &element) &&
-					   !isVariable("font",                      &element) &&
-					   !isVariable("hideKey",                   &element) &&
+					   !isVariable("font",                         &element) &&
+					   !isVariable("hideKey",                      &element) &&
 					   !isVariable("section",                      &element) &&
-					   !isVariable("}",                         &element)){
+					   !isVariable("}",                            &element)){
 						printLineError(currentLine);
 						continue;
 					}
@@ -201,7 +201,7 @@ bool readConfigScan(const Window parentWindow){
 					   !isVariable("textOffsetX",     &element) &&
 					   !isVariable("textOffsetY",     &element) &&
 					   !isVariable("button",          &element) &&
-					   !isVariable("rectangle",        &element) &&
+					   !isVariable("rectangle",       &element) &&
 					   !isVariable("}",               &element)){
 						printLineError(currentLine);
 						continue;
