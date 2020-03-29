@@ -40,95 +40,95 @@ extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
-extern unsigned int boxAmount;
+extern unsigned int containerAmount;
 extern char line[DefaultCharactersCount + 1];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
 static XFontSet createFontSet();
-static void drawCommand(const char *const systemCommand, const Window box, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor);
+static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor);
 static bool isCommand(const char *const command, const char *const vector);
-static void onExpose(const Window *const *const box, char *const *const text, const XFontSet fontSet, const int *const fontOffsetX, const int *const fontOffsetY, const GC *gc, const uint32_t *const textColor);
+static void onExpose(const Window *const *const container, char *const *const text, const XFontSet fontSet, const int *const fontOffsetX, const int *const fontOffsetY, const GC *gc, const uint32_t *const textColor);
 
 void eventLoop(void){
-	unsigned int currentBox;
-	Window _box[monitorAmount][boxAmount];
-	const Window *box[monitorAmount];
+	unsigned int currentContainer;
+	Window _container[monitorAmount][containerAmount];
+	const Window *container[monitorAmount];
 	{
 		Window rootWindow;
 		Window parentWindow;
 		Window *section;
 		unsigned int sectionAmount;
-		Window *boxArray;
-		unsigned int boxAmount;
-		unsigned int boxNumber;
+		Window *containerArray;
+		unsigned int containerAmount;
+		unsigned int containerNumber;
 		unsigned int currentSection;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &section, &sectionAmount);
-			boxNumber = 0;
+			containerNumber = 0;
 			if(sectionAmount > 0){
 				for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
-					XQueryTree(display, section[currentSection], &rootWindow, &parentWindow, &boxArray, &boxAmount);
-					if(boxAmount > 0){
-						for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-							_box[currentMonitor][boxNumber] = boxArray[currentBox];
-							++boxNumber;
+					XQueryTree(display, section[currentSection], &rootWindow, &parentWindow, &containerArray, &containerAmount);
+					if(containerAmount > 0){
+						for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+							_container[currentMonitor][containerNumber] = containerArray[currentContainer];
+							++containerNumber;
 						}
-						XFree(boxArray);
+						XFree(containerArray);
 					}
 				}
 				XFree(section);
 			}
-			box[currentMonitor] = _box[currentMonitor];
+			container[currentMonitor] = _container[currentMonitor];
 		}
 	}
 	unsigned int textMaxLength;
 	unsigned int commandMaxLength;
 	unsigned int drawableCommandMaxLength;
 	readConfigArrayLengths(&textMaxLength, &commandMaxLength, &drawableCommandMaxLength);
-	char _text[boxAmount][textMaxLength + 1];
-	char _command[boxAmount][commandMaxLength + 1];
-	char _drawableCommand[boxAmount][drawableCommandMaxLength + 1];
-	char *text[boxAmount];
-	uint32_t textColor[boxAmount];
-	char *command[boxAmount];
-	char *drawableCommand[boxAmount];
-	for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-		text[currentBox] = _text[currentBox];
-		command[currentBox] = _command[currentBox];
-		drawableCommand[currentBox] = _drawableCommand[currentBox];
-		readConfigFillArrays(currentBox, text[currentBox], &textColor[currentBox], command[currentBox], drawableCommand[currentBox]);
+	char _text[containerAmount][textMaxLength + 1];
+	char _command[containerAmount][commandMaxLength + 1];
+	char _drawableCommand[containerAmount][drawableCommandMaxLength + 1];
+	char *text[containerAmount];
+	uint32_t textColor[containerAmount];
+	char *command[containerAmount];
+	char *drawableCommand[containerAmount];
+	for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+		text[currentContainer] = _text[currentContainer];
+		command[currentContainer] = _command[currentContainer];
+		drawableCommand[currentContainer] = _drawableCommand[currentContainer];
+		readConfigFillArrays(currentContainer, text[currentContainer], &textColor[currentContainer], command[currentContainer], drawableCommand[currentContainer]);
 	}
-	char _systemCommand[boxAmount][drawableCommandMaxLength + drawableCommandPathLength + 2];
-	const char *systemCommand[boxAmount];
+	char _systemCommand[containerAmount][drawableCommandMaxLength + drawableCommandPathLength + 2];
+	const char *systemCommand[containerAmount];
 	{
 		unsigned int element;
 		unsigned int currentCharacter;
-		for(currentBox = 0; currentBox < boxAmount; ++currentBox){
+		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 			element = 0;
 			currentCharacter = 0;
-			if(drawableCommand[currentBox][currentCharacter]){
-				while(drawableCommand[currentBox][currentCharacter]){
-					_systemCommand[currentBox][element] = drawableCommand[currentBox][currentCharacter];
+			if(drawableCommand[currentContainer][currentCharacter]){
+				while(drawableCommand[currentContainer][currentCharacter]){
+					_systemCommand[currentContainer][element] = drawableCommand[currentContainer][currentCharacter];
 					++element;
 					++currentCharacter;
 				}
-				_systemCommand[currentBox][element] = '>';
+				_systemCommand[currentContainer][element] = '>';
 				++element;
 				currentCharacter = 0;
 				while(currentCharacter < drawableCommandPathLength){
-					_systemCommand[currentBox][element] = drawableCommandPath[currentCharacter];
+					_systemCommand[currentContainer][element] = drawableCommandPath[currentCharacter];
 					++element;
 					++currentCharacter;
 				}
 			}
-			_systemCommand[currentBox][element] = '\0';
-			systemCommand[currentBox] = _systemCommand[currentBox];
+			_systemCommand[currentContainer][element] = '\0';
+			systemCommand[currentContainer] = _systemCommand[currentContainer];
 		}
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-			readConfigButton(box[currentMonitor][currentBox], currentBox);
+		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+			readConfigButton(container[currentMonitor][currentContainer], currentContainer);
 		}
 	}
 	XEvent event;
@@ -144,10 +144,10 @@ void eventLoop(void){
 		}
 	}
 	const XFontSet fontSet = createFontSet();
-	int textOffsetX[boxAmount];
-	int textOffsetY[boxAmount];
-	int drawableCommandOffsetX[boxAmount];
-	int drawableCommandOffsetY[boxAmount];
+	int textOffsetX[containerAmount];
+	int textOffsetY[containerAmount];
+	int drawableCommandOffsetX[containerAmount];
+	int drawableCommandOffsetY[containerAmount];
 	readConfigFontOffsets(textOffsetX, textOffsetY, drawableCommandOffsetX, drawableCommandOffsetY);
 	GC gc[monitorAmount];
 	{
@@ -183,18 +183,18 @@ void eventLoop(void){
 			}
 		}else if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-				for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-					if(event.xbutton.window == box[currentMonitor][currentBox]){
-						if(*drawableCommand[currentBox]){
-							drawCommand(systemCommand[currentBox], box[currentMonitor][currentBox], fontSet, drawableCommandOffsetX[currentBox], drawableCommandOffsetY[currentBox], gc[currentMonitor], textColor[currentBox]);
+				for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+					if(event.xbutton.window == container[currentMonitor][currentContainer]){
+						if(*drawableCommand[currentContainer]){
+							drawCommand(systemCommand[currentContainer], container[currentMonitor][currentContainer], fontSet, drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer], gc[currentMonitor], textColor[currentContainer]);
 						}
-						if(command[currentBox]){
-							if(isCommand("Restart", command[currentBox])){
+						if(command[currentContainer]){
+							if(isCommand("Restart", command[currentContainer])){
 								mode = ModeRestart;
-							}else if(isCommand("Exit", command[currentBox])){
+							}else if(isCommand("Exit", command[currentContainer])){
 								mode = ModeExit;
 							}else{
-								system(command[currentBox]);
+								system(command[currentContainer]);
 							}
 						}
 						currentMonitor = monitorAmount;
@@ -206,7 +206,7 @@ void eventLoop(void){
 				break;
 			}
 		}else if(event.type == Expose){
-			onExpose(box, text, fontSet, textOffsetX, textOffsetY, gc, textColor);
+			onExpose(container, text, fontSet, textOffsetX, textOffsetY, gc, textColor);
 		}else if(event.type == rrEventBase + RRScreenChangeNotify){
 			mode = ModeRestart;
 			break;
@@ -261,7 +261,7 @@ static XFontSet createFontSet(){
 	}
 	return fontSet;
 }
-static void drawCommand(const char *const systemCommand, const Window box, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor){
+static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor){
 	if(fontSet){
 		system(systemCommand);
 		if((file = fopen(drawableCommandPath, "r"))){
@@ -283,7 +283,7 @@ static void drawCommand(const char *const systemCommand, const Window box, const
 					XRectangle overallLogicalReturn;
 					XmbTextExtents(fontSet, line, length, NULL, &overallLogicalReturn);
 					XWindowAttributes windowAttributes;
-					XGetWindowAttributes(display, box, &windowAttributes);
+					XGetWindowAttributes(display, container, &windowAttributes);
 					x = windowAttributes.width;
 					x -= overallLogicalReturn.width;
 					x /= 2;
@@ -294,8 +294,8 @@ static void drawCommand(const char *const systemCommand, const Window box, const
 					y += drawableCommandOffsetY;
 				}
 				XSetForeground(display, gc, textColor);
-				XClearWindow(display, box);
-				XmbDrawString(display, box, fontSet, gc, x, y, line, length);
+				XClearWindow(display, container);
+				XmbDrawString(display, container, fontSet, gc, x, y, line, length);
 			}
 		}else{
 			fprintf(stderr, "%s: could not read drawableCommand file\n", programName);
@@ -330,34 +330,34 @@ static bool isCommand(const char *const command, const char *const vector){
 	}
 	return value;
 }
-static void onExpose(const Window *const *const box, char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC *gc, const uint32_t *const textColor){
-	if(boxAmount > 0 && fontSet){
-		unsigned int currentBox;
+static void onExpose(const Window *const *const container, char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC *gc, const uint32_t *const textColor){
+	if(containerAmount > 0 && fontSet){
+		unsigned int currentContainer;
 		unsigned int length;
 		XRectangle overallLogicalReturn;
 		XWindowAttributes windowAttributes;
 		int x;
 		int y;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-				if(text[currentBox]){
+			for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+				if(text[currentContainer]){
 					length = 0;
-					while(text[currentBox][length]){
+					while(text[currentContainer][length]){
 						++length;
 					}
 					XmbTextExtents(fontSet, line, length, NULL, &overallLogicalReturn);
-					XGetWindowAttributes(display, box[currentMonitor][currentBox], &windowAttributes);
+					XGetWindowAttributes(display, container[currentMonitor][currentContainer], &windowAttributes);
 					x = windowAttributes.width;
 					x -= overallLogicalReturn.width;
 					x /= 2;
-					x += textOffsetX[currentBox];
+					x += textOffsetX[currentContainer];
 					y = windowAttributes.height;
 					y += overallLogicalReturn.height;
 					y /= 2;
-					y += textOffsetY[currentBox];
-					XSetForeground(display, gc[currentMonitor], textColor[currentBox]);
-					XClearWindow(display, box[currentMonitor][currentBox]);
-					XmbDrawString(display, box[currentMonitor][currentBox], fontSet, gc[currentMonitor], x, y, text[currentBox], length);
+					y += textOffsetY[currentContainer];
+					XSetForeground(display, gc[currentMonitor], textColor[currentContainer]);
+					XClearWindow(display, container[currentMonitor][currentContainer]);
+					XmbDrawString(display, container[currentMonitor][currentContainer], fontSet, gc[currentMonitor], x, y, text[currentContainer], length);
 				}
 			}
 		}
