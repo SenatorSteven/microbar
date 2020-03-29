@@ -39,25 +39,24 @@ SOFTWARE. */
 #define BackgroundColorPosition /*----------------*/ (1 << 7)
 #define GlobalSectionBorderColorPosition /*-------*/ (1 << 8)
 #define GlobalSectionBackgroundColorPosition /*---*/ (1 << 9)
-#define GlobalBoxBorderColorPosition /*-----------*/ (1 << 10)
-#define GlobalBoxBackgroundColorPosition /*-------*/ (1 << 11)
+#define GlobalContainerBorderColorPosition /*-----------*/ (1 << 10)
+#define GlobalContainerBackgroundColorPosition /*-------*/ (1 << 11)
 #define GlobalRectangleBorderColorPosition /*-----*/ (1 << 12)
 #define GlobalRectangleBackgroundColorPosition /*-*/ (1 << 13)
-#define MonitorPosition /*------------------------*/ (1 << 14)
-#define HideKeyPosition /*------------------------*/ (1 << 15)
-#define TextPosition /*---------------------------*/ (1 << 16)
-#define TextColorPosition /*----------------------*/ (1 << 17)
-#define GlobalTextColorPosition /*----------------*/ (1 << 18)
-#define CommandPosition /*------------------------*/ (1 << 19)
-#define DrawableCommandPosition /*----------------*/ (1 << 20)
-#define TextOffsetXPosition /*--------------------*/ (1 << 21)
-#define TextOffsetYPosition /*--------------------*/ (1 << 22)
-#define DrawableCommandOffsetXPosition /*---------*/ (1 << 23)
-#define DrawableCommandOffsetYPosition /*---------*/ (1 << 24)
-#define ButtonPosition /*-------------------------*/ (1 << 25)
-#define SectionPosition /*------------------------*/ (1 << 26)
-#define BoxPosition /*----------------------------*/ (1 << 27)
-#define RectanglePosition /*----------------------*/ (1 << 28)
+#define HideKeyPosition /*------------------------*/ (1 << 14)
+#define TextPosition /*---------------------------*/ (1 << 15)
+#define TextColorPosition /*----------------------*/ (1 << 16)
+#define GlobalTextColorPosition /*----------------*/ (1 << 17)
+#define CommandPosition /*------------------------*/ (1 << 18)
+#define DrawableCommandPosition /*----------------*/ (1 << 19)
+#define TextOffsetXPosition /*--------------------*/ (1 << 20)
+#define TextOffsetYPosition /*--------------------*/ (1 << 21)
+#define DrawableCommandOffsetXPosition /*---------*/ (1 << 22)
+#define DrawableCommandOffsetYPosition /*---------*/ (1 << 23)
+#define ButtonPosition /*-------------------------*/ (1 << 24)
+#define SectionPosition /*------------------------*/ (1 << 25)
+#define ContainerPosition /*----------------------------*/ (1 << 26)
+#define RectanglePosition /*----------------------*/ (1 << 27)
 
 #define NoOperation /*----------------------------*/ 0
 #define AdditionOperation /*----------------------*/ 1
@@ -70,8 +69,7 @@ extern const char *configPath;
 extern FILE *file;
 extern Display *display;
 extern unsigned int monitorAmount;
-extern unsigned int whichMonitor;
-extern unsigned int boxAmount;
+extern unsigned int containerAmount;
 extern char line[DefaultCharactersCount + 1];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
@@ -84,6 +82,7 @@ static unsigned int getUnsignedDecimalNumber(const Window window, const unsigned
 static int getDecimalNumber(const Window window, unsigned int *const element);
 static uint32_t getARGB(unsigned int *const element);
 static unsigned int getQuotedStringLength(unsigned int *const element);
+static unsigned int getQuotedString(char *const string, unsigned int *const element);
 static bool grabKey(const Window window, unsigned int *const element);
 static bool getButton(unsigned int *const element, uint8_t *const button, uint16_t *const masks);
 static void printLineError(const unsigned int currentLine);
@@ -91,8 +90,7 @@ static void printLineError(const unsigned int currentLine);
 bool readConfigScan(const Window parentWindow){
 	bool value = 0;
 	if((file = getConfigFile())){
-		whichMonitor = monitorAmount;
-		boxAmount = 0;
+		containerAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
@@ -111,24 +109,6 @@ bool readConfigScan(const Window parentWindow){
 								pushWhitespace(&element);
 								maxLinesCount = getUnsignedDecimalNumber(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & MonitorPosition)){
-						if(isVariable("monitor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								if(!isVariable("all", &element)){
-									whichMonitor = getUnsignedDecimalNumber(None, currentLine, &element);
-									if(whichMonitor >= monitorAmount){
-										whichMonitor = monitorAmount;
-									}else{
-										monitorAmount = 1;
-									}
-								}
-								hasReadVariable |= MonitorPosition;
 							}
 							continue;
 						}
@@ -169,12 +149,12 @@ bool readConfigScan(const Window parentWindow){
 						printLineError(currentLine);
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							++boxAmount;
-							hasReadVariable |= BoxPosition;
+							++containerAmount;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -189,10 +169,10 @@ bool readConfigScan(const Window parentWindow){
 					   !isVariable("border",                   &element) &&
 					   !isVariable("borderColor",              &element) &&
 					   !isVariable("backgroundColor",          &element) &&
-					   !isVariable("globalBoxBorderColor",     &element) &&
-					   !isVariable("globalBoxBackgroundColor", &element) &&
+					   !isVariable("globalContainerBorderColor",     &element) &&
+					   !isVariable("globalContainerBackgroundColor", &element) &&
 					   !isVariable("globalTextColor",          &element) &&
-					   !isVariable("box",                      &element) &&
+					   !isVariable("container",                      &element) &&
 					   !isVariable("}",                        &element)){
 						printLineError(currentLine);
 						continue;
@@ -206,7 +186,7 @@ bool readConfigScan(const Window parentWindow){
 						continue;
 					}
 					if(isVariable("}", &element)){
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 					if(!isVariable("x",               &element) &&
@@ -394,11 +374,11 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							hasReadVariable |= BoxPosition;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -415,7 +395,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 						continue;
 					}
 					if(isVariable("}", &element)){
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 				}else{
@@ -431,7 +411,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 	}
 	return value;
 }
-bool readConfigSectionWindow(const Window parentWindow, const unsigned int currentSection, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalBoxBorderColor, uint32_t *const globalBoxBackgroundColor, unsigned int *const boxAmount){
+bool readConfigSectionWindow(const Window parentWindow, const unsigned int currentSection, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalContainerBorderColor, uint32_t *const globalContainerBackgroundColor, unsigned int *const containerAmount){
 	bool value = 0;
 	if((file = getConfigFile())){
 		*x = 0;
@@ -441,9 +421,9 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 		*border = 0;
 		*borderColor = 0x00000000;
 		*backgroundColor = 0x00000000;
-		*globalBoxBorderColor = 0x00000000;
-		*globalBoxBackgroundColor = 0x00000000;
-		*boxAmount = 0;
+		*globalContainerBorderColor = 0x00000000;
+		*globalContainerBackgroundColor = 0x00000000;
+		*containerAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
@@ -478,7 +458,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
+				}else if(!(hasReadVariable & ContainerPosition)){
 					if(!(hasReadVariable & XPosition)){
 						if(isVariable("x", &element)){
 							pushWhitespace(&element);
@@ -556,33 +536,33 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							continue;
 						}
 					}
-					if(!(hasReadVariable & GlobalBoxBorderColorPosition)){
-						if(isVariable("globalBoxBorderColor", &element)){
+					if(!(hasReadVariable & GlobalContainerBorderColorPosition)){
+						if(isVariable("globalContainerBorderColor", &element)){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*globalBoxBorderColor = getARGB(&element);
-								hasReadVariable |= GlobalBoxBorderColorPosition;
+								*globalContainerBorderColor = getARGB(&element);
+								hasReadVariable |= GlobalContainerBorderColorPosition;
 							}
 							continue;
 						}
 					}
-					if(!(hasReadVariable & GlobalBoxBackgroundColorPosition)){
-						if(isVariable("globalBoxBackgroundColor", &element)){
+					if(!(hasReadVariable & GlobalContainerBackgroundColorPosition)){
+						if(isVariable("globalContainerBackgroundColor", &element)){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*globalBoxBackgroundColor = getARGB(&element);
-								hasReadVariable |= GlobalBoxBackgroundColorPosition;
+								*globalContainerBackgroundColor = getARGB(&element);
+								hasReadVariable |= GlobalContainerBackgroundColorPosition;
 							}
 							continue;
 						}
 					}
-					if(isVariable("box", &element)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							++(*boxAmount);
-							hasReadVariable |= BoxPosition;
+							++(*containerAmount);
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -598,7 +578,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 						continue;
 					}
 					if(isVariable("}", &element)){
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 				}else{
@@ -614,7 +594,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 	}
 	return value;
 }
-bool readConfigBoxWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentBox, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalRectangleBorderColor, uint32_t *const globalRectangleBackgroundColor, unsigned int *const rectangleAmount){
+bool readConfigContainerWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentContainer, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalRectangleBorderColor, uint32_t *const globalRectangleBackgroundColor, unsigned int *const rectangleAmount){
 	bool value = 0;
 	if((file = getConfigFile())){
 		*x = 0;
@@ -631,7 +611,7 @@ bool readConfigBoxWindow(const Window parentWindow, const unsigned int currentSe
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int sectionAmountRead = 0;
-		unsigned int boxAmountRead = 0;
+		unsigned int containerAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
 				break;
@@ -662,14 +642,14 @@ bool readConfigBoxWindow(const Window parentWindow, const unsigned int currentSe
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							if(boxAmountRead == currentBox){
-								hasReadVariable |= BoxPosition;
+							if(containerAmountRead == currentContainer){
+								hasReadVariable |= ContainerPosition;
 							}else{
-								++boxAmountRead;
+								++containerAmountRead;
 							}
 						}
 						continue;
@@ -798,7 +778,7 @@ bool readConfigBoxWindow(const Window parentWindow, const unsigned int currentSe
 	}
 	return value;
 }
-bool readConfigRectangleWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentBox, const unsigned int currentRectangle, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor){
+bool readConfigRectangleWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentContainer, const unsigned int currentRectangle, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor){
 	bool value = 0;
 	if((file = getConfigFile())){
 		*x = 0;
@@ -812,7 +792,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int sectionAmountRead = 0;
-		unsigned int boxAmountRead = 0;
+		unsigned int containerAmountRead = 0;
 		unsigned int rectangleAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
@@ -844,14 +824,14 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							if(boxAmountRead == currentBox){
-								hasReadVariable |= BoxPosition;
+							if(containerAmountRead == currentContainer){
+								hasReadVariable |= ContainerPosition;
 							}else{
-								++boxAmountRead;
+								++containerAmountRead;
 							}
 						}
 						continue;
@@ -993,11 +973,11 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							hasReadVariable |= BoxPosition;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1065,7 +1045,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 						if(hasReadVariable & DrawableCommandPosition){
 							hasReadVariable ^= DrawableCommandPosition;
 						}
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 				}else{
@@ -1081,7 +1061,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 	}
 	return value;
 }
-bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint32_t *const textColor, char *const command, char *const drawableCommand){
+bool readConfigFillArrays(const unsigned int currentContainer, char *const text, uint32_t *const textColor, char *const command, char *const drawableCommand){
 	bool value = 0;
 	if((file = getConfigFile())){
 		*text = '\0';
@@ -1091,7 +1071,7 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
-		unsigned int boxAmountRead = 0;
+		unsigned int containerAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
 				break;
@@ -1118,7 +1098,7 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 						}
 						continue;
 					}
-				}else if(boxAmountRead <= currentBox){
+				}else if(containerAmountRead <= currentContainer){
 					if(!(hasReadVariable & GlobalTextColorPosition)){
 						if(isVariable("globalTextColor", &element)){
 							pushWhitespace(&element);
@@ -1130,11 +1110,11 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 							continue;
 						}
 					}
-					if(isVariable("box", &element)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							++boxAmountRead;
-							hasReadVariable |= BoxPosition;
+							++containerAmountRead;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1148,8 +1128,8 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 					if(isVariable("}", &element)){
 						if(hasReadVariable & RectanglePosition){
 							hasReadVariable ^= RectanglePosition;
-						}else if(hasReadVariable & BoxPosition){
-							hasReadVariable ^= BoxPosition;
+						}else if(hasReadVariable & ContainerPosition){
+							hasReadVariable ^= ContainerPosition;
 						}else{
 							if(hasReadVariable & GlobalTextColorPosition){
 								*textColor = 0x00000000;
@@ -1165,15 +1145,7 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								const char quotation = line[element];
-								++element;
-								unsigned int currentCharacter = 0;
-								while(line[element] != quotation && line[element]){
-									text[currentCharacter] = line[element];
-									++currentCharacter;
-									++element;
-								}
-								text[currentCharacter] = '\0';
+								text[getQuotedString(text, &element)] = '\0';
 								hasReadVariable |= TextPosition;
 							}
 							continue;
@@ -1195,15 +1167,7 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								const char quotation = line[element];
-								++element;
-								unsigned int currentCharacter = 0;
-								while(line[element] != quotation && line[element]){
-									command[currentCharacter] = line[element];
-									++currentCharacter;
-									++element;
-								}
-								command[currentCharacter] = '\0';
+								command[getQuotedString(command, &element)] = '\0';
 								hasReadVariable |= CommandPosition;
 							}
 							continue;
@@ -1214,15 +1178,7 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								const char quotation = line[element];
-								++element;
-								unsigned int currentCharacter = 0;
-								while(line[element] != quotation && line[element]){
-									drawableCommand[currentCharacter] = line[element];
-									++currentCharacter;
-									++element;
-								}
-								drawableCommand[currentCharacter] = '\0';
+								drawableCommand[getQuotedString(drawableCommand, &element)] = '\0';
 								hasReadVariable |= DrawableCommandPosition;
 							}
 							continue;
@@ -1251,13 +1207,13 @@ bool readConfigFillArrays(const unsigned int currentBox, char *const text, uint3
 	}
 	return value;
 }
-bool readConfigButton(const Window window, const unsigned int currentBox){
+bool readConfigButton(const Window window, const unsigned int currentContainer){
 	bool value = 0;
 	if((file = getConfigFile())){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
-		unsigned int boxAmountRead = 0;
+		unsigned int containerAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
 				break;
@@ -1284,12 +1240,12 @@ bool readConfigButton(const Window window, const unsigned int currentBox){
 						}
 						continue;
 					}
-				}else if(boxAmountRead <= currentBox){
-					if(isVariable("box", &element)){
+				}else if(containerAmountRead <= currentContainer){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							++boxAmountRead;
-							hasReadVariable |= BoxPosition;
+							++containerAmountRead;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1303,8 +1259,8 @@ bool readConfigButton(const Window window, const unsigned int currentBox){
 					if(isVariable("}", &element)){
 						if(hasReadVariable & RectanglePosition){
 							hasReadVariable ^= RectanglePosition;
-						}else if(hasReadVariable & BoxPosition){
-							hasReadVariable ^= BoxPosition;
+						}else if(hasReadVariable & ContainerPosition){
+							hasReadVariable ^= ContainerPosition;
 						}else{
 							hasReadVariable ^= SectionPosition;
 						}
@@ -1390,11 +1346,11 @@ bool readConfigFontAmount(unsigned int *const fontAmount){
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							hasReadVariable |= BoxPosition;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1411,7 +1367,7 @@ bool readConfigFontAmount(unsigned int *const fontAmount){
 						continue;
 					}
 					if(isVariable("}", &element)){
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 				}else{
@@ -1473,11 +1429,11 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							hasReadVariable |= BoxPosition;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1494,7 +1450,7 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 						continue;
 					}
 					if(isVariable("}", &element)){
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 				}else{
@@ -1541,14 +1497,7 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								const char quotation = line[element];
-								++element;
-								unsigned int currentCharacter = 0;
-								while(line[element] != quotation && line[element]){
-									font[currentCharacter] = line[element];
-									++currentCharacter;
-									++element;
-								}
+								getQuotedString(font, &element);
 							}
 							++fontsRead;
 							break;
@@ -1563,11 +1512,11 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							hasReadVariable |= BoxPosition;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1584,7 +1533,7 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 						continue;
 					}
 					if(isVariable("}", &element)){
-						hasReadVariable ^= BoxPosition;
+						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
 				}else{
@@ -1603,17 +1552,17 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *const drawableCommandOffsetX, int *const drawableCommandOffsetY){
 	bool value = 0;
 	if((file = getConfigFile())){
-		unsigned int currentBox;
-		for(currentBox = 0; currentBox < boxAmount; ++currentBox){
-			textOffsetX[currentBox] = 0;
-			textOffsetY[currentBox] = 0;
-			drawableCommandOffsetX[currentBox] = 0;
-			drawableCommandOffsetY[currentBox] = 0;
+		unsigned int currentContainer;
+		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+			textOffsetX[currentContainer] = 0;
+			textOffsetY[currentContainer] = 0;
+			drawableCommandOffsetX[currentContainer] = 0;
+			drawableCommandOffsetY[currentContainer] = 0;
 		}
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
-		currentBox = 0;
+		currentContainer = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine()){
 				break;
@@ -1640,11 +1589,11 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 						}
 						continue;
 					}
-				}else if(!(hasReadVariable & BoxPosition)){
-					if(isVariable("box", &element)){
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							hasReadVariable |= BoxPosition;
+							hasReadVariable |= ContainerPosition;
 						}
 						continue;
 					}
@@ -1658,7 +1607,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								textOffsetX[currentBox] = getDecimalNumber(None, &element);;
+								textOffsetX[currentContainer] = getDecimalNumber(None, &element);;
 								hasReadVariable |= TextOffsetXPosition;
 							}
 							continue;
@@ -1669,7 +1618,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								textOffsetY[currentBox] = getDecimalNumber(None, &element);;
+								textOffsetY[currentContainer] = getDecimalNumber(None, &element);;
 								hasReadVariable |= TextOffsetYPosition;
 							}
 							continue;
@@ -1680,7 +1629,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								drawableCommandOffsetX[currentBox] = getDecimalNumber(None, &element);;
+								drawableCommandOffsetX[currentContainer] = getDecimalNumber(None, &element);;
 								hasReadVariable |= DrawableCommandOffsetXPosition;
 							}
 							continue;
@@ -1691,7 +1640,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								drawableCommandOffsetY[currentBox] = getDecimalNumber(None, &element);;
+								drawableCommandOffsetY[currentContainer] = getDecimalNumber(None, &element);;
 								hasReadVariable |= DrawableCommandOffsetYPosition;
 							}
 							continue;
@@ -1717,8 +1666,8 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 						if(hasReadVariable & DrawableCommandOffsetYPosition){
 							hasReadVariable ^= DrawableCommandOffsetYPosition;
 						}
-						hasReadVariable ^= BoxPosition;
-						++currentBox;
+						hasReadVariable ^= ContainerPosition;
+						++currentContainer;
 						continue;
 					}
 				}else{
@@ -1769,8 +1718,8 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
 			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, monitor, hideKey, section{}\n");
-			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalBoxBorderColor, globalBoxBackgroundColor, globalTextColor, box{}\n");
-			fprintf(config, "# box object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
+			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalContainerBorderColor, globalContainerBackgroundColor, globalTextColor, container{}\n");
+			fprintf(config, "# container object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
 			fprintf(config, "# rectangle object: x, y, width, height, border, borderColor, backgroundColor\n");
 			fprintf(config, "# decimal operands: +, -, *, /\n");
 			fprintf(config, "# decimal macros: ParentWidth, ParentHeight\n\n\n\n");
@@ -1787,26 +1736,26 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# backgroundColor: color of object\'s background\n");
 			fprintf(config, "# globalSectionBorderColor: color of all sections\' border\n");
 			fprintf(config, "# globalSectionBackgroundColor: color of all sections\' background\n");
-			fprintf(config, "# globalBoxBorderColor: color of all boxes\' border\n");
-			fprintf(config, "# globalBoxBackgroundColor: color of all boxes\' background\n");
+			fprintf(config, "# globalContainerBorderColor: color of all containeres\' border\n");
+			fprintf(config, "# globalContainerBackgroundColor: color of all containeres\' background\n");
 			fprintf(config, "# globalRectangleBorderColor: color of all rectangles\' border\n");
 			fprintf(config, "# globalRectangleBackgroundColor: color of all rectangles\' background\n");
-			fprintf(config, "# globalTextColor: color of all boxes\' text\n");
+			fprintf(config, "# globalTextColor: color of all containeres\' text\n");
 			fprintf(config, "# font: font to form part of a font set, multiple fonts allowed and encouraged\n");
 			fprintf(config, "# monitor: monitor to be used\n");
 			fprintf(config, "# hideKey: combination of keycode and modifiers used to hide the bar\n");
-			fprintf(config, "# text: text label of box\n");
-			fprintf(config, "# textColor: color of box\'s text\n");
-			fprintf(config, "# textOffsetX: x axis offset of box\'s text\n");
-			fprintf(config, "# textOffsetY: y axis offset of box\'s text\n");
-			fprintf(config, "# command: command executed on interaction with box\n");
-			fprintf(config, "# drawableCommand: command returning text output executed on interaction with box\n");
-			fprintf(config, "# drawableCommandOffsetX: x axis offset of box\'s drawableCommand\n");
-			fprintf(config, "# drawableCommandOffsetY: y axis offset of box\'s drawableCommand\n");
+			fprintf(config, "# text: text label of container\n");
+			fprintf(config, "# textColor: color of container\'s text\n");
+			fprintf(config, "# textOffsetX: x axis offset of container\'s text\n");
+			fprintf(config, "# textOffsetY: y axis offset of container\'s text\n");
+			fprintf(config, "# command: command executed on interaction with container\n");
+			fprintf(config, "# drawableCommand: command returning text output executed on interaction with container\n");
+			fprintf(config, "# drawableCommandOffsetX: x axis offset of container\'s drawableCommand\n");
+			fprintf(config, "# drawableCommandOffsetY: y axis offset of container\'s drawableCommand\n");
 			fprintf(config, "# button: combination of mouse button and modifiers used to interact\n");
 			fprintf(config, "# section: informationless interactionless object, residing in global object\n");
-			fprintf(config, "# box: information object, residing in section object\n");
-			fprintf(config, "# rectangle: informationless interactionless object, residing in box object\n");
+			fprintf(config, "# container: information object, residing in section object\n");
+			fprintf(config, "# rectangle: informationless interactionless object, residing in container object\n");
 			fprintf(config, "# ParentWidth: size of parent object\'s width, if applicable\n");
 			fprintf(config, "# ParentHeight: size of parent object\'s height, if applicable\n\n\n\n");
 			fprintf(config, "# # # # #\n");
@@ -1835,7 +1784,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "globalSectionBackgroundColor = #FF000000\n");
 			fprintf(config, "font = \"-misc-fixed-medium-r-normal-*-13-120-75-75-C-70-iso10646-1\"\n");
 			fprintf(config, "font = \"-*-*-*-*-*-*-*-*-*-*-*-*-gb2312.1980-*\"\n");
-			fprintf(config, "monitor = all\n");
+			fprintf(config, "# monitor = all\n");
 			fprintf(config, "hideKey = 116 + Mod4\n");
 			fprintf(config, "section{\n");
 			fprintf(config, "	x = 0\n");
@@ -1843,7 +1792,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "	width = 58\n");
 			fprintf(config, "	height = ParentHeight\n");
 			fprintf(config, "	border = 0\n");
-			fprintf(config, "	box{\n");
+			fprintf(config, "	container{\n");
 			fprintf(config, "		x = 0\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 56\n");
@@ -1865,10 +1814,10 @@ static FILE *getConfigFile(void){
 			fprintf(config, "	width = 224\n");
 			fprintf(config, "	height = ParentHeight\n");
 			fprintf(config, "	border = 0\n");
-			fprintf(config, "	globalBoxBorderColor = #FF1F1F1F\n");
-			fprintf(config, "	globalBoxBackgroundColor = #FF000000\n");
+			fprintf(config, "	globalContainerBorderColor = #FF1F1F1F\n");
+			fprintf(config, "	globalContainerBackgroundColor = #FF000000\n");
 			fprintf(config, "	globalTextColor = #FFFFFFFF\n");
-			fprintf(config, "	box{\n");
+			fprintf(config, "	container{\n");
 			fprintf(config, "		x = ParentWidth - 224\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 84\n");
@@ -1881,7 +1830,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		drawableCommandOffsetY = -2\n");
 			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
-			fprintf(config, "	box{\n");
+			fprintf(config, "	container{\n");
 			fprintf(config, "		x = ParentWidth - 137\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 97\n");
@@ -1894,7 +1843,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		drawableCommandOffsetY = -2\n");
 			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
-			fprintf(config, "	box{\n");
+			fprintf(config, "	container{\n");
 			fprintf(config, "		x = ParentWidth - 37\n");
 			fprintf(config, "		y = 0\n");
 			fprintf(config, "		width = 35\n");
@@ -1993,18 +1942,10 @@ static int getDecimalNumber(const Window parentWindow, unsigned int *const eleme
 	if(parentWindow){
 		XGetWindowAttributes(display, parentWindow, &windowAttributes);
 		if(parentWindow == XDefaultRootWindow(display)){
-			XRRMonitorInfo *monitorInfo;
-			{
-				int monitorAmount;
-				monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
-			}
-			if(monitorAmount == whichMonitor){
-				windowAttributes.width = monitorInfo[currentMonitor].width;
-				windowAttributes.height = monitorInfo[currentMonitor].height;
-			}else{
-				windowAttributes.width = monitorInfo[whichMonitor].width;
-				windowAttributes.height = monitorInfo[whichMonitor].height;
-			}
+			int monitorAmount;
+			XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
+			windowAttributes.width = monitorInfo[currentMonitor].width;
+			windowAttributes.height = monitorInfo[currentMonitor].height;
 			XRRFreeMonitors(monitorInfo);
 		}
 	}
@@ -2023,6 +1964,12 @@ static int getDecimalNumber(const Window parentWindow, unsigned int *const eleme
 			if(parentWindow){
 				numberRead = windowAttributes.height;
 			}
+		}else if(line[dereferencedElement] == '('){
+			++dereferencedElement;
+			numberRead = getDecimalNumber(parentWindow, &dereferencedElement);
+		}else if(line[dereferencedElement] == ')'){
+			++dereferencedElement;
+			break;
 		}else if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-' || line[dereferencedElement] == '*' || line[dereferencedElement] == '/'){
 			if(number == 0 && numberRead == 0){
 				if(line[dereferencedElement] == '/'){
@@ -2201,6 +2148,19 @@ static unsigned int getQuotedStringLength(unsigned int *const element){
 	}
 	*element = dereferencedElement;
 	return length;
+}
+static unsigned int getQuotedString(char *const string, unsigned int *const element){
+	unsigned int currentCharacter = 0;
+	unsigned int dereferencedElement = *element;
+	const char quotation = line[dereferencedElement];
+	++dereferencedElement;
+	while(line[dereferencedElement] != quotation && line[dereferencedElement]){
+		string[currentCharacter] = line[dereferencedElement];
+		++currentCharacter;
+		++dereferencedElement;
+	}
+	*element = dereferencedElement;
+	return currentCharacter;
 }
 static bool grabKey(const Window window, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
