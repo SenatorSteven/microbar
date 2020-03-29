@@ -43,7 +43,6 @@ extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
-extern unsigned int whichMonitor;
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
@@ -170,20 +169,15 @@ static bool createWindows(void){
 	{
 		XRRMonitorInfo *monitorInfo;
 		{
-			unsigned int monitorAmount;
-			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
+			int monitorAmount;
+			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
 		}
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			value = 0;
 			if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
 				if(width > 0 && height > 0){
-					if(monitorAmount == whichMonitor){
-						x += monitorInfo[currentMonitor].x;
-						y += monitorInfo[currentMonitor].y;
-					}else{
-						x += monitorInfo[whichMonitor].x;
-						y += monitorInfo[whichMonitor].y;
-					}
+					x += monitorInfo[currentMonitor].x;
+					y += monitorInfo[currentMonitor].y;
 					XVisualInfo visualInfo;
 					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
 					XSetWindowAttributes windowAttributes = {
@@ -204,11 +198,11 @@ static bool createWindows(void){
 	if(value){
 		unsigned int currentSection;
 		Window section;
-		uint32_t globalBoxBorderColor;
-		uint32_t globalBoxBackgroundColor;
-		unsigned int boxAmount;
-		unsigned int currentBox;
-		Window box;
+		uint32_t globalContainerBorderColor;
+		uint32_t globalContainerBackgroundColor;
+		unsigned int containerAmount;
+		unsigned int currentContainer;
+		Window container;
 		uint32_t globalRectangleBorderColor;
 		uint32_t globalRectangleBackgroundColor;
 		unsigned int rectangleAmount;
@@ -218,7 +212,7 @@ static bool createWindows(void){
 			value = 0;
 			currentSection = 0;
 			while(currentSection < sectionAmount){
-				if(readConfigSectionWindow(topLevelWindowArray[currentMonitor], currentSection, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalBoxBorderColor, &globalBoxBackgroundColor, &boxAmount)){
+				if(readConfigSectionWindow(topLevelWindowArray[currentMonitor], currentSection, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalContainerBorderColor, &globalContainerBackgroundColor, &containerAmount)){
 					if(width > 0 && height > 0){
 						if(borderColor == 0x00000000){
 							borderColor = globalSectionBorderColor;
@@ -232,17 +226,17 @@ static bool createWindows(void){
 				}
 				if(value){
 					value = 0;
-					currentBox = 0;
-					while(currentBox < boxAmount){
-						if(readConfigBoxWindow(section, currentSection, currentBox, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalRectangleBorderColor, &globalRectangleBackgroundColor, &rectangleAmount)){
+					currentContainer = 0;
+					while(currentContainer < containerAmount){
+						if(readConfigContainerWindow(section, currentSection, currentContainer, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalRectangleBorderColor, &globalRectangleBackgroundColor, &rectangleAmount)){
 							if(width > 0 && height > 0){
 								if(borderColor == 0x00000000){
-									borderColor = globalBoxBorderColor;
+									borderColor = globalContainerBorderColor;
 								}
 								if(backgroundColor == 0x00000000){
-									backgroundColor = globalBoxBackgroundColor;
+									backgroundColor = globalContainerBackgroundColor;
 								}
-								box = XCreateSimpleWindow(display, section, x, y, width, height, border, borderColor, backgroundColor);
+								container = XCreateSimpleWindow(display, section, x, y, width, height, border, borderColor, backgroundColor);
 								value = 1;
 							}
 						}
@@ -250,7 +244,7 @@ static bool createWindows(void){
 							value = 0;
 							currentRectangle = 0;
 							while(currentRectangle < rectangleAmount){
-								if(readConfigRectangleWindow(box, currentSection, currentBox, currentRectangle, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
+								if(readConfigRectangleWindow(container, currentSection, currentContainer, currentRectangle, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
 									if(width > 0 && height > 0){
 										if(borderColor == 0x00000000){
 											borderColor = globalRectangleBorderColor;
@@ -258,7 +252,7 @@ static bool createWindows(void){
 										if(backgroundColor == 0x00000000){
 											backgroundColor = globalRectangleBackgroundColor;
 										}
-										rectangle = XCreateSimpleWindow(display, box, x, y, width, height, border, borderColor, backgroundColor);
+										rectangle = XCreateSimpleWindow(display, container, x, y, width, height, border, borderColor, backgroundColor);
 										value = 1;
 									}
 								}
@@ -271,15 +265,15 @@ static bool createWindows(void){
 								++currentRectangle;
 							}
 							if(currentRectangle == rectangleAmount + 1){
-								currentBox = boxAmount;
+								currentContainer = containerAmount;
 							}
-							XMapWindow(display, box);
+							XMapWindow(display, container);
 						}else{
-							currentBox = boxAmount;
+							currentContainer = containerAmount;
 						}
-						++currentBox;
+						++currentContainer;
 					}
-					if(currentBox == boxAmount + 1){
+					if(currentContainer == containerAmount + 1){
 						currentSection = sectionAmount;
 					}
 					XSelectInput(display, section, ExposureMask);
@@ -333,8 +327,7 @@ static void setTopLevelWindowProperties(void){
 		.res_name = (char *)programName,
 		.res_class = (char *)programName
 	};
-	long unsigned int data[12];
-	unsigned int monitor = whichMonitor;
+	unsigned long int data[12];
 	XRRMonitorInfo *monitorInfo;
 	{
 		int monitorAmount;
@@ -372,29 +365,20 @@ static void setTopLevelWindowProperties(void){
 		data[5] = 0;
 		data[6] = 0;
 		data[7] = 0;
-		if(monitorAmount == whichMonitor){
-			monitor = currentMonitor;
-		}
-		if(windowAttributes.y < monitorInfo[monitor].height / 2){
-			data[2] = windowAttributes.y;
-			data[2] += windowAttributes.height;
+		if(windowAttributes.y < monitorInfo[currentMonitor].height / 2){
+			data[2] = windowAttributes.y + windowAttributes.height;
 			data[3] = 0;
 			data[8] = windowAttributes.x;
-			data[9] = windowAttributes.x;
-			data[9] += windowAttributes.width;
-			data[9] -= 1;
+			data[9] = windowAttributes.x + windowAttributes.width - 1;
 			data[10] = 0;
 			data[11] = 0;
 		}else{
 			data[2] = 0;
-			data[3] = XDisplayHeight(display, XDefaultScreen(display));
-			data[3] -= windowAttributes.y;
+			data[3] = XDisplayHeight(display, XDefaultScreen(display)) - windowAttributes.y;
 			data[8] = 0;
 			data[9] = 0;
 			data[10] = windowAttributes.x;
-			data[11] = windowAttributes.x;
-			data[11] += windowAttributes.width;
-			data[11] -= 1;
+			data[11] = windowAttributes.x + windowAttributes.width - 1;
 		}
 		XChangeProperty(display, topLevelWindowArray[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
 		XSelectInput(display, topLevelWindowArray[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
