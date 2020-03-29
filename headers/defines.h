@@ -33,9 +33,9 @@ SOFTWARE. */
 #define DefaultLinesCount /*------*/ 150
 /* # /user-defined constants end # # # # */
 
-#define ModeContinue /*-----------*/ 0
-#define ModeRestart /*------------*/ 1
-#define ModeExit /*---------------*/ 2
+#define ContinueMode /*-----------*/ 0
+#define RestartMode /*------------*/ 1
+#define ExitMode /*---------------*/ 2
 
 typedef uint8_t bool;
 
