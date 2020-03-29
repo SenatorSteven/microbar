@@ -112,9 +112,9 @@ static void start(void){
 		_drawableCommandPath[++element] = '\0';
 	}
 	drawableCommandPath = _drawableCommandPath;
-	mode = ModeContinue;
-	while(mode == ModeContinue || mode == ModeRestart){
-		mode = ModeContinue;
+	mode = ContinueMode;
+	while(mode == ContinueMode || mode == RestartMode){
+		mode = ContinueMode;
 		if((display = XOpenDisplay(NULL))){
 			if(setlocale(LC_CTYPE, "")){
 				if(!XSupportsLocale()){
@@ -137,19 +137,19 @@ static void start(void){
 						cleanup();
 					}else{
 						fprintf(stderr, "%s: could not create windows\n", programName);
-						mode = ModeExit;
+						mode = ExitMode;
 					}
 				}else{
-					mode = ModeExit;
+					mode = ExitMode;
 				}
 			}else{
 				fprintf(stderr, "%s: no monitors\n", programName);
-				mode = ModeExit;
+				mode = ExitMode;
 			}
 			XCloseDisplay(display);
 		}else{
 			fprintf(stderr, "%s: could not connect to server\n", programName);
-			mode = ModeExit;
+			mode = ExitMode;
 		}
 	}
 	return;
