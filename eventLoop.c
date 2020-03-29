@@ -190,9 +190,9 @@ void eventLoop(void){
 						}
 						if(command[currentContainer]){
 							if(isCommand("Restart", command[currentContainer])){
-								mode = ModeRestart;
+								mode = RestartMode;
 							}else if(isCommand("Exit", command[currentContainer])){
-								mode = ModeExit;
+								mode = ExitMode;
 							}else{
 								system(command[currentContainer]);
 							}
@@ -202,13 +202,13 @@ void eventLoop(void){
 					}
 				}
 			}
-			if(mode == ModeRestart || mode == ModeExit){
+			if(mode == RestartMode || mode == ExitMode){
 				break;
 			}
 		}else if(event.type == Expose){
 			onExpose(container, text, fontSet, textOffsetX, textOffsetY, gc, textColor);
 		}else if(event.type == rrEventBase + RRScreenChangeNotify){
-			mode = ModeRestart;
+			mode = RestartMode;
 			break;
 		}
 	}
