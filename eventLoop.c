@@ -131,6 +131,7 @@ void eventLoop(void){
 			readConfigButton(container[currentMonitor][currentContainer], currentContainer);
 		}
 	}
+	bool hasBeenExposed = 0;
 	XEvent event;
 	bool topLevelWindowsMapped = 1;
 	unsigned int topLevelWindowX[monitorAmount];
@@ -167,6 +168,9 @@ void eventLoop(void){
 		XMapWindow(display, topLevelWindowArray[currentMonitor]);
 	}
 	for(;;){
+		if(event.type == Expose && !XPending(display)){
+			hasBeenExposed = 0;
+		}
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
 			if(topLevelWindowsMapped){
@@ -205,8 +209,9 @@ void eventLoop(void){
 			if(mode == RestartMode || mode == ExitMode){
 				break;
 			}
-		}else if(event.type == Expose){
+		}else if(event.type == Expose && !hasBeenExposed){
 			onExpose(container, text, fontSet, textOffsetX, textOffsetY, gc, textColor);
+			hasBeenExposed = 1;
 		}else if(event.type == rrEventBase + RRScreenChangeNotify){
 			mode = RestartMode;
 			break;
