@@ -25,13 +25,14 @@ SOFTWARE. */
 #ifndef READCONFIG_H
 #define READCONFIG_H
 
-bool readConfigScan(const Window parentWindow);
+bool readConfigScan();
 bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalSectionBorderColor, uint32_t *const globalSectionBackgroundColor, unsigned int *const sectionAmount);
 bool readConfigSectionWindow(const Window parentWindow, const unsigned int currentSection, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalContainerBorderColor, uint32_t *const globalContainerBackgroundColor, unsigned int *const boxAmount);
 bool readConfigContainerWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentContainer, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalRectangleBorderColor, uint32_t *const globalRectangleBackgroundColor, unsigned int *const rectangleAmount);
 bool readConfigRectangleWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentContainer, const unsigned int currentRectangle, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor);
 bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int *const commandMaxWordLength, unsigned int *const drawableCommandMaxWordLength);
 bool readConfigFillArrays(const unsigned int currentContainer, char *const text, uint32_t *const textColor, char *const command, char *const drawableCommand);
+bool readConfigShortcuts(Shortcut *const hide, Shortcut *const restart, Shortcut *const exit);
 bool readConfigButton(const Window window, const unsigned int currentContainer);
 bool readConfigFontAmount(unsigned int *const fontAmount);
 bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const userFontLength);

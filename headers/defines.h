@@ -39,4 +39,9 @@ SOFTWARE. */
 
 typedef uint8_t bool;
 
+typedef struct{
+	unsigned int keycode;
+	uint16_t masks;
+} Shortcut;
+
 #endif
