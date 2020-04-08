@@ -163,6 +163,9 @@ void eventLoop(void){
 		};
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			gc[currentMonitor] = XCreateGC(display, topLevelWindowArray[currentMonitor], GCSubwindowMode, &gcValues);
+			if(!gc[currentMonitor]){
+				fprintf(stderr, "%s: could not create graphics context for monitor %u\n", programName, currentMonitor);
+			}
 		}
 	}
 	int rrEventBase;
@@ -237,7 +240,9 @@ void eventLoop(void){
 		}
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		XFreeGC(display, gc[currentMonitor]);
+		if(gc[currentMonitor]){
+			XFreeGC(display, gc[currentMonitor]);
+		}
 	}
 	if(fontSet){
 		XFreeFontSet(display, fontSet);
@@ -263,15 +268,16 @@ static XFontSet createFontSet(){
 	if(fontAmount){
 		unsigned int userFontLength[fontAmount];
 		readConfigFontLength(fontAmount, userFontLength);
-		unsigned int setLength  = fontAmount;
+		unsigned int setLength = fontAmount;
 		setLength -= 1;
-		for(unsigned int currentFont = 0; currentFont < fontAmount; ++currentFont){
+		unsigned int currentFont;
+		for(currentFont = 0; currentFont < fontAmount; ++currentFont){
 			setLength += userFontLength[currentFont];
 		}
 		char set[setLength + 1];
 		{
 			unsigned int element = 0;
-			for(unsigned int currentFont = 0; currentFont < fontAmount; ++currentFont){
+			for(currentFont = 0; currentFont < fontAmount; ++currentFont){
 				readConfigFillFontArray(currentFont, &set[element]);
 				element += userFontLength[currentFont];
 				if(currentFont < fontAmount - 1){
@@ -286,19 +292,21 @@ static XFontSet createFontSet(){
 		{
 			char *def_string;
 			fontSet = XCreateFontSet(display, set, &missingFont, (int *)&missingAmount, &def_string);
+			if(!fontSet){
+				fprintf(stderr, "%s: could not create fontset\n", programName);
+			}
 		}
-		for(unsigned int currentItem = 0; currentItem < missingAmount; ++currentItem){
-			fprintf(stderr, "%s: missing font: %s\n", programName, missingFont[currentItem]);
+		for(currentFont = 0; currentFont < missingAmount; ++currentFont){
+			fprintf(stderr, "%s: missing font: %s\n", programName, missingFont[currentFont]);
 		}
-		XFreeStringList(missingFont);
-		if(!fontSet){
-			fprintf(stderr, "%s: could not create fontset\n", programName);
+		if(missingFont){
+			XFreeStringList(missingFont);
 		}
 	}
 	return fontSet;
 }
 static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor){
-	if(fontSet){
+	if(fontSet && gc){
 		system(systemCommand);
 		if((file = fopen(drawableCommandPath, "r"))){
 			unsigned int length = 0;
@@ -367,7 +375,7 @@ static bool isCommand(const char *const command, const char *const vector){
 	return value;
 }
 static void onExpose(const Window *const *const container, char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC *gc, const uint32_t *const textColor){
-	if(containerAmount > 0 && fontSet){
+	if(containerAmount > 0 && fontSet && gc){
 		unsigned int currentContainer;
 		unsigned int length;
 		XRectangle overallLogicalReturn;
