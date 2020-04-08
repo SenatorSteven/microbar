@@ -128,7 +128,7 @@ static void start(void){
 				XRRFreeMonitors(monitorInfo);
 			}
 			if(monitorAmount){
-				if(readConfigScan(XDefaultRootWindow(display))){
+				if(readConfigScan()){
 					Window topLevelWindow[monitorAmount];
 					topLevelWindowArray = topLevelWindow;
 					if(createWindows()){

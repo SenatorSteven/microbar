@@ -30,19 +30,17 @@ A simple text-based status bar for the X Window System.
 ## ...But what _is_ microbar?
 Well, if the comment alone does not provide enough information, microbar is a simple, fast and highly customizable information provider and command runner.
 
-<p align="center">
-  <img width="612" height="38" src="https://github.com/TheSenatorSteven/microbar/blob/master/sample.png" alt="sample">
-</p>
+![microbar](https://github.com/TheSenatorSteven/microbar/blob/master/sample.png)
 
 
 
 ## Features
 - Extremely verbose and helpful default configuration
-- Fully customizable bar, "sections", "containers" and "rectangles"
+- Fully customizable bar, "menus", "boxes" and "innerBoxes"
 - Ability to execute one-time commands e.g. "firefox"
 - Ability to execute text-returning commands e.g. "date"
 - Ability to restart after a configuration edit
-- Multi-monitor support and options
+- Multi-monitor support
 
 
 

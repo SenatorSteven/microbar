@@ -45,6 +45,7 @@ extern char line[DefaultCharactersCount + 1];
 extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
+static void grabKeys(Shortcut hide, Shortcut restart, Shortcut exit);
 static XFontSet createFontSet();
 static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor);
 static bool isCommand(const char *const command, const char *const vector);
@@ -126,6 +127,11 @@ void eventLoop(void){
 			systemCommand[currentContainer] = _systemCommand[currentContainer];
 		}
 	}
+	Shortcut hide;
+	Shortcut restart;
+	Shortcut exit;
+	readConfigShortcuts(&hide, &restart, &exit);
+	grabKeys(hide, restart, exit);
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 			readConfigButton(container[currentMonitor][currentContainer], currentContainer);
@@ -173,17 +179,25 @@ void eventLoop(void){
 		}
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
-			if(topLevelWindowsMapped){
-				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-					XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+			if(event.xkey.keycode == restart.keycode && event.xkey.state == restart.masks){
+				mode = RestartMode;
+				break;
+			}else if(event.xkey.keycode == hide.keycode && event.xkey.state == hide.masks){
+				if(topLevelWindowsMapped){
+					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+						XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+					}
+					topLevelWindowsMapped = 0;
+				}else{
+					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+						XMoveWindow(display, topLevelWindowArray[currentMonitor], topLevelWindowX[currentMonitor], topLevelWindowY[currentMonitor]);
+						XMapWindow(display, topLevelWindowArray[currentMonitor]);
+					}
+					topLevelWindowsMapped = 1;
 				}
-				topLevelWindowsMapped = 0;
 			}else{
-				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-					XMoveWindow(display, topLevelWindowArray[currentMonitor], topLevelWindowX[currentMonitor], topLevelWindowY[currentMonitor]);
-					XMapWindow(display, topLevelWindowArray[currentMonitor]);
-				}
-				topLevelWindowsMapped = 1;
+				mode = ExitMode;
+				break;
 			}
 		}else if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
@@ -193,9 +207,14 @@ void eventLoop(void){
 							drawCommand(systemCommand[currentContainer], container[currentMonitor][currentContainer], fontSet, drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer], gc[currentMonitor], textColor[currentContainer]);
 						}
 						if(command[currentContainer]){
-							if(isCommand("Restart", command[currentContainer])){
+							if(isCommand("hide", command[currentContainer])){
+								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+									XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+								}
+								topLevelWindowsMapped = 0;
+							}else if(isCommand("restart", command[currentContainer])){
 								mode = RestartMode;
-							}else if(isCommand("Exit", command[currentContainer])){
+							}else if(isCommand("exit", command[currentContainer])){
 								mode = ExitMode;
 							}else{
 								system(command[currentContainer]);
@@ -206,7 +225,7 @@ void eventLoop(void){
 					}
 				}
 			}
-			if(mode == RestartMode || mode == ExitMode){
+			if(mode != ContinueMode){
 				break;
 			}
 		}else if(event.type == Expose && !hasBeenExposed){
@@ -222,6 +241,18 @@ void eventLoop(void){
 	}
 	if(fontSet){
 		XFreeFontSet(display, fontSet);
+	}
+	return;
+}
+static void grabKeys(Shortcut hide, Shortcut restart, Shortcut exit){
+	if(hide.keycode != AnyKey){
+		XGrabKey(display, hide.keycode, hide.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+	}
+	if(restart.keycode != AnyKey){
+		XGrabKey(display, restart.keycode, restart.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+	}
+	if(exit.keycode != AnyKey){
+		XGrabKey(display, exit.keycode, exit.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
 	}
 	return;
 }

@@ -43,20 +43,22 @@ SOFTWARE. */
 #define GlobalContainerBackgroundColorPosition /*-*/ (1 << 11)
 #define GlobalRectangleBorderColorPosition /*-----*/ (1 << 12)
 #define GlobalRectangleBackgroundColorPosition /*-*/ (1 << 13)
-#define HideKeyPosition /*------------------------*/ (1 << 14)
-#define TextPosition /*---------------------------*/ (1 << 15)
-#define TextColorPosition /*----------------------*/ (1 << 16)
-#define GlobalTextColorPosition /*----------------*/ (1 << 17)
-#define CommandPosition /*------------------------*/ (1 << 18)
-#define DrawableCommandPosition /*----------------*/ (1 << 19)
-#define TextOffsetXPosition /*--------------------*/ (1 << 20)
-#define TextOffsetYPosition /*--------------------*/ (1 << 21)
-#define DrawableCommandOffsetXPosition /*---------*/ (1 << 22)
-#define DrawableCommandOffsetYPosition /*---------*/ (1 << 23)
-#define ButtonPosition /*-------------------------*/ (1 << 24)
-#define SectionPosition /*------------------------*/ (1 << 25)
-#define ContainerPosition /*----------------------*/ (1 << 26)
-#define RectanglePosition /*----------------------*/ (1 << 27)
+#define TextPosition /*---------------------------*/ (1 << 14)
+#define TextColorPosition /*----------------------*/ (1 << 15)
+#define GlobalTextColorPosition /*----------------*/ (1 << 16)
+#define CommandPosition /*------------------------*/ (1 << 17)
+#define DrawableCommandPosition /*----------------*/ (1 << 18)
+#define TextOffsetXPosition /*--------------------*/ (1 << 19)
+#define TextOffsetYPosition /*--------------------*/ (1 << 20)
+#define DrawableCommandOffsetXPosition /*---------*/ (1 << 21)
+#define DrawableCommandOffsetYPosition /*---------*/ (1 << 22)
+#define HidePosition /*---------------------------*/ (1 << 23)
+#define RestartPosition /*------------------------*/ (1 << 24)
+#define ExitPosition /*---------------------------*/ (1 << 25)
+#define ButtonPosition /*-------------------------*/ (1 << 26)
+#define SectionPosition /*------------------------*/ (1 << 27)
+#define ContainerPosition /*----------------------*/ (1 << 28)
+#define RectanglePosition /*----------------------*/ (1 << 29)
 
 #define NoOperation /*----------------------------*/ 0
 #define AdditionOperation /*----------------------*/ 1
@@ -83,11 +85,11 @@ static int getIntegerNumber(const Window window, unsigned int *const element);
 static uint32_t getARGB(unsigned int *const element);
 static unsigned int getQuotedStringLength(unsigned int *const element);
 static unsigned int getQuotedString(char *const string, unsigned int *const element);
-static bool grabKey(const Window window, unsigned int *const element);
+static bool getKey(unsigned int *const element, unsigned int *const keycode, uint16_t *const masks);
 static bool getButton(unsigned int *const element, uint8_t *const button, uint16_t *const masks);
 static void printLineError(const unsigned int currentLine);
 
-bool readConfigScan(const Window parentWindow){
+bool readConfigScan(){
 	bool value = 0;
 	if((file = getConfigFile())){
 		containerAmount = 0;
@@ -113,17 +115,6 @@ bool readConfigScan(const Window parentWindow){
 							continue;
 						}
 					}
-					if(!(hasReadVariable & HideKeyPosition)){
-						if(isVariable("hideKey", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								grabKey(parentWindow, &element);
-								hasReadVariable |= HideKeyPosition;
-							}
-							continue;
-						}
-					}
 					if(isVariable("section", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
@@ -143,7 +134,7 @@ bool readConfigScan(const Window parentWindow){
 					   !isVariable("globalSectionBackgroundColor", &element) &&
 					   !isVariable("font",                         &element) &&
 					   !isVariable("monitor",                      &element) &&
-					   !isVariable("hideKey",                      &element) &&
+					   !isVariable("keycode",                      &element) &&
 					   !isVariable("section",                      &element) &&
 					   !isVariable("}",                            &element)){
 						printLineError(currentLine);
@@ -1207,6 +1198,104 @@ bool readConfigFillArrays(const unsigned int currentContainer, char *const text,
 	}
 	return value;
 }
+bool readConfigShortcuts(Shortcut *const hide, Shortcut *const restart, Shortcut *const exit){
+	bool value = 0;
+	if((file = getConfigFile())){
+		(*hide).keycode = AnyKey;
+		(*hide).masks = None;
+		(*restart).keycode = AnyKey;
+		(*restart).masks = None;
+		(*exit).keycode = AnyKey;
+		(*exit).masks = None;
+		unsigned int maxLinesCount = DefaultLinesCount;
+		unsigned int element;
+		uint32_t hasReadVariable = NoPositions;
+		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
+			if(!getLine()){
+				break;
+			}
+			element = 0;
+			pushWhitespace(&element);
+			if(!isVariable("#", &element)){
+				if(!(hasReadVariable & SectionPosition)){
+					if(!(hasReadVariable & LinesPosition)){
+						if(isVariable("lines", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								pushWhitespace(&element);
+								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								hasReadVariable |= LinesPosition;
+							}
+							continue;
+						}
+					}
+					if(isVariable("keycode", &element)){
+						pushWhitespace(&element);
+						unsigned int keycode;
+						uint16_t masks;
+						getKey(&element, &keycode, &masks);
+						if(isVariable("hide", &element)){
+							if(!(hasReadVariable & HidePosition)){
+								(*hide).keycode = keycode;
+								(*hide).masks = masks;
+							}
+						}else if(isVariable("restart", &element)){
+							if(!(hasReadVariable & RestartPosition)){
+								(*restart).keycode = keycode;
+								(*restart).masks = masks;
+							}
+						}else if(isVariable("exit", &element)){
+							if(!(hasReadVariable & ExitPosition)){
+								(*exit).keycode = keycode;
+								(*exit).masks = masks;
+							}
+						}
+						continue;
+					}
+					if(isVariable("section", &element)){
+						pushWhitespace(&element);
+						if(isVariable("{", &element)){
+							hasReadVariable |= SectionPosition;
+						}
+						continue;
+					}
+				}else if(!(hasReadVariable & ContainerPosition)){
+					if(isVariable("container", &element)){
+						pushWhitespace(&element);
+						if(isVariable("{", &element)){
+							hasReadVariable |= ContainerPosition;
+						}
+						continue;
+					}
+					if(isVariable("}", &element)){
+						hasReadVariable ^= SectionPosition;
+						continue;
+					}
+				}else if(!(hasReadVariable & RectanglePosition)){
+					if(isVariable("rectangle", &element)){
+						pushWhitespace(&element);
+						if(isVariable("{", &element)){
+							hasReadVariable |= RectanglePosition;
+						}
+						continue;
+					}
+					if(isVariable("}", &element)){
+						hasReadVariable ^= ContainerPosition;
+						continue;
+					}
+				}else{
+					if(isVariable("}", &element)){
+						hasReadVariable ^= RectanglePosition;
+						continue;
+					}
+				}
+			}
+		}
+		fclose(file);
+		value = 1;
+	}
+	return value;
+}
 bool readConfigButton(const Window window, const unsigned int currentContainer){
 	bool value = 0;
 	if((file = getConfigFile())){
@@ -1706,23 +1795,23 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# this file needs to be user-specified when launched\n");
 			fprintf(config, "# max line character length is %u\n", DefaultCharactersCount);
 			fprintf(config, "# comments are signified by a \'#\' at the beginning of the line\n");
-			fprintf(config, "# one variable per line, followed by \'=\' and it\'s value\n");
+			fprintf(config, "# one variable per line, followed by \'=\' and its value\n");
 			fprintf(config, "# all spaces and tabs are ignored\n");
 			fprintf(config, "# all variables are valued 0 or undefined by default unless stated otherwise\n");
 			fprintf(config, "# colors are in argb format\n");
 			fprintf(config, "# all variables, argb values and macros can be written with random capitalization\n");
 			fprintf(config, "# argb do not require a \'#\' before the value\n");
-			fprintf(config, "# text requires the same quote character before and after it\n");
-			fprintf(config, "# text quotation is variable, the first character after \'=\' is the quote character\n\n\n\n");
+			fprintf(config, "# text require the same quote character before and after it\n");
+			fprintf(config, "# text quotation is variable, the first character is the quote character\n\n\n\n");
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
-			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, monitor, hideKey, section{}\n");
+			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, keycode, section{}\n");
 			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalContainerBorderColor, globalContainerBackgroundColor, globalTextColor, container{}\n");
 			fprintf(config, "# container object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
 			fprintf(config, "# rectangle object: x, y, width, height, border, borderColor, backgroundColor\n");
-			fprintf(config, "# decimal operands: +, -, *, /\n");
-			fprintf(config, "# decimal macros: ParentWidth, ParentHeight\n\n\n\n");
+			fprintf(config, "# math operands: +, -, *, /, (, )\n");
+			fprintf(config, "# math macros: ParentWidth, ParentHeight\n\n\n\n");
 			fprintf(config, "# # # # # # # # # # # #\n");
 			fprintf(config, "# variable definition #\n");
 			fprintf(config, "# # # # # # # # # # # #\n\n");
@@ -1742,8 +1831,6 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# globalRectangleBackgroundColor: color of all rectangles\' background\n");
 			fprintf(config, "# globalTextColor: color of all containeres\' text\n");
 			fprintf(config, "# font: font to form part of a font set, multiple fonts allowed and encouraged\n");
-			fprintf(config, "# monitor: monitor to be used\n");
-			fprintf(config, "# hideKey: combination of keycode and modifiers used to hide the bar\n");
 			fprintf(config, "# text: text label of container\n");
 			fprintf(config, "# textColor: color of container\'s text\n");
 			fprintf(config, "# textOffsetX: x axis offset of container\'s text\n");
@@ -1752,6 +1839,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# drawableCommand: command returning text output executed on interaction with container\n");
 			fprintf(config, "# drawableCommandOffsetX: x axis offset of container\'s drawableCommand\n");
 			fprintf(config, "# drawableCommandOffsetY: y axis offset of container\'s drawableCommand\n");
+			fprintf(config, "# keycode: combination of keycode and modifiers used to interact\n");
 			fprintf(config, "# button: combination of mouse button and modifiers used to interact\n");
 			fprintf(config, "# section: informationless interactionless object, residing in global object\n");
 			fprintf(config, "# container: information object, residing in section object\n");
@@ -1764,15 +1852,16 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# lines: default %u\n", DefaultLinesCount);
 			fprintf(config, "# font: the xfontsel application is recommended for looking at different available fonts\n");
 			fprintf(config, "# font: requires quotation, there is a font hierarchy from first to last specified\n");
-			fprintf(config, "# monitor: 0 = first, 1 = second, all = all, (>= n) = all\n");
-			fprintf(config, "# hideKey: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
+			fprintf(config, "# keycode: does not take \'=\'\n");
+			fprintf(config, "# keycode: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
+			fprintf(config, "# keycode: program commands: hide, restart, exit\n");
 			fprintf(config, "# text: requires quotation\n");
-			fprintf(config, "# command: requires quotation, program commands: restart, exit\n");
+			fprintf(config, "# command: requires quotation, program commands: hide, restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# button: buttons: Button1 = left click, Button2 = middle click, Button3 = right click, Button4 = wheel up, Button5 = wheel down\n\n\n\n");
-			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 190\n");
+			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
+			fprintf(config, "lines = 189\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -1784,8 +1873,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "globalSectionBackgroundColor = #FF000000\n");
 			fprintf(config, "font = \"-misc-fixed-medium-r-normal-*-13-120-75-75-C-70-iso10646-1\"\n");
 			fprintf(config, "font = \"-*-*-*-*-*-*-*-*-*-*-*-*-gb2312.1980-*\"\n");
-			fprintf(config, "# monitor = all\n");
-			fprintf(config, "hideKey = 116 + Mod4\n");
+			fprintf(config, "keycode 116 + Mod4 hide\n");
 			fprintf(config, "section{\n");
 			fprintf(config, "	x = 0\n");
 			fprintf(config, "	y = 0\n");
@@ -1857,7 +1945,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		button = Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
-			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
+			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
 			fclose(config);
 			config = fopen(configPath, "r");
 		}else{
@@ -2162,40 +2250,40 @@ static unsigned int getQuotedString(char *const string, unsigned int *const elem
 	*element = dereferencedElement;
 	return currentCharacter;
 }
-static bool grabKey(const Window window, unsigned int *const element){
+static bool getKey(unsigned int *const element, unsigned int *const keycode, uint16_t *const masks){
 	unsigned int dereferencedElement = *element;
+	unsigned int dereferencedKeycode = AnyKey;
+	uint16_t dereferencedMasks = None;
 	bool value = 0;
-	unsigned int keycode = AnyKey;
-	uint16_t masks = None;
 	bool lookingForValue = 1;
 	while(line[dereferencedElement]){
 		pushWhitespace(&dereferencedElement);
 		if(lookingForValue){
 			if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
 				do{
-					keycode *= 10;
-					keycode += line[dereferencedElement];
-					keycode -= 48;
+					dereferencedKeycode *= 10;
+					dereferencedKeycode += line[dereferencedElement];
+					dereferencedKeycode -= 48;
 					++dereferencedElement;
 				}while(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9');
 			}else if(isVariable("AnyModifier", &dereferencedElement)){
-				masks |= AnyModifier;
+				dereferencedMasks |= AnyModifier;
 			}else if(isVariable("Shift", &dereferencedElement)){
-				masks |= ShiftMask;
+				dereferencedMasks |= ShiftMask;
 			}else if(isVariable("Lock", &dereferencedElement)){
-				masks |= LockMask;
+				dereferencedMasks |= LockMask;
 			}else if(isVariable("Control", &dereferencedElement)){
-				masks |= ControlMask;
+				dereferencedMasks |= ControlMask;
 			}else if(isVariable("Mod1", &dereferencedElement)){
-				masks |= Mod1Mask;
+				dereferencedMasks |= Mod1Mask;
 			}else if(isVariable("Mod2", &dereferencedElement)){
-				masks |= Mod2Mask;
+				dereferencedMasks |= Mod2Mask;
 			}else if(isVariable("Mod3", &dereferencedElement)){
-				masks |= Mod3Mask;
+				dereferencedMasks |= Mod3Mask;
 			}else if(isVariable("Mod4", &dereferencedElement)){
-				masks |= Mod4Mask;
+				dereferencedMasks |= Mod4Mask;
 			}else if(isVariable("Mod5", &dereferencedElement)){
-				masks |= Mod5Mask;
+				dereferencedMasks |= Mod5Mask;
 			}else{
 				break;
 			}
@@ -2211,7 +2299,8 @@ static bool grabKey(const Window window, unsigned int *const element){
 	}
 	if(keycode != AnyKey){
 		*element = dereferencedElement;
-		XGrabKey(display, keycode, masks, window, True, GrabModeAsync, GrabModeAsync);
+		*keycode = dereferencedKeycode;
+		*masks = dereferencedMasks;
 		value = 1;
 	}
 	return value;
