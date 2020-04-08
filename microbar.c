@@ -134,11 +134,11 @@ static void start(void){
 					if(createWindows()){
 						setTopLevelWindowProperties();
 						eventLoop();
-						cleanup();
 					}else{
 						fprintf(stderr, "%s: could not create windows\n", programName);
 						mode = ExitMode;
 					}
+					cleanup();
 				}else{
 					mode = ExitMode;
 				}

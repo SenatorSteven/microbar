@@ -122,23 +122,25 @@ bool readConfigScan(){
 						}
 						continue;
 					}
-					if(!isVariable("lines",                        &element) &&
-					   !isVariable("x",                            &element) &&
-					   !isVariable("y",                            &element) &&
-					   !isVariable("width",                        &element) &&
-					   !isVariable("height",                       &element) &&
-					   !isVariable("border",                       &element) &&
-					   !isVariable("borderColor",                  &element) &&
-					   !isVariable("backgroundColor",              &element) &&
-					   !isVariable("globalSectionBorderColor",     &element) &&
-					   !isVariable("globalSectionBackgroundColor", &element) &&
-					   !isVariable("font",                         &element) &&
-					   !isVariable("monitor",                      &element) &&
-					   !isVariable("keycode",                      &element) &&
-					   !isVariable("section",                      &element) &&
-					   !isVariable("}",                            &element)){
-						printLineError(currentLine);
-						continue;
+					if(line[element]){
+						if(!isVariable("lines",                        &element) &&
+						   !isVariable("x",                            &element) &&
+						   !isVariable("y",                            &element) &&
+						   !isVariable("width",                        &element) &&
+						   !isVariable("height",                       &element) &&
+						   !isVariable("border",                       &element) &&
+						   !isVariable("borderColor",                  &element) &&
+						   !isVariable("backgroundColor",              &element) &&
+						   !isVariable("globalSectionBorderColor",     &element) &&
+						   !isVariable("globalSectionBackgroundColor", &element) &&
+						   !isVariable("font",                         &element) &&
+						   !isVariable("monitor",                      &element) &&
+						   !isVariable("keycode",                      &element) &&
+						   !isVariable("section",                      &element) &&
+						   !isVariable("}",                            &element)){
+							printLineError(currentLine);
+							continue;
+						}
 					}
 				}else if(!(hasReadVariable & ContainerPosition)){
 					if(isVariable("container", &element)){
@@ -153,20 +155,22 @@ bool readConfigScan(){
 						hasReadVariable ^= SectionPosition;
 						continue;
 					}
-					if(!isVariable("x",                        &element) &&
-					   !isVariable("y",                        &element) &&
-					   !isVariable("width",                    &element) &&
-					   !isVariable("height",                   &element) &&
-					   !isVariable("border",                   &element) &&
-					   !isVariable("borderColor",              &element) &&
-					   !isVariable("backgroundColor",          &element) &&
-					   !isVariable("globalContainerBorderColor",     &element) &&
-					   !isVariable("globalContainerBackgroundColor", &element) &&
-					   !isVariable("globalTextColor",          &element) &&
-					   !isVariable("container",                      &element) &&
-					   !isVariable("}",                        &element)){
-						printLineError(currentLine);
-						continue;
+					if(line[element]){
+						if(!isVariable("x",                              &element) &&
+						   !isVariable("y",                              &element) &&
+						   !isVariable("width",                          &element) &&
+						   !isVariable("height",                         &element) &&
+						   !isVariable("border",                         &element) &&
+						   !isVariable("borderColor",                    &element) &&
+						   !isVariable("backgroundColor",                &element) &&
+						   !isVariable("globalContainerBorderColor",     &element) &&
+						   !isVariable("globalContainerBackgroundColor", &element) &&
+						   !isVariable("globalTextColor",                &element) &&
+						   !isVariable("container",                      &element) &&
+						   !isVariable("}",                              &element)){
+							printLineError(currentLine);
+							continue;
+						}
 					}
 				}else if(!(hasReadVariable & RectanglePosition)){
 					if(isVariable("rectangle", &element)){
@@ -180,40 +184,44 @@ bool readConfigScan(){
 						hasReadVariable ^= ContainerPosition;
 						continue;
 					}
-					if(!isVariable("x",               &element) &&
-					   !isVariable("y",               &element) &&
-					   !isVariable("width",           &element) &&
-					   !isVariable("height",          &element) &&
-					   !isVariable("border",          &element) &&
-					   !isVariable("borderColor",     &element) &&
-					   !isVariable("backgroundColor", &element) &&
-					   !isVariable("text",            &element) &&
-					   !isVariable("textColor",       &element) &&
-					   !isVariable("command",         &element) &&
-					   !isVariable("drawableCommand", &element) &&
-					   !isVariable("textOffsetX",     &element) &&
-					   !isVariable("textOffsetY",     &element) &&
-					   !isVariable("button",          &element) &&
-					   !isVariable("rectangle",       &element) &&
-					   !isVariable("}",               &element)){
-						printLineError(currentLine);
-						continue;
+					if(line[element]){
+						if(!isVariable("x",               &element) &&
+						   !isVariable("y",               &element) &&
+						   !isVariable("width",           &element) &&
+						   !isVariable("height",          &element) &&
+						   !isVariable("border",          &element) &&
+						   !isVariable("borderColor",     &element) &&
+						   !isVariable("backgroundColor", &element) &&
+						   !isVariable("text",            &element) &&
+						   !isVariable("textColor",       &element) &&
+						   !isVariable("command",         &element) &&
+						   !isVariable("drawableCommand", &element) &&
+						   !isVariable("textOffsetX",     &element) &&
+						   !isVariable("textOffsetY",     &element) &&
+						   !isVariable("button",          &element) &&
+						   !isVariable("rectangle",       &element) &&
+						   !isVariable("}",               &element)){
+							printLineError(currentLine);
+							continue;
+						}
 					}
 				}else{
 					if(isVariable("}", &element)){
 						hasReadVariable ^= RectanglePosition;
 						continue;
 					}
-					if(!isVariable("x",               &element) &&
-					   !isVariable("y",               &element) &&
-					   !isVariable("width",           &element) &&
-					   !isVariable("height",          &element) &&
-					   !isVariable("border",          &element) &&
-					   !isVariable("borderColor",     &element) &&
-					   !isVariable("backgroundColor", &element) &&
-					   !isVariable("}",               &element)){
-						printLineError(currentLine);
-						continue;
+					if(line[element]){
+						if(!isVariable("x",               &element) &&
+						   !isVariable("y",               &element) &&
+						   !isVariable("width",           &element) &&
+						   !isVariable("height",          &element) &&
+						   !isVariable("border",          &element) &&
+						   !isVariable("borderColor",     &element) &&
+						   !isVariable("backgroundColor", &element) &&
+						   !isVariable("}",               &element)){
+							printLineError(currentLine);
+							continue;
+						}
 					}
 				}
 			}
