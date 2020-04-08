@@ -58,7 +58,7 @@ Somebody could argue that the CPU power being used in updating the bar is as tri
 
 
 ## Installation
-1. Clone
+1. Download
 2. Unzip
 3. Go to the microbar-master directory
 4. Allow "compile.sh" to execute as program
