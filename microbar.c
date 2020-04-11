@@ -125,7 +125,11 @@ static void start(void){
 			}
 			{
 				XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
-				XRRFreeMonitors(monitorInfo);
+				if(monitorInfo){
+					XRRFreeMonitors(monitorInfo);
+				}else{
+					monitorAmount = 0;
+				}
 			}
 			if(monitorAmount){
 				if(readConfigScan()){
@@ -172,28 +176,32 @@ static bool createWindows(void){
 			int monitorAmount;
 			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
 		}
-		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			value = 0;
-			if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
-				if(width > 0 && height > 0){
-					x += monitorInfo[currentMonitor].x;
-					y += monitorInfo[currentMonitor].y;
-					XVisualInfo visualInfo;
-					XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
-					XSetWindowAttributes windowAttributes = {
-						.background_pixel = backgroundColor,
-						.border_pixel = borderColor,
-						.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
-					};
-					topLevelWindow[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
-					value = 1;
+		if(monitorInfo){
+			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+				value = 0;
+				if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
+					if(width > 0 && height > 0){
+						x += monitorInfo[currentMonitor].x;
+						y += monitorInfo[currentMonitor].y;
+						XVisualInfo visualInfo;
+						XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
+						XSetWindowAttributes windowAttributes = {
+							.background_pixel = backgroundColor,
+							.border_pixel = borderColor,
+							.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
+						};
+						topLevelWindow[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
+						value = 1;
+					}
+				}
+				if(!value){
+					break;
 				}
 			}
-			if(!value){
-				break;
-			}
+			XRRFreeMonitors(monitorInfo);
+		}else{
+			value = 0;
 		}
-		XRRFreeMonitors(monitorInfo);
 	}
 	if(value){
 		unsigned int currentSection;
@@ -333,58 +341,60 @@ static void setTopLevelWindowProperties(void){
 		int monitorAmount;
 		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
 	}
-	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
-		sizeHints.x = windowAttributes.x;
-		sizeHints.y = windowAttributes.y;
-		sizeHints.width = windowAttributes.width;
-		sizeHints.height = windowAttributes.height;
-		sizeHints.min_width = windowAttributes.width;
-		sizeHints.min_height = windowAttributes.height;
-		sizeHints.max_width = windowAttributes.width;
-		sizeHints.max_height = windowAttributes.height;
-		sizeHints.base_width = windowAttributes.width;
-		sizeHints.base_height = windowAttributes.height;
-		XSetWMName(display, topLevelWindow[currentMonitor], &textProperty);
-		XSetWMNormalHints(display, topLevelWindow[currentMonitor], &sizeHints);
-		XSetWMHints(display, topLevelWindow[currentMonitor], &WMHints);
-		XSetClassHint(display, topLevelWindow[currentMonitor], &classHint);
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
-		data[0] = 0xFFFFFFFF;
-		data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
-		data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
-		data[3] = XInternAtom(display, "_NET_WM_ACTION_STICK", False);
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_DESKTOP", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data[0], 1);
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_WINDOW_TYPE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[1], 1);
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[2], 1);
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_ALLOWED_ACTIONS", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[3], 1);
-		data[0] = 0;
-		data[1] = 0;
-		data[4] = 0;
-		data[5] = 0;
-		data[6] = 0;
-		data[7] = 0;
-		if(windowAttributes.y < monitorInfo[currentMonitor].height / 2){
-			data[2] = windowAttributes.y + windowAttributes.height;
-			data[3] = 0;
-			data[8] = windowAttributes.x;
-			data[9] = windowAttributes.x + windowAttributes.width - 1;
-			data[10] = 0;
-			data[11] = 0;
-		}else{
-			data[2] = 0;
-			data[3] = XDisplayHeight(display, XDefaultScreen(display)) - windowAttributes.y;
-			data[8] = 0;
-			data[9] = 0;
-			data[10] = windowAttributes.x;
-			data[11] = windowAttributes.x + windowAttributes.width - 1;
+	if(monitorInfo){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+			XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
+			sizeHints.x = windowAttributes.x;
+			sizeHints.y = windowAttributes.y;
+			sizeHints.width = windowAttributes.width;
+			sizeHints.height = windowAttributes.height;
+			sizeHints.min_width = windowAttributes.width;
+			sizeHints.min_height = windowAttributes.height;
+			sizeHints.max_width = windowAttributes.width;
+			sizeHints.max_height = windowAttributes.height;
+			sizeHints.base_width = windowAttributes.width;
+			sizeHints.base_height = windowAttributes.height;
+			XSetWMName(display, topLevelWindow[currentMonitor], &textProperty);
+			XSetWMNormalHints(display, topLevelWindow[currentMonitor], &sizeHints);
+			XSetWMHints(display, topLevelWindow[currentMonitor], &WMHints);
+			XSetClassHint(display, topLevelWindow[currentMonitor], &classHint);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
+			data[0] = 0xFFFFFFFF;
+			data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
+			data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
+			data[3] = XInternAtom(display, "_NET_WM_ACTION_STICK", False);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_DESKTOP", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data[0], 1);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_WINDOW_TYPE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[1], 1);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STATE", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[2], 1);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_ALLOWED_ACTIONS", False), XA_ATOM, 32, PropModeReplace, (unsigned char *)&data[3], 1);
+			data[0] = 0;
+			data[1] = 0;
+			data[4] = 0;
+			data[5] = 0;
+			data[6] = 0;
+			data[7] = 0;
+			if(windowAttributes.y < monitorInfo[currentMonitor].height / 2){
+				data[2] = windowAttributes.y + windowAttributes.height;
+				data[3] = 0;
+				data[8] = windowAttributes.x;
+				data[9] = windowAttributes.x + windowAttributes.width - 1;
+				data[10] = 0;
+				data[11] = 0;
+			}else{
+				data[2] = 0;
+				data[3] = XDisplayHeight(display, XDefaultScreen(display)) - windowAttributes.y;
+				data[8] = 0;
+				data[9] = 0;
+				data[10] = windowAttributes.x;
+				data[11] = windowAttributes.x + windowAttributes.width - 1;
+			}
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
+			XSelectInput(display, topLevelWindow[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
+			XRRSelectInput(display, topLevelWindow[currentMonitor], RRScreenChangeNotifyMask);
 		}
-		XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
-		XSelectInput(display, topLevelWindow[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
-		XRRSelectInput(display, topLevelWindow[currentMonitor], RRScreenChangeNotifyMask);
+		XRRFreeMonitors(monitorInfo);
 	}
-	XRRFreeMonitors(monitorInfo);
 	return;
 }
 static void cleanup(void){

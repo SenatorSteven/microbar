@@ -80,7 +80,7 @@ static bool getLine(void);
 static void pushWhitespace(unsigned int *const element);
 static bool isVariable(const char *const variable, unsigned int *const element);
 static unsigned int getUnsignedIntegerNumber(const Window window, const unsigned int currentLine, unsigned int *const element);
-static int getIntegerNumber(const Window window, unsigned int *const element);
+static int getIntegerNumber(Window window, unsigned int *const element);
 static uint32_t getARGB(unsigned int *const element);
 static unsigned int getQuotedStringLength(unsigned int *const element);
 static unsigned int getQuotedString(char *const string, unsigned int *const element);
@@ -2026,7 +2026,7 @@ static unsigned int getUnsignedIntegerNumber(const Window parentWindow, const un
 	}
 	return number;
 }
-static int getIntegerNumber(const Window parentWindow, unsigned int *const element){
+static int getIntegerNumber(Window parentWindow, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	int number = 0;
 	int numberRead = 0;
@@ -2039,9 +2039,13 @@ static int getIntegerNumber(const Window parentWindow, unsigned int *const eleme
 		if(parentWindow == XDefaultRootWindow(display)){
 			int monitorAmount;
 			XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
-			windowAttributes.width = monitorInfo[currentMonitor].width;
-			windowAttributes.height = monitorInfo[currentMonitor].height;
-			XRRFreeMonitors(monitorInfo);
+			if(monitorInfo){
+				windowAttributes.width = monitorInfo[currentMonitor].width;
+				windowAttributes.height = monitorInfo[currentMonitor].height;
+				XRRFreeMonitors(monitorInfo);
+			}else{
+				parentWindow = None;
+			}
 		}
 	}
 	while(line[dereferencedElement]){
