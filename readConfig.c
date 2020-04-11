@@ -73,7 +73,6 @@ extern Display *display;
 extern unsigned int monitorAmount;
 extern unsigned int containerAmount;
 extern char line[DefaultCharactersCount + 1];
-extern Window *topLevelWindowArray;
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);

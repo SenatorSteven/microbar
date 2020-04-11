@@ -42,7 +42,7 @@ extern Display *display;
 extern unsigned int monitorAmount;
 extern unsigned int containerAmount;
 extern char line[DefaultCharactersCount + 1];
-extern Window *topLevelWindowArray;
+extern Window *topLevelWindow;
 extern unsigned int currentMonitor;
 
 static void grabKeys(Shortcut hide, Shortcut restart, Shortcut exit);
@@ -65,7 +65,7 @@ void eventLoop(void){
 		unsigned int containerNumber;
 		unsigned int currentSection;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			XQueryTree(display, topLevelWindowArray[currentMonitor], &rootWindow, &parentWindow, &section, &sectionAmount);
+			XQueryTree(display, topLevelWindow[currentMonitor], &rootWindow, &parentWindow, &section, &sectionAmount);
 			containerNumber = 0;
 			if(sectionAmount > 0){
 				for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
@@ -145,7 +145,7 @@ void eventLoop(void){
 	{
 		XWindowAttributes windowAttributes;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			XGetWindowAttributes(display, topLevelWindowArray[currentMonitor], &windowAttributes);
+			XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
 			topLevelWindowX[currentMonitor] = windowAttributes.x;
 			topLevelWindowY[currentMonitor] = windowAttributes.y;
 		}
@@ -162,7 +162,7 @@ void eventLoop(void){
 			.subwindow_mode = IncludeInferiors
 		};
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			gc[currentMonitor] = XCreateGC(display, topLevelWindowArray[currentMonitor], GCSubwindowMode, &gcValues);
+			gc[currentMonitor] = XCreateGC(display, topLevelWindow[currentMonitor], GCSubwindowMode, &gcValues);
 			if(!gc[currentMonitor]){
 				fprintf(stderr, "%s: could not create graphics context for monitor %u\n", programName, currentMonitor);
 			}
@@ -174,7 +174,7 @@ void eventLoop(void){
 		XRRQueryExtension(display, &rrEventBase, &rrErrorBase);
 	}
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		XMapWindow(display, topLevelWindowArray[currentMonitor]);
+		XMapWindow(display, topLevelWindow[currentMonitor]);
 	}
 	for(;;){
 		if(event.type == Expose && !XPending(display)){
@@ -188,13 +188,13 @@ void eventLoop(void){
 			}else if(event.xkey.keycode == hide.keycode && event.xkey.state == hide.masks){
 				if(topLevelWindowsMapped){
 					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-						XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+						XUnmapWindow(display, topLevelWindow[currentMonitor]);
 					}
 					topLevelWindowsMapped = 0;
 				}else{
 					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-						XMoveWindow(display, topLevelWindowArray[currentMonitor], topLevelWindowX[currentMonitor], topLevelWindowY[currentMonitor]);
-						XMapWindow(display, topLevelWindowArray[currentMonitor]);
+						XMoveWindow(display, topLevelWindow[currentMonitor], topLevelWindowX[currentMonitor], topLevelWindowY[currentMonitor]);
+						XMapWindow(display, topLevelWindow[currentMonitor]);
 					}
 					topLevelWindowsMapped = 1;
 				}
@@ -212,7 +212,7 @@ void eventLoop(void){
 						if(command[currentContainer]){
 							if(isCommand("hide", command[currentContainer])){
 								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									XUnmapWindow(display, topLevelWindowArray[currentMonitor]);
+									XUnmapWindow(display, topLevelWindow[currentMonitor]);
 								}
 								topLevelWindowsMapped = 0;
 							}else if(isCommand("restart", command[currentContainer])){

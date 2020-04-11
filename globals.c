@@ -22,6 +22,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
+#include <stdint.h>
 #include <stdio.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
@@ -39,5 +40,5 @@ Display *display;
 unsigned int monitorAmount;
 unsigned int containerAmount;
 char line[DefaultCharactersCount + 1];
-Window *topLevelWindowArray;
+Window *topLevelWindow;
 unsigned int currentMonitor;
