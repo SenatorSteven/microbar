@@ -25,8 +25,6 @@ SOFTWARE. */
 #ifndef DEFINES_H
 #define DEFINES_H
 
-#include <stdint.h>
-
 /* # /user-defined constants start # # # */
 #define Tab /*--------------------*/ "    "
 #define DefaultCharactersCount /*-*/ 255
