@@ -398,7 +398,6 @@ static void setTopLevelWindowProperties(void){
 	return;
 }
 static void cleanup(void){
-	XUngrabKeyboard(display, CurrentTime);
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		XUnmapSubwindows(display, topLevelWindow[currentMonitor]);
 		XDestroySubwindows(display, topLevelWindow[currentMonitor]);

@@ -53,12 +53,13 @@ SOFTWARE. */
 #define DrawableCommandOffsetXPosition /*---------*/ (1 << 21)
 #define DrawableCommandOffsetYPosition /*---------*/ (1 << 22)
 #define HidePosition /*---------------------------*/ (1 << 23)
-#define RestartPosition /*------------------------*/ (1 << 24)
-#define ExitPosition /*---------------------------*/ (1 << 25)
-#define ButtonPosition /*-------------------------*/ (1 << 26)
-#define SectionPosition /*------------------------*/ (1 << 27)
-#define ContainerPosition /*----------------------*/ (1 << 28)
-#define RectanglePosition /*----------------------*/ (1 << 29)
+#define PeekPosition /*---------------------------*/ (1 << 24)
+#define RestartPosition /*------------------------*/ (1 << 25)
+#define ExitPosition /*---------------------------*/ (1 << 26)
+#define ButtonPosition /*-------------------------*/ (1 << 27)
+#define SectionPosition /*------------------------*/ (1 << 28)
+#define ContainerPosition /*----------------------*/ (1 << 29)
+#define RectanglePosition /*----------------------*/ (1 << 30)
 
 #define NoOperation /*----------------------------*/ 0
 #define AdditionOperation /*----------------------*/ 1
@@ -88,7 +89,7 @@ static bool getKey(unsigned int *const element, unsigned int *const keycode, uin
 static bool getButton(unsigned int *const element, uint8_t *const button, uint16_t *const masks);
 static void printLineError(const unsigned int currentLine);
 
-bool readConfigScan(){
+bool readConfigScan(void){
 	bool value = 0;
 	if((file = getConfigFile())){
 		containerAmount = 0;
@@ -1205,11 +1206,13 @@ bool readConfigFillArrays(const unsigned int currentContainer, char *const text,
 	}
 	return value;
 }
-bool readConfigShortcuts(Shortcut *const hide, Shortcut *const restart, Shortcut *const exit){
+bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *const restart, Shortcut *const exit){
 	bool value = 0;
 	if((file = getConfigFile())){
 		(*hide).keycode = AnyKey;
 		(*hide).masks = None;
+		(*peek).keycode = AnyKey;
+		(*peek).masks = None;
 		(*restart).keycode = AnyKey;
 		(*restart).masks = None;
 		(*exit).keycode = AnyKey;
@@ -1245,6 +1248,11 @@ bool readConfigShortcuts(Shortcut *const hide, Shortcut *const restart, Shortcut
 							if(!(hasReadVariable & HidePosition)){
 								(*hide).keycode = keycode;
 								(*hide).masks = masks;
+							}
+						}else if(isVariable("peek", &element)){
+							if(!(hasReadVariable & PeekPosition)){
+								(*peek).keycode = keycode;
+								(*peek).masks = masks;
 							}
 						}else if(isVariable("restart", &element)){
 							if(!(hasReadVariable & RestartPosition)){
@@ -1861,9 +1869,9 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# font: requires quotation, there is a font hierarchy from first to last specified\n");
 			fprintf(config, "# keycode: does not take \'=\'\n");
 			fprintf(config, "# keycode: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
-			fprintf(config, "# keycode: program commands: hide, restart, exit\n");
+			fprintf(config, "# keycode: program commands: hide, peek, restart, exit\n");
 			fprintf(config, "# text: requires quotation\n");
-			fprintf(config, "# command: requires quotation, program commands: hide, restart, exit\n");
+			fprintf(config, "# command: requires quotation, program commands: hide, peek, restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# button: buttons: Button1 = left click, Button2 = middle click, Button3 = right click, Button4 = wheel up, Button5 = wheel down\n\n\n\n");
@@ -2249,8 +2257,8 @@ static unsigned int getQuotedStringLength(unsigned int *const element){
 	return length;
 }
 static unsigned int getQuotedString(char *const string, unsigned int *const element){
-	unsigned int currentCharacter = 0;
 	unsigned int dereferencedElement = *element;
+	unsigned int currentCharacter = 0;
 	const char quotation = line[dereferencedElement];
 	++dereferencedElement;
 	while(line[dereferencedElement] != quotation && line[dereferencedElement]){

@@ -45,11 +45,13 @@ extern char line[DefaultCharactersCount + 1];
 extern Window *topLevelWindow;
 extern unsigned int currentMonitor;
 
-static void grabKeys(Shortcut hide, Shortcut restart, Shortcut exit);
-static XFontSet createFontSet();
+static void grabKeys(Shortcut hide, Shortcut peek, Shortcut restart, Shortcut exit);
+static XFontSet createFontSet(void);
 static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor);
 static bool isCommand(const char *const command, const char *const vector);
+static void hideToggle(bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown, unsigned int *const topLevelWindowX, unsigned int *const topLevelWindowY);
 static void onExpose(const Window *const *const container, char *const *const text, const XFontSet fontSet, const int *const fontOffsetX, const int *const fontOffsetY, const GC *gc, const uint32_t *const textColor);
+static void ungrabKeys(Shortcut hide, Shortcut peek, Shortcut restart, Shortcut exit);
 
 void eventLoop(void){
 	unsigned int currentContainer;
@@ -128,10 +130,11 @@ void eventLoop(void){
 		}
 	}
 	Shortcut hide;
+	Shortcut peek;
 	Shortcut restart;
 	Shortcut exit;
-	readConfigShortcuts(&hide, &restart, &exit);
-	grabKeys(hide, restart, exit);
+	readConfigShortcuts(&hide, &peek, &restart, &exit);
+	grabKeys(hide, peek, restart, exit);
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 			readConfigButton(container[currentMonitor][currentContainer], currentContainer);
@@ -140,6 +143,7 @@ void eventLoop(void){
 	bool hasBeenExposed = 0;
 	XEvent event;
 	bool topLevelWindowsMapped = 1;
+	bool topLevelWindowsShown = 0;
 	unsigned int topLevelWindowX[monitorAmount];
 	unsigned int topLevelWindowY[monitorAmount];
 	{
@@ -177,30 +181,31 @@ void eventLoop(void){
 		XMapWindow(display, topLevelWindow[currentMonitor]);
 	}
 	for(;;){
-		if(event.type == Expose && !XPending(display)){
-			hasBeenExposed = 0;
-		}
 		XNextEvent(display, &event);
 		if(event.type == KeyPress){
-			if(event.xkey.keycode == restart.keycode && event.xkey.state == restart.masks){
-				mode = RestartMode;
-				break;
-			}else if(event.xkey.keycode == hide.keycode && event.xkey.state == hide.masks){
-				if(topLevelWindowsMapped){
-					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-						XUnmapWindow(display, topLevelWindow[currentMonitor]);
-					}
-					topLevelWindowsMapped = 0;
-				}else{
+			if(event.xkey.keycode == hide.keycode && event.xkey.state == hide.masks){
+				hideToggle(&topLevelWindowsMapped, &topLevelWindowsShown, topLevelWindowX, topLevelWindowY);
+			}else if(event.xkey.keycode == peek.keycode && event.xkey.state == peek.masks){
+				if(!topLevelWindowsMapped){
 					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 						XMoveWindow(display, topLevelWindow[currentMonitor], topLevelWindowX[currentMonitor], topLevelWindowY[currentMonitor]);
 						XMapWindow(display, topLevelWindow[currentMonitor]);
 					}
-					topLevelWindowsMapped = 1;
+					topLevelWindowsShown = 1;
 				}
-			}else{
+			}else if(event.xkey.keycode == restart.keycode && event.xkey.state == restart.masks){
+				mode = RestartMode;
+				break;
+			}else if(event.xkey.keycode == exit.keycode && event.xkey.state == exit.masks){
 				mode = ExitMode;
 				break;
+			}
+		}else if(event.type == KeyRelease){
+			if(topLevelWindowsShown){
+				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+					XUnmapWindow(display, topLevelWindow[currentMonitor]);
+				}
+				topLevelWindowsShown = 0;
 			}
 		}else if(event.type == ButtonPress){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
@@ -211,10 +216,7 @@ void eventLoop(void){
 						}
 						if(command[currentContainer]){
 							if(isCommand("hide", command[currentContainer])){
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									XUnmapWindow(display, topLevelWindow[currentMonitor]);
-								}
-								topLevelWindowsMapped = 0;
+								hideToggle(&topLevelWindowsMapped, &topLevelWindowsShown, topLevelWindowX, topLevelWindowY);
 							}else if(isCommand("restart", command[currentContainer])){
 								mode = RestartMode;
 							}else if(isCommand("exit", command[currentContainer])){
@@ -231,9 +233,15 @@ void eventLoop(void){
 			if(mode != ContinueMode){
 				break;
 			}
-		}else if(event.type == Expose && !hasBeenExposed){
-			onExpose(container, text, fontSet, textOffsetX, textOffsetY, gc, textColor);
-			hasBeenExposed = 1;
+		}else if(event.type == Expose){
+			if(!hasBeenExposed){
+				onExpose(container, text, fontSet, textOffsetX, textOffsetY, gc, textColor);
+				hasBeenExposed = 1;
+			}else{
+				if(!XPending(display)){
+					hasBeenExposed = 0;
+				}
+			}
 		}else if(event.type == rrEventBase + RRScreenChangeNotify){
 			mode = RestartMode;
 			break;
@@ -247,11 +255,15 @@ void eventLoop(void){
 	if(fontSet){
 		XFreeFontSet(display, fontSet);
 	}
+	ungrabKeys(hide, peek, restart, exit);
 	return;
 }
-static void grabKeys(Shortcut hide, Shortcut restart, Shortcut exit){
+static void grabKeys(Shortcut hide, Shortcut peek, Shortcut restart, Shortcut exit){
 	if(hide.keycode != AnyKey){
 		XGrabKey(display, hide.keycode, hide.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+	}
+	if(peek.keycode != AnyKey){
+		XGrabKey(display, peek.keycode, peek.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
 	}
 	if(restart.keycode != AnyKey){
 		XGrabKey(display, restart.keycode, restart.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
@@ -261,7 +273,7 @@ static void grabKeys(Shortcut hide, Shortcut restart, Shortcut exit){
 	}
 	return;
 }
-static XFontSet createFontSet(){
+static XFontSet createFontSet(void){
 	XFontSet fontSet = NULL;
 	unsigned int fontAmount;
 	readConfigFontAmount(&fontAmount);
@@ -324,16 +336,16 @@ static void drawCommand(const char *const systemCommand, const Window container,
 				int x;
 				int y;
 				{
-					XRectangle overallLogicalReturn;
-					XmbTextExtents(fontSet, line, length, NULL, &overallLogicalReturn);
+					XRectangle overallSize;
+					XmbTextExtents(fontSet, line, length, NULL, &overallSize);
 					XWindowAttributes windowAttributes;
 					XGetWindowAttributes(display, container, &windowAttributes);
 					x = windowAttributes.width;
-					x -= overallLogicalReturn.width;
+					x -= overallSize.width;
 					x /= 2;
 					x += drawableCommandOffsetX;
 					y = windowAttributes.height;
-					y += overallLogicalReturn.height;
+					y += overallSize.height;
 					y /= 2;
 					y += drawableCommandOffsetY;
 				}
@@ -374,11 +386,27 @@ static bool isCommand(const char *const command, const char *const vector){
 	}
 	return value;
 }
+static void hideToggle(bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown, unsigned int *const topLevelWindowX, unsigned int *const topLevelWindowY){
+	if(*topLevelWindowsMapped){
+		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+			XUnmapWindow(display, topLevelWindow[currentMonitor]);
+		}
+		*topLevelWindowsMapped = 0;
+	}else{
+		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+			XMoveWindow(display, topLevelWindow[currentMonitor], topLevelWindowX[currentMonitor], topLevelWindowY[currentMonitor]);
+			XMapWindow(display, topLevelWindow[currentMonitor]);
+		}
+		*topLevelWindowsMapped = 1;
+		*topLevelWindowsShown = 0;
+	}
+	return;
+}
 static void onExpose(const Window *const *const container, char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC *gc, const uint32_t *const textColor){
 	if(containerAmount > 0 && fontSet && gc){
 		unsigned int currentContainer;
 		unsigned int length;
-		XRectangle overallLogicalReturn;
+		XRectangle overallSize;
 		XWindowAttributes windowAttributes;
 		int x;
 		int y;
@@ -389,14 +417,14 @@ static void onExpose(const Window *const *const container, char *const *const te
 					while(text[currentContainer][length]){
 						++length;
 					}
-					XmbTextExtents(fontSet, line, length, NULL, &overallLogicalReturn);
+					XmbTextExtents(fontSet, line, length, NULL, &overallSize);
 					XGetWindowAttributes(display, container[currentMonitor][currentContainer], &windowAttributes);
 					x = windowAttributes.width;
-					x -= overallLogicalReturn.width;
+					x -= overallSize.width;
 					x /= 2;
 					x += textOffsetX[currentContainer];
 					y = windowAttributes.height;
-					y += overallLogicalReturn.height;
+					y += overallSize.height;
 					y /= 2;
 					y += textOffsetY[currentContainer];
 					XSetForeground(display, gc[currentMonitor], textColor[currentContainer]);
@@ -405,6 +433,21 @@ static void onExpose(const Window *const *const container, char *const *const te
 				}
 			}
 		}
+	}
+	return;
+}
+static void ungrabKeys(Shortcut hide, Shortcut peek, Shortcut restart, Shortcut exit){
+	if(hide.keycode != AnyKey){
+		XUngrabKey(display, hide.keycode, hide.masks, XDefaultRootWindow(display));
+	}
+	if(peek.keycode != AnyKey){
+		XUngrabKey(display, peek.keycode, peek.masks, XDefaultRootWindow(display));
+	}
+	if(restart.keycode != AnyKey){
+		XUngrabKey(display, restart.keycode, restart.masks, XDefaultRootWindow(display));
+	}
+	if(exit.keycode != AnyKey){
+		XUngrabKey(display, exit.keycode, exit.masks, XDefaultRootWindow(display));
 	}
 	return;
 }
