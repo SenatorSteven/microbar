@@ -80,8 +80,8 @@ static FILE *getConfigFile(void);
 static bool getLine(void);
 static void pushWhitespace(unsigned int *const element);
 static bool isVariable(const char *const variable, unsigned int *const element);
-static unsigned int getUnsignedIntegerNumber(const Window window, const unsigned int currentLine, unsigned int *const element);
-static int getIntegerNumber(Window window, unsigned int *const element);
+static unsigned int getUnsignedInteger(const Window window, const unsigned int currentLine, unsigned int *const element);
+static int getInteger(Window window, unsigned int *const element);
 static uint32_t getARGB(unsigned int *const element);
 static unsigned int getQuotedStringLength(unsigned int *const element);
 static unsigned int getQuotedString(char *const string, unsigned int *const element);
@@ -109,7 +109,7 @@ bool readConfigScan(void){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -260,7 +260,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -271,7 +271,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*x = getIntegerNumber(parentWindow, &element);
+								*x = getInteger(parentWindow, &element);
 								hasReadVariable |= XPosition;
 							}
 							continue;
@@ -282,7 +282,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*y = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*y = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= YPosition;
 							}
 							continue;
@@ -293,7 +293,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*width = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*width = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= WidthPosition;
 							}
 							continue;
@@ -304,7 +304,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*height = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*height = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= HeightPosition;
 							}
 							continue;
@@ -326,7 +326,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*border = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*border = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= BorderPosition;
 							}
 							continue;
@@ -440,7 +440,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -463,7 +463,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*x = getIntegerNumber(parentWindow, &element);
+								*x = getInteger(parentWindow, &element);
 								hasReadVariable |= XPosition;
 							}
 							continue;
@@ -474,7 +474,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*y = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*y = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= YPosition;
 							}
 							continue;
@@ -485,7 +485,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*width = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*width = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= WidthPosition;
 							}
 							continue;
@@ -496,7 +496,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*height = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*height = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= HeightPosition;
 							}
 							continue;
@@ -518,7 +518,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*border = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*border = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= BorderPosition;
 							}
 							continue;
@@ -624,7 +624,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -659,7 +659,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*x = getIntegerNumber(parentWindow, &element);
+								*x = getInteger(parentWindow, &element);
 								hasReadVariable |= XPosition;
 							}
 							continue;
@@ -670,7 +670,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*y = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*y = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= YPosition;
 							}
 							continue;
@@ -681,7 +681,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*width = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*width = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= WidthPosition;
 							}
 							continue;
@@ -692,7 +692,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*height = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*height = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= HeightPosition;
 							}
 							continue;
@@ -714,7 +714,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*border = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*border = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= BorderPosition;
 							}
 							continue;
@@ -806,7 +806,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -853,7 +853,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*x = getIntegerNumber(parentWindow, &element);
+								*x = getInteger(parentWindow, &element);
 								hasReadVariable |= XPosition;
 							}
 							continue;
@@ -864,7 +864,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*y = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*y = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= YPosition;
 							}
 							continue;
@@ -875,7 +875,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*width = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*width = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= WidthPosition;
 							}
 							continue;
@@ -886,7 +886,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*height = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*height = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= HeightPosition;
 							}
 							continue;
@@ -908,7 +908,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								*border = getUnsignedIntegerNumber(parentWindow, currentLine, &element);
+								*border = getUnsignedInteger(parentWindow, currentLine, &element);
 								hasReadVariable |= BorderPosition;
 							}
 							continue;
@@ -959,7 +959,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1084,7 +1084,7 @@ bool readConfigFillArrays(const unsigned int currentContainer, char *const text,
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1233,7 +1233,7 @@ bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *c
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1331,7 +1331,7 @@ bool readConfigButton(const Window window, const unsigned int currentContainer){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1374,16 +1374,14 @@ bool readConfigButton(const Window window, const unsigned int currentContainer){
 					if(!(hasReadVariable & ButtonPosition)){
 						if(isVariable("button", &element)){
 							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								uint8_t button = AnyButton;
-								uint16_t masks = None;
-								getButton(&element, &button, &masks);
-								if(button != AnyButton){
-									XGrabButton(display, button, AnyModifier, window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
-								}
-								hasReadVariable |= ButtonPosition;
+							pushWhitespace(&element);
+							uint8_t button = AnyButton;
+							uint16_t masks = None;
+							getButton(&element, &button, &masks);
+							if(button != AnyButton){
+								XGrabButton(display, button, AnyModifier, window, True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 							}
+							hasReadVariable |= ButtonPosition;
 							continue;
 						}
 					}
@@ -1430,7 +1428,7 @@ bool readConfigFontAmount(unsigned int *const fontAmount){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1511,7 +1509,7 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1590,7 +1588,7 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1680,7 +1678,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								maxLinesCount = getUnsignedIntegerNumber(None, currentLine, &element);
+								maxLinesCount = getUnsignedInteger(None, currentLine, &element);
 								hasReadVariable |= LinesPosition;
 							}
 							continue;
@@ -1711,7 +1709,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								textOffsetX[currentContainer] = getIntegerNumber(None, &element);;
+								textOffsetX[currentContainer] = getInteger(None, &element);;
 								hasReadVariable |= TextOffsetXPosition;
 							}
 							continue;
@@ -1722,7 +1720,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								textOffsetY[currentContainer] = getIntegerNumber(None, &element);;
+								textOffsetY[currentContainer] = getInteger(None, &element);;
 								hasReadVariable |= TextOffsetYPosition;
 							}
 							continue;
@@ -1733,7 +1731,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								drawableCommandOffsetX[currentContainer] = getIntegerNumber(None, &element);;
+								drawableCommandOffsetX[currentContainer] = getInteger(None, &element);;
 								hasReadVariable |= DrawableCommandOffsetXPosition;
 							}
 							continue;
@@ -1744,7 +1742,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								drawableCommandOffsetY[currentContainer] = getIntegerNumber(None, &element);;
+								drawableCommandOffsetY[currentContainer] = getInteger(None, &element);;
 								hasReadVariable |= DrawableCommandOffsetYPosition;
 							}
 							continue;
@@ -1825,7 +1823,6 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalContainerBorderColor, globalContainerBackgroundColor, globalTextColor, container{}\n");
 			fprintf(config, "# container object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
 			fprintf(config, "# rectangle object: x, y, width, height, border, borderColor, backgroundColor\n");
-			fprintf(config, "# math operands: +, -, *, /, (, )\n");
 			fprintf(config, "# math macros: ParentWidth, ParentHeight\n\n\n\n");
 			fprintf(config, "# # # # # # # # # # # #\n");
 			fprintf(config, "# variable definition #\n");
@@ -1854,8 +1851,8 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# drawableCommand: command returning text output executed on interaction with container\n");
 			fprintf(config, "# drawableCommandOffsetX: x axis offset of container\'s drawableCommand\n");
 			fprintf(config, "# drawableCommandOffsetY: y axis offset of container\'s drawableCommand\n");
-			fprintf(config, "# keycode: combination of keycode and modifiers used to interact\n");
-			fprintf(config, "# button: combination of mouse button and modifiers used to interact\n");
+			fprintf(config, "# keycode: combination of keycode + modifiers used to execute command\n");
+			fprintf(config, "# button: combination of mouse button + modifiers used to interact\n");
 			fprintf(config, "# section: informationless interactionless object, residing in global object\n");
 			fprintf(config, "# container: information object, residing in section object\n");
 			fprintf(config, "# rectangle: informationless interactionless object, residing in container object\n");
@@ -1873,10 +1870,12 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# text: requires quotation\n");
 			fprintf(config, "# command: requires quotation, program commands: hide, peek, restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
+			fprintf(config, "# button: does not take \'=\'\n");
+			fprintf(config, "# button: buttons: Button1 = left click, Button2 = middle click, Button3 = right click, Button4 = wheel up, Button5 = wheel down\n");
 			fprintf(config, "# button: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
-			fprintf(config, "# button: buttons: Button1 = left click, Button2 = middle click, Button3 = right click, Button4 = wheel up, Button5 = wheel down\n\n\n\n");
+			fprintf(config, "# math operands: +, -, *, /, (, )\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 189\n");
+			fprintf(config, "lines = 190\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -1908,7 +1907,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		textOffsetX = 1\n");
 			fprintf(config, "		textOffsetY = -2\n");
 			fprintf(config, "		command = \"restart\"\n");
-			fprintf(config, "		button = Button1\n");
+			fprintf(config, "		button Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
 			fprintf(config, "section{\n");
@@ -1931,7 +1930,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		drawableCommand = \"date \'+D%%d/M%%m/Y%%y\'\"\n");
 			fprintf(config, "		drawableCommandOffsetX = 1\n");
 			fprintf(config, "		drawableCommandOffsetY = -2\n");
-			fprintf(config, "		button = Button1\n");
+			fprintf(config, "		button Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	container{\n");
 			fprintf(config, "		x = ParentWidth - 137\n");
@@ -1944,7 +1943,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		textOffsetY = -2\n");
 			fprintf(config, "		drawableCommand = \"date \'+%%H:%%M:%%S %%Z\'\"\n");
 			fprintf(config, "		drawableCommandOffsetY = -2\n");
-			fprintf(config, "		button = Button1\n");
+			fprintf(config, "		button Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "	container{\n");
 			fprintf(config, "		x = ParentWidth - 37\n");
@@ -1957,7 +1956,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "		textOffsetX = 1\n");
 			fprintf(config, "		textOffsetY = -2\n");
 			fprintf(config, "		command = \"exit\"\n");
-			fprintf(config, "		button = Button1\n");
+			fprintf(config, "		button Button1\n");
 			fprintf(config, "	}\n");
 			fprintf(config, "}\n");
 			fprintf(config, "# /config end # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
@@ -2026,15 +2025,15 @@ static bool isVariable(const char *const variable, unsigned int *const element){
 	}
 	return value;
 }
-static unsigned int getUnsignedIntegerNumber(const Window parentWindow, const unsigned int currentLine, unsigned int *const element){
-	unsigned int number = getIntegerNumber(parentWindow, element);
+static unsigned int getUnsignedInteger(const Window parentWindow, const unsigned int currentLine, unsigned int *const element){
+	unsigned int number = getInteger(parentWindow, element);
 	if((int)number < 0){
 		fprintf(stderr, "%s: line %u: %i is not an unsigned integer\n", programName, currentLine, (int)number);
 		number = 0;
 	}
 	return number;
 }
-static int getIntegerNumber(Window parentWindow, unsigned int *const element){
+static int getInteger(Window parentWindow, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	int number = 0;
 	int numberRead = 0;
@@ -2073,7 +2072,7 @@ static int getIntegerNumber(Window parentWindow, unsigned int *const element){
 			}
 		}else if(line[dereferencedElement] == '('){
 			++dereferencedElement;
-			numberRead = getIntegerNumber(parentWindow, &dereferencedElement);
+			numberRead = getInteger(parentWindow, &dereferencedElement);
 		}else if(line[dereferencedElement] == ')'){
 			++dereferencedElement;
 			break;
