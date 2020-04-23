@@ -136,8 +136,7 @@ bool readConfigScan(void){
 						   !isVariable("font",                         &element) &&
 						   !isVariable("monitor",                      &element) &&
 						   !isVariable("keycode",                      &element) &&
-						   !isVariable("section",                      &element) &&
-						   !isVariable("}",                            &element)){
+						   !isVariable("section",                      &element)){
 							printLineError(currentLine);
 							continue;
 						}
@@ -166,8 +165,7 @@ bool readConfigScan(void){
 						   !isVariable("globalContainerBorderColor",     &element) &&
 						   !isVariable("globalContainerBackgroundColor", &element) &&
 						   !isVariable("globalTextColor",                &element) &&
-						   !isVariable("container",                      &element) &&
-						   !isVariable("}",                              &element)){
+						   !isVariable("container",                      &element)){
 							printLineError(currentLine);
 							continue;
 						}
@@ -199,8 +197,7 @@ bool readConfigScan(void){
 						   !isVariable("textOffsetX",     &element) &&
 						   !isVariable("textOffsetY",     &element) &&
 						   !isVariable("button",          &element) &&
-						   !isVariable("rectangle",       &element) &&
-						   !isVariable("}",               &element)){
+						   !isVariable("rectangle",       &element)){
 							printLineError(currentLine);
 							continue;
 						}
@@ -217,8 +214,7 @@ bool readConfigScan(void){
 						   !isVariable("height",          &element) &&
 						   !isVariable("border",          &element) &&
 						   !isVariable("borderColor",     &element) &&
-						   !isVariable("backgroundColor", &element) &&
-						   !isVariable("}",               &element)){
+						   !isVariable("backgroundColor", &element)){
 							printLineError(currentLine);
 							continue;
 						}
@@ -2382,14 +2378,12 @@ static bool getButton(unsigned int *const element, uint8_t *const button, uint16
 	return value;
 }
 static void printLineError(const unsigned int currentLine){
-	if(line[0]){
-		unsigned int element = 0;
-		fprintf(stderr, "%s: line %u: \"", programName, currentLine);
-		while(line[element]){
-			fprintf(stderr, "%c", line[element]);
-			++element;
-		}
-		fprintf(stderr, "\" not recognized as an internal variable\n");
+	unsigned int element = 0;
+	fprintf(stderr, "%s: line %u: \"", programName, currentLine);
+	while(line[element]){
+		fprintf(stderr, "%c", line[element]);
+		++element;
 	}
+	fprintf(stderr, "\" not recognized as an internal variable\n");
 	return;
 }
