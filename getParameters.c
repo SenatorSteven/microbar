@@ -168,12 +168,12 @@ static bool isArgument(const char *const argument, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
 	while(argument[element] || vector[element]){
-		if(argument[element] >= 'A' && argument[element] <= 'Z'){
+		if(vector[element] >= 'A' && vector[element] <= 'Z'){
 			if(!(vector[element] == argument[element] || vector[element] == argument[element] + 32)){
 				element = 0;
 				break;
 			}
-		}else if(argument[element] >= 'a' && argument[element] <= 'z'){
+		}else if(vector[element] >= 'a' && vector[element] <= 'z'){
 			if(!(vector[element] == argument[element] || vector[element] == argument[element] - 32)){
 				element = 0;
 				break;

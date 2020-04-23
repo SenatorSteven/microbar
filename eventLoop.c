@@ -363,12 +363,12 @@ static bool isCommand(const char *const command, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
 	while(command[element] || vector[element]){
-		if(command[element] >= 'A' && command[element] <= 'Z'){
+		if(vector[element] >= 'A' && vector[element] <= 'Z'){
 			if(!(vector[element] == command[element] || vector[element] == command[element] + 32)){
 				element = 0;
 				break;
 			}
-		}else if(command[element] >= 'a' && command[element] <= 'z'){
+		}else if(vector[element] >= 'a' && vector[element] <= 'z'){
 			if(!(vector[element] == command[element] || vector[element] == command[element] - 32)){
 				element = 0;
 				break;
