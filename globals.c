@@ -30,7 +30,6 @@ SOFTWARE. */
 const char *programName;
 const char *configPath;
 const char *workplacePath;
-FILE *file;
 unsigned int workplacePathLength;
 unsigned int drawableCommandPathLength;
 const char *drawableCommandPath;

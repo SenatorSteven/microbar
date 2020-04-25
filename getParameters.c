@@ -36,7 +36,6 @@ SOFTWARE. */
 extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
-extern FILE *file;
 
 static bool isArgument(const char *const argument, const char *const vector);
 
@@ -47,6 +46,7 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 		workplacePath = NULL;
 		uint8_t hasReadVariable = NoPositions;
 		DIR *dir;
+		FILE *file;
 		for(unsigned int currentArgument = 1; currentArgument < argumentCount; ++currentArgument){
 			if(!(hasReadVariable & ConfigPosition)){
 				if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument])){

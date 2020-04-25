@@ -69,7 +69,6 @@ SOFTWARE. */
 
 extern const char *programName;
 extern const char *configPath;
-extern FILE *file;
 extern Display *display;
 extern unsigned int monitorAmount;
 extern unsigned int containerAmount;
@@ -77,7 +76,7 @@ extern char line[DefaultCharactersCount + 1];
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
-static bool getLine(void);
+static bool getLine(FILE *file);
 static void pushWhitespace(unsigned int *const element);
 static bool isVariable(const char *const variable, unsigned int *const element);
 static unsigned int getUnsignedInteger(const Window window, const unsigned int currentLine, unsigned int *const element);
@@ -91,13 +90,14 @@ static void printLineError(const unsigned int currentLine);
 
 bool readConfigScan(void){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		containerAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -226,7 +226,8 @@ bool readConfigScan(void){
 }
 bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalSectionBorderColor, uint32_t *const globalSectionBackgroundColor, unsigned int *const sectionAmount){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -241,7 +242,7 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -405,7 +406,8 @@ bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *cons
 }
 bool readConfigSectionWindow(const Window parentWindow, const unsigned int currentSection, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalContainerBorderColor, uint32_t *const globalContainerBackgroundColor, unsigned int *const containerAmount){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -421,7 +423,7 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int sectionAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -588,7 +590,8 @@ bool readConfigSectionWindow(const Window parentWindow, const unsigned int curre
 }
 bool readConfigContainerWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentContainer, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor, uint32_t *const globalRectangleBorderColor, uint32_t *const globalRectangleBackgroundColor, unsigned int *const rectangleAmount){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -605,7 +608,7 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 		unsigned int sectionAmountRead = 0;
 		unsigned int containerAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -772,7 +775,8 @@ bool readConfigContainerWindow(const Window parentWindow, const unsigned int cur
 }
 bool readConfigRectangleWindow(const Window parentWindow, const unsigned int currentSection, const unsigned int currentContainer, const unsigned int currentRectangle, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, uint32_t *const borderColor, uint32_t *const backgroundColor){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		*x = 0;
 		*y = 0;
 		*width = 0;
@@ -787,7 +791,7 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 		unsigned int containerAmountRead = 0;
 		unsigned int rectangleAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -931,7 +935,8 @@ bool readConfigRectangleWindow(const Window parentWindow, const unsigned int cur
 }
 bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int *const commandMaxWordLength, unsigned int *const drawableCommandMaxWordLength){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		*textMaxWordLength = 0;
 		*commandMaxWordLength = 0;
 		*drawableCommandMaxWordLength = 0;
@@ -940,7 +945,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int length;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1055,7 +1060,8 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 }
 bool readConfigFillArrays(const unsigned int currentContainer, char *const text, uint32_t *const textColor, char *const command, char *const drawableCommand){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		*text = '\0';
 		*textColor = 0x00000000;
 		*command = '\0';
@@ -1065,7 +1071,7 @@ bool readConfigFillArrays(const unsigned int currentContainer, char *const text,
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int containerAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1201,7 +1207,8 @@ bool readConfigFillArrays(const unsigned int currentContainer, char *const text,
 }
 bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *const restart, Shortcut *const exit){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		(*hide).keycode = AnyKey;
 		(*hide).masks = None;
 		(*peek).keycode = AnyKey;
@@ -1214,7 +1221,7 @@ bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *c
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1306,13 +1313,14 @@ bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *c
 }
 bool readConfigButton(const Window window, const unsigned int currentContainer){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int containerAmountRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1403,13 +1411,14 @@ bool readConfigButton(const Window window, const unsigned int currentContainer){
 }
 bool readConfigFontAmount(unsigned int *const fontAmount){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		*fontAmount = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1480,7 +1489,8 @@ bool readConfigFontAmount(unsigned int *const fontAmount){
 }
 bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const userFontLength){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		unsigned int currentFont;
 		for(currentFont = 0; currentFont < fontAmount; ++currentFont){
 			userFontLength[currentFont] = 0;
@@ -1490,7 +1500,7 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 		uint32_t hasReadVariable = NoPositions;
 		currentFont = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1563,13 +1573,14 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 }
 bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
 		unsigned int fontsRead = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1646,7 +1657,8 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *font){
 }
 bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *const drawableCommandOffsetX, int *const drawableCommandOffsetY){
 	bool value = 0;
-	if((file = getConfigFile())){
+	FILE *const file = getConfigFile();
+	if(file){
 		unsigned int currentContainer;
 		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 			textOffsetX[currentContainer] = 0;
@@ -1659,7 +1671,7 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 		uint32_t hasReadVariable = NoPositions;
 		currentContainer = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine()){
+			if(!getLine(file)){
 				break;
 			}
 			element = 0;
@@ -1961,7 +1973,7 @@ static FILE *getConfigFile(void){
 	}
 	return config;
 }
-static bool getLine(void){
+static bool getLine(FILE *file){
 	bool value = 0;
 	unsigned int element = 0;
 	for(;;){

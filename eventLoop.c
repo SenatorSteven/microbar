@@ -33,7 +33,6 @@ SOFTWARE. */
 extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
-extern FILE *file;
 extern unsigned int workplacePathLength;
 extern unsigned int drawableCommandPathLength;
 extern const char *drawableCommandPath;
@@ -320,7 +319,8 @@ static XFontSet createFontSet(void){
 static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor){
 	if(fontSet && gc){
 		system(systemCommand);
-		if((file = fopen(drawableCommandPath, "r"))){
+		FILE *file = fopen(drawableCommandPath, "r");
+		if(file){
 			unsigned int length = 0;
 			while(length < DefaultCharactersCount){
 				line[length] = fgetc(file);
