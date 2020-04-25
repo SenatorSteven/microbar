@@ -123,8 +123,7 @@ bool readConfigScan(void){
 						continue;
 					}
 					if(line[element]){
-						if(!isVariable("lines",                        &element) &&
-						   !isVariable("x",                            &element) &&
+						if(!isVariable("x",                            &element) &&
 						   !isVariable("y",                            &element) &&
 						   !isVariable("width",                        &element) &&
 						   !isVariable("height",                       &element) &&
@@ -134,9 +133,7 @@ bool readConfigScan(void){
 						   !isVariable("globalSectionBorderColor",     &element) &&
 						   !isVariable("globalSectionBackgroundColor", &element) &&
 						   !isVariable("font",                         &element) &&
-						   !isVariable("monitor",                      &element) &&
-						   !isVariable("keycode",                      &element) &&
-						   !isVariable("section",                      &element)){
+						   !isVariable("keycode",                      &element)){
 							printLineError(currentLine);
 							continue;
 						}
@@ -162,10 +159,9 @@ bool readConfigScan(void){
 						   !isVariable("border",                         &element) &&
 						   !isVariable("borderColor",                    &element) &&
 						   !isVariable("backgroundColor",                &element) &&
-						   !isVariable("globalContainerBorderColor",     &element) &&
 						   !isVariable("globalContainerBackgroundColor", &element) &&
-						   !isVariable("globalTextColor",                &element) &&
-						   !isVariable("container",                      &element)){
+						   !isVariable("globalContainerBorderColor",     &element) &&
+						   !isVariable("globalTextColor",                &element)){
 							printLineError(currentLine);
 							continue;
 						}
@@ -183,21 +179,22 @@ bool readConfigScan(void){
 						continue;
 					}
 					if(line[element]){
-						if(!isVariable("x",               &element) &&
-						   !isVariable("y",               &element) &&
-						   !isVariable("width",           &element) &&
-						   !isVariable("height",          &element) &&
-						   !isVariable("border",          &element) &&
-						   !isVariable("borderColor",     &element) &&
-						   !isVariable("backgroundColor", &element) &&
-						   !isVariable("text",            &element) &&
-						   !isVariable("textColor",       &element) &&
-						   !isVariable("command",         &element) &&
-						   !isVariable("drawableCommand", &element) &&
-						   !isVariable("textOffsetX",     &element) &&
-						   !isVariable("textOffsetY",     &element) &&
-						   !isVariable("button",          &element) &&
-						   !isVariable("rectangle",       &element)){
+						if(!isVariable("x",                              &element) &&
+						   !isVariable("y",                              &element) &&
+						   !isVariable("width",                          &element) &&
+						   !isVariable("height",                         &element) &&
+						   !isVariable("border",                         &element) &&
+						   !isVariable("borderColor",                    &element) &&
+						   !isVariable("backgroundColor",                &element) &&
+						   !isVariable("text",                           &element) &&
+						   !isVariable("textColor",                      &element) &&
+						   !isVariable("command",                        &element) &&
+						   !isVariable("drawableCommand",                &element) &&
+						   !isVariable("textOffsetXPosition",            &element) &&
+						   !isVariable("textOffsetYPosition",            &element) &&
+						   !isVariable("drawableCommandOffsetXPosition", &element) &&
+						   !isVariable("drawableCommandOffsetYPosition", &element) &&
+						   !isVariable("button",                         &element)){
 							printLineError(currentLine);
 							continue;
 						}
