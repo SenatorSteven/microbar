@@ -76,7 +76,7 @@ extern char line[DefaultCharactersCount + 1];
 extern unsigned int currentMonitor;
 
 static FILE *getConfigFile(void);
-static bool getLine(FILE *file);
+static bool getLine(FILE *const file);
 static void pushWhitespace(unsigned int *const element);
 static bool isVariable(const char *const variable, unsigned int *const element);
 static unsigned int getUnsignedInteger(const Window window, const unsigned int currentLine, unsigned int *const element);
@@ -1973,7 +1973,7 @@ static FILE *getConfigFile(void){
 	}
 	return config;
 }
-static bool getLine(FILE *file){
+static bool getLine(FILE *const file){
 	bool value = 0;
 	unsigned int element = 0;
 	for(;;){

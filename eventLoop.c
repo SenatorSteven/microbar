@@ -319,7 +319,7 @@ static XFontSet createFontSet(void){
 static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const GC gc, const uint32_t textColor){
 	if(fontSet && gc){
 		system(systemCommand);
-		FILE *file = fopen(drawableCommandPath, "r");
+		FILE *const file = fopen(drawableCommandPath, "r");
 		if(file){
 			unsigned int length = 0;
 			while(length < DefaultCharactersCount){
