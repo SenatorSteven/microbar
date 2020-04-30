@@ -115,12 +115,9 @@ static void start(void){
 	for(;;){
 		mode = ContinueMode;
 		if((display = XOpenDisplay(NULL))){
-			if(setlocale(LC_CTYPE, "")){
-				if(!XSupportsLocale()){
-					fprintf(stderr, "%s: locale is not supported\n", programName);
-				}
-			}else{
-				fprintf(stderr, "%s: could not set locale\n", programName);
+			setlocale(LC_CTYPE, "");
+			if(!XSupportsLocale()){
+				fprintf(stderr, "%s: locale is not supported\n", programName);
 			}
 			{
 				XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
