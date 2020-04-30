@@ -330,7 +330,7 @@ static void setTopLevelWindowProperties(void){
 	};
 	XWMHints WMHints = {
 		.flags = InputHint | StateHint,
-		.input = False,
+		.input = True,
 		.initial_state = NormalState
 	};
 	XClassHint classHint = {
