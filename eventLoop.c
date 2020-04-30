@@ -276,6 +276,7 @@ static void grabKeys(Shortcut hide, Shortcut peek, Shortcut restart, Shortcut ex
 	if(exit.keycode != AnyKey){
 		XGrabKey(display, exit.keycode, exit.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
 	}
+	XSync(display, False);
 	return;
 }
 static XFontSet createFontSet(void){
