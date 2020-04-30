@@ -54,8 +54,7 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 					if(++currentArgument < argumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file\"\n", programName, programName);
-							fprintf(stdout, "%s# if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration\n", Tab);
-							fprintf(stdout, "%s# environment variables may be used\n", Tab);
+							fprintf(stdout, "%sif the specified file doesn't exist, it will be created\n%sand it will contain the hardcoded default configuration\n", Tab, Tab);
 							hasReadVariable |= HelpPosition;
 							break;
 						}else if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument]) || isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){
@@ -105,9 +104,8 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 					if(++currentArgument < argumentCount){
 						if(isArgument("-h", argumentVector[currentArgument]) || isArgument("--help", argumentVector[currentArgument])){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory/\"\n", programName, programName);
-							fprintf(stdout, "%s# if the specified directory doesn't exist, it will not be created\n", Tab);
-							fprintf(stdout, "%s# if not specified, workplace directory will be the directory of config\n", Tab);
-							fprintf(stdout, "%s# environment variables may be used\n", Tab);
+							fprintf(stdout, "%sif the specified directory doesn't exist, it will not be created\n", Tab);
+							fprintf(stdout, "%sif not specified, workplace directory will be the directory of config\n", Tab);
 							hasReadVariable |= HelpPosition;
 							break;
 						}else if(isArgument("-c", argumentVector[currentArgument]) || isArgument("--config", argumentVector[currentArgument]) || isArgument("-w", argumentVector[currentArgument]) || isArgument("--workplace", argumentVector[currentArgument])){

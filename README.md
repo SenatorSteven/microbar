@@ -28,7 +28,7 @@ Text-based status bar for the X Window System.
 
 
 ## ...But what _is_ microbar?
-Well, if the comment alone does not provide enough information, microbar is a simple, fast and highly customizable information provider and command runner.
+Well, if the comment alone does not provide enough information, microbar is a fast and highly customizable information provider and command runner.
 
 ![microbar](https://github.com/TheSenatorSteven/microbar/blob/master/sample.png)
 
@@ -49,11 +49,6 @@ CPU usage is everything. When some information is needed only once every little 
 <br>
 <br>
 Somebody could argue that the CPU power being used in updating the bar is as trivial as the information obtained from it. As this is the philosophical part of the equation, this applies not. The user controls the programs, not the opposite.
-
-
-
-## Trivia
-"microbar" comes from the words "micromanagement" and, of course, "bar". It is a bar that needs quite a lot of management on a micro, small, level to get it to look and work the exact way the user wants. It requires simple mathematical operations knowledge, shell commands knowledge and a screenshot button to get it to work well and look perfect.
 
 
 
@@ -89,14 +84,18 @@ microbar: usage: microbar [parameters] or microbar [parameter] [--help]
 #### $ microbar --config --help
 <pre>
 microbar: usage: microbar --config "/path/to/file"
-    # if the specified file doesn't exist, it will be created and it will contain the hardcoded default configuration
-    # environment variables may be used
+    if the specified file doesn't exist, it will be created
+    and it will contain the hardcoded default configuration
 </pre>
 
 #### $ microbar --workplace --help
 <pre>
 microbar: usage: microbar --workplace "/path/to/directory"
-    # if the specified directory doesn't exist, it will not be created
-    # if not specified, workspace directory will be the directory of config
-    # environment variables may be used
+    if the specified directory doesn't exist, it will not be created
+    if not specified, workspace directory will be the directory of config
 </pre>
+
+
+
+## Trivia
+"microbar" comes from the words "micromanagement" and, of course, "bar". It is a bar that needs quite a lot of management on a micro, small, level to get it to look and work the exact way the user wants. It requires simple mathematical operations knowledge, shell commands knowledge and a screenshot button to get it to work well and look perfect.

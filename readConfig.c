@@ -84,7 +84,7 @@ static int getInteger(Window window, unsigned int *const element);
 static uint32_t getARGB(unsigned int *const element);
 static unsigned int getQuotedStringLength(unsigned int *const element);
 static unsigned int getQuotedString(char *const string, unsigned int *const element);
-static bool getKey(unsigned int *const element, unsigned int *const keycode, uint16_t *const masks);
+static Shortcut getKey(unsigned int *const element);
 static bool getButton(unsigned int *const element, uint8_t *const button, uint16_t *const masks);
 static void printLineError(const unsigned int currentLine);
 
@@ -943,7 +943,6 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
-		unsigned int length;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine(file)){
 				break;
@@ -988,7 +987,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								length = getQuotedStringLength(&element);
+								unsigned int length = getQuotedStringLength(&element);
 								if(length > *textMaxWordLength){
 									*textMaxWordLength = length;
 								}
@@ -1002,7 +1001,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								length = getQuotedStringLength(&element);
+								unsigned int length = getQuotedStringLength(&element);
 								if(length > *commandMaxWordLength){
 									*commandMaxWordLength = length;
 								}
@@ -1016,7 +1015,7 @@ bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int 
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								length = getQuotedStringLength(&element);
+								unsigned int length = getQuotedStringLength(&element);
 								if(length > *drawableCommandMaxWordLength){
 									*drawableCommandMaxWordLength = length;
 								}
@@ -1241,28 +1240,26 @@ bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *c
 					}
 					if(isVariable("keycode", &element)){
 						pushWhitespace(&element);
-						unsigned int keycode;
-						uint16_t masks;
-						getKey(&element, &keycode, &masks);
+						Shortcut shortcut = getKey(&element);
 						if(isVariable("hide", &element)){
 							if(!(hasReadVariable & HidePosition)){
-								(*hide).keycode = keycode;
-								(*hide).masks = masks;
+								(*hide).keycode = shortcut.keycode;
+								(*hide).masks = shortcut.masks;
 							}
 						}else if(isVariable("peek", &element)){
 							if(!(hasReadVariable & PeekPosition)){
-								(*peek).keycode = keycode;
-								(*peek).masks = masks;
+								(*peek).keycode = shortcut.keycode;
+								(*peek).masks = shortcut.masks;
 							}
 						}else if(isVariable("restart", &element)){
 							if(!(hasReadVariable & RestartPosition)){
-								(*restart).keycode = keycode;
-								(*restart).masks = masks;
+								(*restart).keycode = shortcut.keycode;
+								(*restart).masks = shortcut.masks;
 							}
 						}else if(isVariable("exit", &element)){
 							if(!(hasReadVariable & ExitPosition)){
-								(*exit).keycode = keycode;
-								(*exit).masks = masks;
+								(*exit).keycode = shortcut.keycode;
+								(*exit).masks = shortcut.masks;
 							}
 						}
 						continue;
@@ -1413,10 +1410,10 @@ bool readConfigFontAmount(unsigned int *const fontAmount){
 	bool value = 0;
 	FILE *const file = getConfigFile();
 	if(file){
+		*fontAmount = 0;
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		uint32_t hasReadVariable = NoPositions;
-		*fontAmount = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine(file)){
 				break;
@@ -1491,13 +1488,13 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 	bool value = 0;
 	FILE *const file = getConfigFile();
 	if(file){
+		unsigned int maxLinesCount = DefaultLinesCount;
+		unsigned int element;
+		uint32_t hasReadVariable = NoPositions;
 		unsigned int currentFont;
 		for(currentFont = 0; currentFont < fontAmount; ++currentFont){
 			userFontLength[currentFont] = 0;
 		}
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		uint32_t hasReadVariable = NoPositions;
 		currentFont = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine(file)){
@@ -1659,6 +1656,9 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 	bool value = 0;
 	FILE *const file = getConfigFile();
 	if(file){
+		unsigned int maxLinesCount = DefaultLinesCount;
+		unsigned int element;
+		uint32_t hasReadVariable = NoPositions;
 		unsigned int currentContainer;
 		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 			textOffsetX[currentContainer] = 0;
@@ -1666,9 +1666,6 @@ bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *
 			drawableCommandOffsetX[currentContainer] = 0;
 			drawableCommandOffsetY[currentContainer] = 0;
 		}
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		uint32_t hasReadVariable = NoPositions;
 		currentContainer = 0;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine(file)){
@@ -2273,40 +2270,41 @@ static unsigned int getQuotedString(char *const string, unsigned int *const elem
 	*element = dereferencedElement;
 	return currentCharacter;
 }
-static bool getKey(unsigned int *const element, unsigned int *const keycode, uint16_t *const masks){
+static Shortcut getKey(unsigned int *const element){
 	unsigned int dereferencedElement = *element;
-	unsigned int dereferencedKeycode = AnyKey;
-	uint16_t dereferencedMasks = None;
-	bool value = 0;
+	Shortcut shortcut = {
+		.keycode = AnyKey,
+		.masks = None
+	};
 	bool lookingForValue = 1;
 	while(line[dereferencedElement]){
 		pushWhitespace(&dereferencedElement);
 		if(lookingForValue){
 			if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
 				do{
-					dereferencedKeycode *= 10;
-					dereferencedKeycode += line[dereferencedElement];
-					dereferencedKeycode -= 48;
+					shortcut.keycode *= 10;
+					shortcut.keycode += line[dereferencedElement];
+					shortcut.keycode -= 48;
 					++dereferencedElement;
 				}while(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9');
 			}else if(isVariable("AnyModifier", &dereferencedElement)){
-				dereferencedMasks |= AnyModifier;
+				shortcut.masks |= AnyModifier;
 			}else if(isVariable("Shift", &dereferencedElement)){
-				dereferencedMasks |= ShiftMask;
+				shortcut.masks |= ShiftMask;
 			}else if(isVariable("Lock", &dereferencedElement)){
-				dereferencedMasks |= LockMask;
+				shortcut.masks |= LockMask;
 			}else if(isVariable("Control", &dereferencedElement)){
-				dereferencedMasks |= ControlMask;
+				shortcut.masks |= ControlMask;
 			}else if(isVariable("Mod1", &dereferencedElement)){
-				dereferencedMasks |= Mod1Mask;
+				shortcut.masks |= Mod1Mask;
 			}else if(isVariable("Mod2", &dereferencedElement)){
-				dereferencedMasks |= Mod2Mask;
-			}else if(isVariable("Mod3", &dereferencedElement)){
-				dereferencedMasks |= Mod3Mask;
+				shortcut.masks |= Mod2Mask;
+		 	}else if(isVariable("Mod3", &dereferencedElement)){
+				shortcut.masks |= Mod3Mask;
 			}else if(isVariable("Mod4", &dereferencedElement)){
-				dereferencedMasks |= Mod4Mask;
+				shortcut.masks |= Mod4Mask;
 			}else if(isVariable("Mod5", &dereferencedElement)){
-				dereferencedMasks |= Mod5Mask;
+				shortcut.masks |= Mod5Mask;
 			}else{
 				break;
 			}
@@ -2320,13 +2318,10 @@ static bool getKey(unsigned int *const element, unsigned int *const keycode, uin
 			}
 		}
 	}
-	if(keycode != AnyKey){
+	if(shortcut.keycode != AnyKey){
 		*element = dereferencedElement;
-		*keycode = dereferencedKeycode;
-		*masks = dereferencedMasks;
-		value = 1;
 	}
-	return value;
+	return shortcut;
 }
 static bool getButton(unsigned int *const element, uint8_t *const button, uint16_t *const masks){
 	unsigned int dereferencedElement = *element;

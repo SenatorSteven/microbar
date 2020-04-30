@@ -112,8 +112,7 @@ static void start(void){
 		_drawableCommandPath[++element] = '\0';
 	}
 	drawableCommandPath = _drawableCommandPath;
-	mode = ContinueMode;
-	while(mode != ExitMode){
+	for(;;){
 		mode = ContinueMode;
 		if((display = XOpenDisplay(NULL))){
 			if(setlocale(LC_CTYPE, "")){
@@ -138,11 +137,11 @@ static void start(void){
 					if(createWindows()){
 						setTopLevelWindowProperties();
 						eventLoop();
+						cleanup();
 					}else{
 						fprintf(stderr, "%s: could not create windows\n", programName);
 						mode = ExitMode;
 					}
-					cleanup();
 				}else{
 					mode = ExitMode;
 				}
@@ -154,6 +153,9 @@ static void start(void){
 		}else{
 			fprintf(stderr, "%s: could not connect to server\n", programName);
 			mode = ExitMode;
+		}
+		if(mode == ExitMode){
+			break;
 		}
 	}
 	return;
@@ -302,9 +304,9 @@ static bool createWindows(void){
 }
 static void setTopLevelWindowProperties(void){
 	unsigned int programNameLength = 0;
-	while(programName[programNameLength] != '\0'){
+	do{
 		++programNameLength;
-	}
+	}while(programName[programNameLength]);
 	XTextProperty textProperty = {
 		.value = (unsigned char *)programName,
 		.encoding = XA_STRING,
@@ -335,7 +337,7 @@ static void setTopLevelWindowProperties(void){
 		.res_name = (char *)programName,
 		.res_class = (char *)programName
 	};
-	unsigned long int data[12];
+	long unsigned int data[12];
 	XRRMonitorInfo *monitorInfo;
 	{
 		int monitorAmount;
