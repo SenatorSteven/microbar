@@ -1568,7 +1568,7 @@ bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const use
 	}
 	return value;
 }
-bool readConfigFillFontArray(const unsigned int currentFont, char *font){
+bool readConfigFillFontArray(const unsigned int currentFont, char *const font){
 	bool value = 0;
 	FILE *const file = getConfigFile();
 	if(file){
