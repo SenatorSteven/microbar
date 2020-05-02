@@ -36,7 +36,7 @@ bool readConfigShortcuts(Shortcut *const hide, Shortcut *const peek, Shortcut *c
 bool readConfigButton(const Window window, const unsigned int currentContainer);
 bool readConfigFontAmount(unsigned int *const fontAmount);
 bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const userFontLength);
-bool readConfigFillFontArray(const unsigned int currentFont, char *font);
+bool readConfigFillFontArray(const unsigned int currentFont, char *const font);
 bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *const drawableCommandOffsetX, int *const drawableCommandOffsetY);
 
 #endif
