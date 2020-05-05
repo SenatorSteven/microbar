@@ -300,10 +300,10 @@ static bool createWindows(void){
 	return value;
 }
 static void setTopLevelWindowProperties(void){
-	unsigned int programNameLength = 0;
-	do{
+	unsigned int programNameLength = 1;
+	while(programName[programNameLength]){
 		++programNameLength;
-	}while(programName[programNameLength]);
+	}
 	XTextProperty textProperty = {
 		.value = (unsigned char *)programName,
 		.encoding = XA_STRING,
