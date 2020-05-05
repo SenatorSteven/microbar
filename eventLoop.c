@@ -308,8 +308,7 @@ static XFontSet createFontSet(void){
 		char **missingFont;
 		unsigned int missingAmount;
 		{
-			char *def_string;
-			fontSet = XCreateFontSet(display, set, &missingFont, (int *)&missingAmount, &def_string);
+			fontSet = XCreateFontSet(display, set, &missingFont, (int *)&missingAmount, NULL);
 			if(!fontSet){
 				fprintf(stderr, "%s: could not create fontset\n", programName);
 			}
