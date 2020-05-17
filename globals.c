@@ -40,3 +40,4 @@ unsigned int containerAmount;
 char line[DefaultCharactersCount + 1];
 Window *topLevelWindow;
 unsigned int currentMonitor;
+Window *const *container;

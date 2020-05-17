@@ -43,12 +43,16 @@ extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
+extern unsigned int containerAmount;
 extern Window *topLevelWindow;
 extern unsigned int currentMonitor;
+extern Window *const *container;
 
 static void start(void);
-static bool createWindows(void);
+static bool createTopLevelWindows(void);
 static void setTopLevelWindowProperties(void);
+static bool createSubwindows(void);
+static bool createWindow(Window *const window, const Window parentWindow, const int x, const int y, unsigned int width, unsigned int height, const unsigned int border, uint32_t borderColor, uint32_t backgroundColor, const uint32_t globalBorderColor, const uint32_t globalBackgroundColor);
 static void cleanup(void);
 
 int main(const int argumentCount, const char *const *const argumentVector){
@@ -131,25 +135,34 @@ static void start(void){
 				if(readConfigScan()){
 					Window _topLevelWindow[monitorAmount];
 					topLevelWindow = _topLevelWindow;
-					if(createWindows()){
+					if(createTopLevelWindows()){
 						setTopLevelWindowProperties();
+						Window __container[monitorAmount][containerAmount];
+						Window *_container[monitorAmount];
+						for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+							_container[currentMonitor] = __container[currentMonitor];
+						}
+						container = _container;
+						if(!createSubwindows()){
+							fprintf(stderr, "%s: could not create subwindows\n", programName);
+						}
 						eventLoop();
 						cleanup();
 					}else{
-						fprintf(stderr, "%s: could not create windows\n", programName);
-						mode = ExitMode;
+						fprintf(stderr, "%s: could not create top level windows\n", programName);
+						break;
 					}
 				}else{
-					mode = ExitMode;
+					break;
 				}
 			}else{
 				fprintf(stderr, "%s: there are no monitors to display on\n", programName);
-				mode = ExitMode;
+				break;
 			}
 			XCloseDisplay(display);
 		}else{
 			fprintf(stderr, "%s: could not connect to server\n", programName);
-			mode = ExitMode;
+			break;
 		}
 		if(mode == ExitMode){
 			break;
@@ -157,145 +170,45 @@ static void start(void){
 	}
 	return;
 }
-static bool createWindows(void){
-	bool value;
-	int x;
-	int y;
-	unsigned int width;
-	unsigned int height;
-	unsigned int border;
-	uint32_t borderColor;
-	uint32_t backgroundColor;
-	uint32_t globalSectionBorderColor;
-	uint32_t globalSectionBackgroundColor;
-	unsigned int sectionAmount;
+static bool createTopLevelWindows(void){
+	bool value = 0;
+	XRRMonitorInfo *monitorInfo = NULL;
 	{
-		XRRMonitorInfo *monitorInfo;
-		{
-			int monitorAmount;
-			monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
-		}
-		if(monitorInfo){
+		int monitorAmount;
+		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
+	}
+	if(monitorInfo){
+		int x[monitorAmount];
+		int y[monitorAmount];
+		unsigned int width[monitorAmount];
+		unsigned int height[monitorAmount];
+		unsigned int border[monitorAmount];
+		uint32_t borderColor[monitorAmount];
+		uint32_t backgroundColor[monitorAmount];
+		XVisualInfo visualInfo;
+		XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
+		XSetWindowAttributes setWindowAttributes = {
+			.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
+		};
+		if(readConfigTopLevelWindow(XDefaultRootWindow(display), x, y, width, height, border, borderColor, backgroundColor)){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 				value = 0;
-				if(readConfigTopLevelWindow(XDefaultRootWindow(display), &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalSectionBorderColor, &globalSectionBackgroundColor, &sectionAmount)){
-					if(width > 0 && height > 0){
-						x += monitorInfo[currentMonitor].x;
-						y += monitorInfo[currentMonitor].y;
-						XVisualInfo visualInfo;
-						XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
-						XSetWindowAttributes windowAttributes = {
-							.background_pixel = backgroundColor,
-							.border_pixel = borderColor,
-							.colormap = XCreateColormap(display, XDefaultRootWindow(display), visualInfo.visual, AllocNone)
-						};
-						topLevelWindow[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x, y, width, height, border, visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &windowAttributes);
-						value = 1;
-					}
+				if(width[currentMonitor] && height[currentMonitor]){
+					x[currentMonitor] += monitorInfo[currentMonitor].x;
+					y[currentMonitor] += monitorInfo[currentMonitor].y;
+					setWindowAttributes.background_pixel = backgroundColor[currentMonitor];
+					setWindowAttributes.border_pixel = borderColor[currentMonitor];
+					topLevelWindow[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x[currentMonitor], y[currentMonitor], width[currentMonitor], height[currentMonitor], border[currentMonitor], visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &setWindowAttributes);
+					XSync(display, False);
+					value = 1;
 				}
 				if(!value){
+					fprintf(stderr, "%s: could not create top level window %u\n", programName, currentMonitor);
 					break;
 				}
 			}
-			XRRFreeMonitors(monitorInfo);
-		}else{
-			value = 0;
 		}
-	}
-	if(value){
-		unsigned int currentSection;
-		Window section;
-		uint32_t globalContainerBorderColor;
-		uint32_t globalContainerBackgroundColor;
-		unsigned int containerAmount;
-		unsigned int currentContainer;
-		Window container;
-		uint32_t globalRectangleBorderColor;
-		uint32_t globalRectangleBackgroundColor;
-		unsigned int rectangleAmount;
-		unsigned int currentRectangle;
-		Window rectangle;
-		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-			value = 0;
-			currentSection = 0;
-			while(currentSection < sectionAmount){
-				if(readConfigSectionWindow(topLevelWindow[currentMonitor], currentSection, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalContainerBorderColor, &globalContainerBackgroundColor, &containerAmount)){
-					if(width > 0 && height > 0){
-						if(borderColor == 0x00000000){
-							borderColor = globalSectionBorderColor;
-						}
-						if(backgroundColor == 0x00000000){
-							backgroundColor = globalSectionBackgroundColor;
-						}
-						section = XCreateSimpleWindow(display, topLevelWindow[currentMonitor], x, y, width, height, border, borderColor, backgroundColor);
-						value = 1;
-					}
-				}
-				if(value){
-					value = 0;
-					currentContainer = 0;
-					while(currentContainer < containerAmount){
-						if(readConfigContainerWindow(section, currentSection, currentContainer, &x, &y, &width, &height, &border, &borderColor, &backgroundColor, &globalRectangleBorderColor, &globalRectangleBackgroundColor, &rectangleAmount)){
-							if(width > 0 && height > 0){
-								if(borderColor == 0x00000000){
-									borderColor = globalContainerBorderColor;
-								}
-								if(backgroundColor == 0x00000000){
-									backgroundColor = globalContainerBackgroundColor;
-								}
-								container = XCreateSimpleWindow(display, section, x, y, width, height, border, borderColor, backgroundColor);
-								value = 1;
-							}
-						}
-						if(value){
-							value = 0;
-							currentRectangle = 0;
-							while(currentRectangle < rectangleAmount){
-								if(readConfigRectangleWindow(container, currentSection, currentContainer, currentRectangle, &x, &y, &width, &height, &border, &borderColor, &backgroundColor)){
-									if(width > 0 && height > 0){
-										if(borderColor == 0x00000000){
-											borderColor = globalRectangleBorderColor;
-										}
-										if(backgroundColor == 0x00000000){
-											backgroundColor = globalRectangleBackgroundColor;
-										}
-										rectangle = XCreateSimpleWindow(display, container, x, y, width, height, border, borderColor, backgroundColor);
-										value = 1;
-									}
-								}
-								if(value){
-									value = 0;
-									XMapWindow(display, rectangle);
-								}else{
-									currentRectangle = rectangleAmount;
-								}
-								++currentRectangle;
-							}
-							if(currentRectangle == rectangleAmount + 1){
-								currentContainer = containerAmount;
-							}
-							XMapWindow(display, container);
-						}else{
-							currentContainer = containerAmount;
-						}
-						++currentContainer;
-					}
-					if(currentContainer == containerAmount + 1){
-						currentSection = sectionAmount;
-					}
-					XSelectInput(display, section, ExposureMask);
-					XMapWindow(display, section);
-				}else{
-					currentSection = sectionAmount;
-				}
-				++currentSection;
-			}
-			if(currentSection == sectionAmount){
-				value = 1;
-			}else{
-				break;
-			}
-		}
+		XRRFreeMonitors(monitorInfo);
 	}
 	return value;
 }
@@ -334,8 +247,8 @@ static void setTopLevelWindowProperties(void){
 		.res_name = (char *)programName,
 		.res_class = (char *)programName
 	};
-	long unsigned int data[12];
-	XRRMonitorInfo *monitorInfo;
+	unsigned long int data[12];
+	XRRMonitorInfo *monitorInfo = NULL;
 	{
 		int monitorAmount;
 		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
@@ -395,6 +308,167 @@ static void setTopLevelWindowProperties(void){
 		XRRFreeMonitors(monitorInfo);
 	}
 	return;
+}
+static bool createSubwindows(void){
+	bool value = 0;
+	unsigned int sectionAmount;
+	unsigned int rectangleAmount;
+	if(readConfigSectionRectangleAmount(&sectionAmount, &rectangleAmount)){
+		uint32_t globalSectionBorderColor;
+		uint32_t globalSectionBackgroundColor;
+		uint32_t globalContainerBorderColor[sectionAmount];
+		uint32_t globalContainerBackgroundColor[sectionAmount];
+		uint32_t globalRectangleBorderColor[containerAmount];
+		uint32_t globalRectangleBackgroundColor[containerAmount];
+		if(readConfigGlobalColors(sectionAmount, &globalSectionBorderColor, &globalSectionBackgroundColor, globalContainerBorderColor, globalContainerBackgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor)){
+			int *x[monitorAmount];
+			int *y[monitorAmount];
+			unsigned int *width[monitorAmount];
+			unsigned int *height[monitorAmount];
+			unsigned int *border[monitorAmount];
+			unsigned int childrenAmount;
+			unsigned int currentContainer;
+			{
+				unsigned int currentSection;
+				Window _section[monitorAmount][sectionAmount];
+				Window *section[monitorAmount];
+				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+					section[currentMonitor] = _section[currentMonitor];
+				}
+				{
+					int _x[monitorAmount][sectionAmount];
+					int _y[monitorAmount][sectionAmount];
+					unsigned int _width[monitorAmount][sectionAmount];
+					unsigned int _height[monitorAmount][sectionAmount];
+					unsigned int _border[monitorAmount][sectionAmount];
+					uint32_t borderColor[sectionAmount];
+					uint32_t backgroundColor[sectionAmount];
+					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+						x[currentMonitor] = _x[currentMonitor];
+						y[currentMonitor] = _y[currentMonitor];
+						width[currentMonitor] = _width[currentMonitor];
+						height[currentMonitor] = _height[currentMonitor];
+						border[currentMonitor] = _border[currentMonitor];
+					}
+					if(readConfigSectionWindows(topLevelWindow, sectionAmount, x, y, width, height, border, borderColor, backgroundColor)){
+						for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+							for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
+								if(!createWindow(&section[currentMonitor][currentSection], topLevelWindow[currentMonitor], x[currentMonitor][currentSection], y[currentMonitor][currentSection], width[currentMonitor][currentSection], height[currentMonitor][currentSection], border[currentMonitor][currentSection], borderColor[currentSection], backgroundColor[currentSection], globalSectionBorderColor, globalSectionBackgroundColor)){
+									fprintf(stderr, "%s: could not create section %u, %u\n", programName, currentMonitor, currentSection);
+								}
+							}
+						}
+						XSync(display, False);
+					}else{
+						fprintf(stderr, "%s: could not create sections\n", programName);
+					}
+				}
+				{
+					int _x[monitorAmount][containerAmount];
+					int _y[monitorAmount][containerAmount];
+					unsigned int _width[monitorAmount][containerAmount];
+					unsigned int _height[monitorAmount][containerAmount];
+					unsigned int _border[monitorAmount][containerAmount];
+					uint32_t borderColor[containerAmount];
+					uint32_t backgroundColor[containerAmount];
+					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+						x[currentMonitor] = _x[currentMonitor];
+						y[currentMonitor] = _y[currentMonitor];
+						width[currentMonitor] = _width[currentMonitor];
+						height[currentMonitor] = _height[currentMonitor];
+						border[currentMonitor] = _border[currentMonitor];
+					}
+					unsigned int sectionChildrenAmount[sectionAmount];
+					if(readConfigSectionChildren(sectionAmount, sectionChildrenAmount) && readConfigContainerWindows(section, x, y, width, height, border, borderColor, backgroundColor)){
+						for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+							currentSection = 0;
+							childrenAmount = 0;
+							for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+								if(!createWindow(&container[currentMonitor][currentContainer], section[currentMonitor][currentSection], x[currentMonitor][currentContainer], y[currentMonitor][currentContainer], width[currentMonitor][currentContainer], height[currentMonitor][currentContainer], border[currentMonitor][currentContainer], borderColor[currentContainer], backgroundColor[currentContainer], globalContainerBorderColor[currentSection], globalContainerBackgroundColor[currentSection])){
+									fprintf(stderr, "%s: could not create container %u, %u\n", programName, currentMonitor, currentContainer);
+								}
+								childrenAmount += sectionChildrenAmount[currentSection];
+								if(currentContainer == childrenAmount - 1){
+									++currentSection;
+								}else{
+									childrenAmount -= sectionChildrenAmount[currentSection];
+								}
+							}
+						}
+						XSync(display, False);
+					}else{
+						fprintf(stderr, "%s: could not create containers\n", programName);
+					}
+				}
+			}
+			Window rectangle;
+			unsigned int containerChildrenAmount[containerAmount];
+			if(readConfigContainerChildren(containerChildrenAmount)){
+				unsigned int currentRectangle;
+				int _x[monitorAmount][rectangleAmount];
+				int _y[monitorAmount][rectangleAmount];
+				unsigned int _width[monitorAmount][rectangleAmount];
+				unsigned int _height[monitorAmount][rectangleAmount];
+				unsigned int _border[monitorAmount][rectangleAmount];
+				uint32_t borderColor[rectangleAmount];
+				uint32_t backgroundColor[rectangleAmount];
+				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+					x[currentMonitor] = _x[currentMonitor];
+					y[currentMonitor] = _y[currentMonitor];
+					width[currentMonitor] = _width[currentMonitor];
+					height[currentMonitor] = _height[currentMonitor];
+					border[currentMonitor] = _border[currentMonitor];
+				}
+				if(readConfigRectangleWindows(container, rectangleAmount, x, y, width, height, border, borderColor, backgroundColor)){
+					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+						currentContainer = 0;
+						childrenAmount = 0;
+						for(currentRectangle = 0; currentRectangle < rectangleAmount; ++currentRectangle){
+							if(!createWindow(&rectangle, container[currentMonitor][currentContainer], x[currentMonitor][currentRectangle], y[currentMonitor][currentRectangle], width[currentMonitor][currentRectangle], height[currentMonitor][currentRectangle], border[currentMonitor][currentRectangle], borderColor[currentRectangle], backgroundColor[currentRectangle], globalRectangleBorderColor[currentContainer], globalRectangleBackgroundColor[currentContainer])){
+								fprintf(stderr, "%s: could not create rectangle %u, %u\n", programName, currentMonitor, currentRectangle);
+							}
+							childrenAmount += containerChildrenAmount[currentContainer];
+							if(currentRectangle == childrenAmount - 1){
+								++currentContainer;
+							}else{
+								childrenAmount -= containerChildrenAmount[currentContainer];
+							}
+						}
+					}
+					XSync(display, False);
+				}else{
+					fprintf(stderr, "%s: could not create rectangles %u, n\n", programName, currentMonitor);
+				}
+			}else{
+				fprintf(stderr, "%s: could not create rectangles %u, n\n", programName, currentMonitor);
+			}
+			value = 1;
+		}
+	}
+	return value;
+}
+static bool createWindow(Window *const window, const Window parentWindow, const int x, const int y, unsigned int width, unsigned int height, const unsigned int border, uint32_t borderColor, uint32_t backgroundColor, const uint32_t globalBorderColor, const uint32_t globalBackgroundColor){
+	bool value = 0;
+	if(width && height){
+		value = 1;
+	}
+	if(!width){
+		width = 1;
+	}
+	if(!height){
+		height = 1;
+	}
+	if(!borderColor){
+		borderColor = globalBorderColor;
+	}
+	if(!backgroundColor){
+		backgroundColor = globalBackgroundColor;
+	}
+	*window = XCreateSimpleWindow(display, parentWindow, x, y, width, height, border, borderColor, backgroundColor);
+	if(value){
+		XMapWindow(display, *window);
+	}
+	return value;
 }
 static void cleanup(void){
 	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
