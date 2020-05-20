@@ -122,6 +122,7 @@ void eventLoop(void){
 	}
 	grabButtons();
 	{
+		XEvent event;
 		unsigned int topLevelWindowX[monitorAmount];
 		unsigned int topLevelWindowY[monitorAmount];
 		{
@@ -132,7 +133,6 @@ void eventLoop(void){
 				topLevelWindowY[currentMonitor] = windowAttributes.y;
 			}
 		}
-		XEvent event;
 		bool topLevelWindowsMapped = 1;
 		bool topLevelWindowsShown = 0;
 		unsigned int currentContainer;

@@ -30,39 +30,40 @@ SOFTWARE. */
 
 #define NoPositions /*----------------------------*/ (uint64_t)0
 #define LinesPosition /*--------------------------*/ ((uint64_t)1 << 0)
-#define XPosition /*------------------------------*/ ((uint64_t)1 << 1)
-#define YPosition /*------------------------------*/ ((uint64_t)1 << 2)
-#define WidthPosition /*--------------------------*/ ((uint64_t)1 << 3)
-#define HeightPosition /*-------------------------*/ ((uint64_t)1 << 4)
-#define BorderPosition /*-------------------------*/ ((uint64_t)1 << 5)
-#define BorderColorPosition /*--------------------*/ ((uint64_t)1 << 6)
-#define BackgroundColorPosition /*----------------*/ ((uint64_t)1 << 7)
-#define GlobalSectionBorderColorPosition /*-------*/ ((uint64_t)1 << 8)
-#define GlobalSectionBackgroundColorPosition /*---*/ ((uint64_t)1 << 9)
-#define GlobalContainerBorderColorPosition /*-----*/ ((uint64_t)1 << 10)
-#define GlobalContainerBackgroundColorPosition /*-*/ ((uint64_t)1 << 11)
-#define GlobalRectangleBorderColorPosition /*-----*/ ((uint64_t)1 << 12)
-#define GlobalRectangleBackgroundColorPosition /*-*/ ((uint64_t)1 << 13)
-#define GlobalTextColorPosition /*----------------*/ ((uint64_t)1 << 14)
-#define GlobalDrawableCommandColorPosition /*-----*/ ((uint64_t)1 << 15)
-#define TextPosition /*---------------------------*/ ((uint64_t)1 << 16)
-#define TextColorPosition /*----------------------*/ ((uint64_t)1 << 17)
-#define TextOffsetXPosition /*--------------------*/ ((uint64_t)1 << 18)
-#define TextOffsetYPosition /*--------------------*/ ((uint64_t)1 << 19)
-#define CommandPosition /*------------------------*/ ((uint64_t)1 << 20)
-#define DrawableCommandPosition /*----------------*/ ((uint64_t)1 << 21)
-#define DrawableCommandColorPosition /*-----------*/ ((uint64_t)1 << 22)
-#define DrawableCommandOffsetXPosition /*---------*/ ((uint64_t)1 << 23)
-#define DrawableCommandOffsetYPosition /*---------*/ ((uint64_t)1 << 24)
-#define InteractAllPosition /*--------------------*/ ((uint64_t)1 << 25)
-#define HidePosition /*---------------------------*/ ((uint64_t)1 << 26)
-#define PeekPosition /*---------------------------*/ ((uint64_t)1 << 27)
-#define RestartPosition /*------------------------*/ ((uint64_t)1 << 28)
-#define ExitPosition /*---------------------------*/ ((uint64_t)1 << 29)
-#define ButtonPosition /*-------------------------*/ ((uint64_t)1 << 30)
-#define SectionPosition /*------------------------*/ ((uint64_t)1 << 31)
-#define ContainerPosition /*----------------------*/ ((uint64_t)1 << 32)
-#define RectanglePosition /*----------------------*/ ((uint64_t)1 << 33)
+#define MonitorPosition /*------------------------*/ ((uint64_t)1 << 1)
+#define XPosition /*------------------------------*/ ((uint64_t)1 << 2)
+#define YPosition /*------------------------------*/ ((uint64_t)1 << 3)
+#define WidthPosition /*--------------------------*/ ((uint64_t)1 << 4)
+#define HeightPosition /*-------------------------*/ ((uint64_t)1 << 5)
+#define BorderPosition /*-------------------------*/ ((uint64_t)1 << 6)
+#define BorderColorPosition /*--------------------*/ ((uint64_t)1 << 7)
+#define BackgroundColorPosition /*----------------*/ ((uint64_t)1 << 8)
+#define GlobalSectionBorderColorPosition /*-------*/ ((uint64_t)1 << 9)
+#define GlobalSectionBackgroundColorPosition /*---*/ ((uint64_t)1 << 10)
+#define GlobalContainerBorderColorPosition /*-----*/ ((uint64_t)1 << 11)
+#define GlobalContainerBackgroundColorPosition /*-*/ ((uint64_t)1 << 12)
+#define GlobalRectangleBorderColorPosition /*-----*/ ((uint64_t)1 << 13)
+#define GlobalRectangleBackgroundColorPosition /*-*/ ((uint64_t)1 << 14)
+#define GlobalTextColorPosition /*----------------*/ ((uint64_t)1 << 15)
+#define GlobalDrawableCommandColorPosition /*-----*/ ((uint64_t)1 << 16)
+#define TextPosition /*---------------------------*/ ((uint64_t)1 << 17)
+#define TextColorPosition /*----------------------*/ ((uint64_t)1 << 18)
+#define TextOffsetXPosition /*--------------------*/ ((uint64_t)1 << 19)
+#define TextOffsetYPosition /*--------------------*/ ((uint64_t)1 << 20)
+#define CommandPosition /*------------------------*/ ((uint64_t)1 << 21)
+#define DrawableCommandPosition /*----------------*/ ((uint64_t)1 << 22)
+#define DrawableCommandColorPosition /*-----------*/ ((uint64_t)1 << 23)
+#define DrawableCommandOffsetXPosition /*---------*/ ((uint64_t)1 << 24)
+#define DrawableCommandOffsetYPosition /*---------*/ ((uint64_t)1 << 25)
+#define InteractAllPosition /*--------------------*/ ((uint64_t)1 << 26)
+#define HidePosition /*---------------------------*/ ((uint64_t)1 << 27)
+#define PeekPosition /*---------------------------*/ ((uint64_t)1 << 28)
+#define RestartPosition /*------------------------*/ ((uint64_t)1 << 29)
+#define ExitPosition /*---------------------------*/ ((uint64_t)1 << 30)
+#define ButtonPosition /*-------------------------*/ ((uint64_t)1 << 31)
+#define SectionPosition /*------------------------*/ ((uint64_t)1 << 32)
+#define ContainerPosition /*----------------------*/ ((uint64_t)1 << 33)
+#define RectanglePosition /*----------------------*/ ((uint64_t)1 << 34)
 
 #define NoOperation /*----------------------------*/ 0
 #define AdditionOperation /*----------------------*/ 1
@@ -74,6 +75,7 @@ extern const char *programName;
 extern const char *configPath;
 extern Display *display;
 extern unsigned int monitorAmount;
+extern unsigned int whichMonitor;
 extern unsigned int containerAmount;
 extern char line[DefaultCharactersCount + 1];
 extern unsigned int currentMonitor;
@@ -94,6 +96,7 @@ static void printLineError(const unsigned int currentLine);
 
 bool readConfigScan(void){
 	bool value = 0;
+	whichMonitor = monitorAmount;
 	containerAmount = 0;
 	FILE *const file = getConfigFile();
 	if(file){
@@ -115,6 +118,24 @@ bool readConfigScan(void){
 								pushWhitespace(&element);
 								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
 								hasReadVariable |= LinesPosition;
+							}
+							continue;
+						}
+					}
+					if(!(hasReadVariable & MonitorPosition)){
+						if(isVariable("monitor", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								pushWhitespace(&element);
+								if(!isVariable("all", &element)){
+									whichMonitor = getUnsignedInteger(currentLine, None, &element);
+									if(whichMonitor < monitorAmount){
+										monitorAmount = 1;
+									}else{
+										whichMonitor = monitorAmount;
+									}
+								}
+								hasReadVariable |= MonitorPosition;
 							}
 							continue;
 						}
@@ -2470,7 +2491,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# # # # # # #\n");
 			fprintf(config, "# variables #\n");
 			fprintf(config, "# # # # # # #\n\n");
-			fprintf(config, "# global object: lines, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, keycode, section{}\n");
+			fprintf(config, "# global object: lines, monitor, x, y, width, height, border, borderColor, backgroundColor, globalSectionBorderColor, globalSectionBackgroundColor, font, keycode, section{}\n");
 			fprintf(config, "# section object: x, y, width, height, border, borderColor, backgroundColor, globalContainerBorderColor, globalContainerBackgroundColor, globalTextColor, globalDrawableCommandColor, container{}\n");
 			fprintf(config, "# container object: x, y, width, height, border, borderColor, backgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor, text, textColor, textOffsetX, textOffsetY, command, drawableCommand, drawableCommandColor, drawableCommandOffsetX, drawableCommandOffsetY, button, rectangle{}\n");
 			fprintf(config, "# rectangle object: x, y, width, height, border, borderColor, backgroundColor\n");
@@ -2479,6 +2500,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# variable definition #\n");
 			fprintf(config, "# # # # # # # # # # # #\n\n");
 			fprintf(config, "# lines: config lines to be read\n");
+			fprintf(config, "# monitor: monitor to be used\n");
 			fprintf(config, "# x: x axis position of object\n");
 			fprintf(config, "# y: y axis position of object\n");
 			fprintf(config, "# width: size of object\'s width, excluding border\n");
@@ -2515,6 +2537,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# extra #\n");
 			fprintf(config, "# # # # #\n\n");
 			fprintf(config, "# lines: default %u\n", DefaultLinesCount);
+			fprintf(config, "# monitor: all, n\n");
 			fprintf(config, "# font: the xfontsel application is recommended for looking at different available fonts\n");
 			fprintf(config, "# font: requires quotation, there is a font hierarchy from first to last specified\n");
 			fprintf(config, "# keycode: does not take \'=\'\n");
@@ -2529,7 +2552,8 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# button: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# math operands: +, -, *, /, (, )\n\n\n\n");
 			fprintf(config, "# /config start # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #\n");
-			fprintf(config, "lines = 188\n");
+			fprintf(config, "lines = 191\n");
+			fprintf(config, "monitor = all\n");
 			fprintf(config, "x = 0\n");
 			fprintf(config, "y = ParentHeight - 19\n");
 			fprintf(config, "width = ParentWidth\n");
@@ -2692,11 +2716,16 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 	XWindowAttributes windowAttributes;
 	if(parentWindow){
 		if(parentWindow == XDefaultRootWindow(display)){
-			int monitorAmount;
-			XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
+			unsigned int trueMonitorAmount;
+			XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&trueMonitorAmount);
 			if(monitorInfo){
-				windowAttributes.width = monitorInfo[currentMonitor].width;
-				windowAttributes.height = monitorInfo[currentMonitor].height;
+				if(whichMonitor == trueMonitorAmount){
+					windowAttributes.width = monitorInfo[currentMonitor].width;
+					windowAttributes.height = monitorInfo[currentMonitor].height;
+				}else{
+					windowAttributes.width = monitorInfo[whichMonitor].width;
+					windowAttributes.height = monitorInfo[whichMonitor].height;
+				}
 				XRRFreeMonitors(monitorInfo);
 			}else{
 				parentWindow = None;

@@ -43,6 +43,7 @@ extern const char *drawableCommandPath;
 extern uint8_t mode;
 extern Display *display;
 extern unsigned int monitorAmount;
+extern unsigned int whichMonitor;
 extern unsigned int containerAmount;
 extern Window *topLevelWindow;
 extern unsigned int currentMonitor;
@@ -172,11 +173,8 @@ static void start(void){
 }
 static bool createTopLevelWindows(void){
 	bool value = 0;
-	XRRMonitorInfo *monitorInfo = NULL;
-	{
-		int monitorAmount;
-		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
-	}
+	unsigned int trueMonitorAmount;
+	XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&trueMonitorAmount);
 	if(monitorInfo){
 		int x[monitorAmount];
 		int y[monitorAmount];
@@ -194,8 +192,13 @@ static bool createTopLevelWindows(void){
 			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 				value = 0;
 				if(width[currentMonitor] && height[currentMonitor]){
-					x[currentMonitor] += monitorInfo[currentMonitor].x;
-					y[currentMonitor] += monitorInfo[currentMonitor].y;
+					if(whichMonitor == trueMonitorAmount){
+						x[currentMonitor] += monitorInfo[currentMonitor].x;
+						y[currentMonitor] += monitorInfo[currentMonitor].y;
+					}else{
+						x[currentMonitor] += monitorInfo[whichMonitor].x;
+						y[currentMonitor] += monitorInfo[whichMonitor].y;
+					}
 					setWindowAttributes.background_pixel = backgroundColor[currentMonitor];
 					setWindowAttributes.border_pixel = borderColor[currentMonitor];
 					topLevelWindow[currentMonitor] = XCreateWindow(display, XDefaultRootWindow(display), x[currentMonitor], y[currentMonitor], width[currentMonitor], height[currentMonitor], border[currentMonitor], visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &setWindowAttributes);
@@ -248,11 +251,8 @@ static void setTopLevelWindowProperties(void){
 		.res_class = (char *)programName
 	};
 	unsigned long int data[12];
-	XRRMonitorInfo *monitorInfo = NULL;
-	{
-		int monitorAmount;
-		monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, &monitorAmount);
-	}
+	unsigned int trueMonitorAmount;
+	XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&trueMonitorAmount);
 	if(monitorInfo){
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
@@ -286,20 +286,32 @@ static void setTopLevelWindowProperties(void){
 			data[5] = 0;
 			data[6] = 0;
 			data[7] = 0;
-			if(windowAttributes.y < monitorInfo[currentMonitor].height / 2){
-				data[2] = windowAttributes.y + windowAttributes.height;
-				data[3] = 0;
-				data[8] = windowAttributes.x;
-				data[9] = windowAttributes.x + windowAttributes.width - 1;
-				data[10] = 0;
-				data[11] = 0;
+			if(whichMonitor == trueMonitorAmount){
+				if(windowAttributes.y - monitorInfo[currentMonitor].y < monitorInfo[currentMonitor].height / 2){
+					goto topPlacement;
+				}else{
+					goto bottomPlacement;
+				}
 			}else{
-				data[2] = 0;
-				data[3] = XDisplayHeight(display, XDefaultScreen(display)) - windowAttributes.y;
-				data[8] = 0;
-				data[9] = 0;
-				data[10] = windowAttributes.x;
-				data[11] = windowAttributes.x + windowAttributes.width - 1;
+				if(windowAttributes.y - monitorInfo[whichMonitor].y < monitorInfo[whichMonitor].height / 2){
+					topPlacement:{
+						data[2] = windowAttributes.y + windowAttributes.height;
+						data[3] = 0;
+						data[8] = windowAttributes.x;
+						data[9] = windowAttributes.x + windowAttributes.width - 1;
+						data[10] = 0;
+						data[11] = 0;
+					}
+				}else{
+					bottomPlacement:{
+						data[2] = 0;
+						data[3] = XDisplayHeight(display, XDefaultScreen(display)) - windowAttributes.y;
+						data[8] = 0;
+						data[9] = 0;
+						data[10] = windowAttributes.x;
+						data[11] = windowAttributes.x + windowAttributes.width - 1;
+					}
+				}
 			}
 			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
 			XSelectInput(display, topLevelWindow[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
