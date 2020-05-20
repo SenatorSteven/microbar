@@ -258,9 +258,11 @@ void eventLoop(void){
 				if(mode != ContinueMode){
 					break;
 				}
-			}else if(event.type == Expose && !event.xexpose.count){
-				onExpose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor);
-			}else if(event.type == rrEventBase + RRScreenChangeNotify){
+			}else if(event.type == Expose){
+				if(!event.xexpose.count){
+					onExpose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor);
+				}
+			}else if(event.type == RRScreenChangeNotify + rrEventBase){
 				mode = RestartMode;
 				break;
 			}
