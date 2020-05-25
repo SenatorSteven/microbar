@@ -42,4 +42,9 @@ typedef struct{
 	uint16_t masks;
 } Shortcut;
 
+typedef struct{
+	uint8_t button;
+	uint16_t masks;
+} Button;
+
 #endif
