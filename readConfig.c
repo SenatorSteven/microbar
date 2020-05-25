@@ -91,7 +91,7 @@ static uint32_t getARGB(unsigned int *const element);
 static unsigned int getQuotedStringLength(unsigned int *const element);
 static unsigned int getQuotedString(char *const string, unsigned int *const element);
 static Shortcut getKey(unsigned int *const element);
-static bool getButton(uint8_t *const button, uint16_t *const masks, unsigned int *const element);
+static Button getButton(unsigned int *const element);
 static void printLineError(const unsigned int currentLine);
 
 bool readConfigScan(void){
@@ -2036,12 +2036,10 @@ bool readConfigButtons(void){
 					if(!(hasReadVariable & ButtonPosition)){
 						if(isVariable("button", &element)){
 							pushWhitespace(&element);
-							uint8_t button;
-							uint16_t masks;
-							getButton(&button, &masks, &element);
-							if(button != AnyButton){
+							Button button = getButton(&element);
+							if(button.button != AnyButton){
 								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									XGrabButton(display, button, masks, container[currentMonitor][currentContainer], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
+									XGrabButton(display, button.button, button.masks, container[currentMonitor][currentContainer], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 								}
 							}
 							hasReadVariable |= ButtonPosition;
@@ -3000,43 +2998,44 @@ static Shortcut getKey(unsigned int *const element){
 	}
 	return shortcut;
 }
-static bool getButton(uint8_t *const button, uint16_t *const masks, unsigned int *const element){
-	uint8_t dereferencedButton = AnyButton;
-	uint16_t dereferencedMasks = None;
+static Button getButton(unsigned int *const element){
+	Button button = {
+		.button = AnyButton,
+		.masks = None
+	};
 	unsigned int dereferencedElement = *element;
-	bool value = 0;
 	bool lookingForValue = 1;
 	while(line[dereferencedElement]){
 		pushWhitespace(&dereferencedElement);
 		if(lookingForValue){
 			if(isVariable("Button1", &dereferencedElement)){
-				dereferencedButton = Button1;
+				button.button = Button1;
 			}else if(isVariable("Button2", &dereferencedElement)){
-				dereferencedButton = Button2;
+				button.button = Button2;
 			}else if(isVariable("Button3", &dereferencedElement)){
-				dereferencedButton = Button3;
+				button.button = Button3;
 			}else if(isVariable("Button4", &dereferencedElement)){
-				dereferencedButton = Button4;
+				button.button = Button4;
 			}else if(isVariable("Button5", &dereferencedElement)){
-				dereferencedButton = Button5;
+				button.button = Button5;
 			}else if(isVariable("AnyModifier", &dereferencedElement)){
-				dereferencedMasks |= AnyModifier;
+				button.masks |= AnyModifier;
 			}else if(isVariable("Shift", &dereferencedElement)){
-				dereferencedMasks |= ShiftMask;
+				button.masks |= ShiftMask;
 			}else if(isVariable("Lock", &dereferencedElement)){
-				dereferencedMasks |= LockMask;
+				button.masks |= LockMask;
 			}else if(isVariable("Control", &dereferencedElement)){
-				dereferencedMasks |= ControlMask;
+				button.masks |= ControlMask;
 			}else if(isVariable("Mod1", &dereferencedElement)){
-				dereferencedMasks |= Mod1Mask;
+				button.masks |= Mod1Mask;
 			}else if(isVariable("Mod2", &dereferencedElement)){
-				dereferencedMasks |= Mod2Mask;
+				button.masks |= Mod2Mask;
 			}else if(isVariable("Mod3", &dereferencedElement)){
-				dereferencedMasks |= Mod3Mask;
+				button.masks |= Mod3Mask;
 			}else if(isVariable("Mod4", &dereferencedElement)){
-				dereferencedMasks |= Mod4Mask;
+				button.masks |= Mod4Mask;
 			}else if(isVariable("Mod5", &dereferencedElement)){
-				dereferencedMasks |= Mod5Mask;
+				button.masks |= Mod5Mask;
 			}else{
 				break;
 			}
@@ -3050,13 +3049,10 @@ static bool getButton(uint8_t *const button, uint16_t *const masks, unsigned int
 			}
 		}
 	}
-	*button = dereferencedButton;
-	*masks = dereferencedMasks;
-	if(dereferencedButton != AnyButton){
+	if(button.button != AnyButton){
 		*element = dereferencedElement;
-		value = 1;
 	}
-	return value;
+	return button;
 }
 static void printLineError(const unsigned int currentLine){
 	unsigned int element = 0;

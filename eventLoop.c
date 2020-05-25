@@ -529,14 +529,17 @@ static void ungrabKeys(const unsigned int sectionShortcutAmount, const unsigned 
 	if(interactAll.keycode != AnyKey){
 		XUngrabKey(display, interactAll.keycode, interactAll.masks, XDefaultRootWindow(display));
 	}
-	for(unsigned int currentSectionShortcut = 0; currentSectionShortcut < sectionShortcutAmount; ++currentSectionShortcut){
-		if(interactSection[currentSectionShortcut].keycode != AnyKey){
-			XUngrabKey(display, interactSection[currentSectionShortcut].keycode, interactSection[currentSectionShortcut].masks, XDefaultRootWindow(display));
+	{
+		unsigned int currentShortcut;
+		for(currentShortcut = 0; currentShortcut < sectionShortcutAmount; ++currentShortcut){
+			if(interactSection[currentShortcut].keycode != AnyKey){
+				XUngrabKey(display, interactSection[currentShortcut].keycode, interactSection[currentShortcut].masks, XDefaultRootWindow(display));
+			}
 		}
-	}
-	for(unsigned int currentContainerShortcut = 0; currentContainerShortcut < containerShortcutAmount; ++currentContainerShortcut){
-		if(interactContainer[currentContainerShortcut].keycode != AnyKey){
-			XUngrabKey(display, interactContainer[currentContainerShortcut].keycode, interactContainer[currentContainerShortcut].masks, XDefaultRootWindow(display));
+		for(currentShortcut = 0; currentShortcut < containerShortcutAmount; ++currentShortcut){
+			if(interactContainer[currentShortcut].keycode != AnyKey){
+				XUngrabKey(display, interactContainer[currentShortcut].keycode, interactContainer[currentShortcut].masks, XDefaultRootWindow(display));
+			}
 		}
 	}
 	if(hide.keycode != AnyKey){
