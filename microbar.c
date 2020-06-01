@@ -127,6 +127,11 @@ static void start(void){
 			{
 				XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&monitorAmount);
 				if(monitorInfo){
+					for(currentMonitor = 1; currentMonitor < monitorAmount; ++currentMonitor){
+						if(monitorInfo[currentMonitor - 1].x == monitorInfo[currentMonitor].x && monitorInfo[currentMonitor - 1].y == monitorInfo[currentMonitor].y){
+							--monitorAmount;
+						}
+					}
 					XRRFreeMonitors(monitorInfo);
 				}else{
 					monitorAmount = 0;
