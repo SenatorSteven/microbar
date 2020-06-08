@@ -162,26 +162,18 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 static bool isArgument(const char *const argument, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
-	while(argument[element] || vector[element]){
-		if(vector[element] >= 'A' && vector[element] <= 'Z'){
-			if(!(vector[element] == argument[element] || vector[element] == argument[element] + 32)){
-				element = 0;
-				break;
-			}
-		}else if(vector[element] >= 'a' && vector[element] <= 'z'){
-			if(!(vector[element] == argument[element] || vector[element] == argument[element] - 32)){
-				element = 0;
-				break;
-			}
-		}else{
-			if(!(vector[element] == argument[element])){
-				element = 0;
-				break;
-			}
+	char a = argument[element];
+	char v = vector[element];
+	while(a || v){
+		if((v >= 'A' && v <= 'Z' && v != a && v != a + 32) || (v >= 'a' && v <= 'z' && v != a && v != a - 32) || v != a){
+			element = 0;
+			break;
 		}
 		++element;
+		a = argument[element];
+		v = vector[element];
 	}
-	if(element != 0){
+	if(element){
 		value = 1;
 	}
 	return value;

@@ -1898,7 +1898,7 @@ bool readConfigShortcuts(const unsigned int sectionShortcutAmount, const unsigne
 					}
 					if(isVariable("keycode", &element)){
 						pushWhitespace(&element);
-						Shortcut shortcut = getKey(&element);
+						const Shortcut shortcut = getKey(&element);
 						if(isVariable("interact", &element)){
 							pushWhitespace(&element);
 							if(isVariable("all", &element)){
@@ -2036,7 +2036,7 @@ bool readConfigButtons(void){
 					if(!(hasReadVariable & ButtonPosition)){
 						if(isVariable("button", &element)){
 							pushWhitespace(&element);
-							Button button = getButton(&element);
+							const Button button = getButton(&element);
 							if(button.button != AnyButton){
 								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 									XGrabButton(display, button.button, button.masks, container[currentMonitor][currentContainer], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
@@ -2274,6 +2274,7 @@ bool readConfigFillFontArray(const unsigned int currentFont, char *const font){
 							break;
 						}else{
 							++fontsRead;
+							continue;
 						}
 					}
 					if(isVariable("section", &element)){
@@ -2658,39 +2659,31 @@ static bool getLine(FILE *const file){
 }
 static void pushWhitespace(unsigned int *const element){
 	unsigned int dereferencedElement = *element;
-	while(line[dereferencedElement] == ' ' || line[dereferencedElement] == '	'){
+	char l = line[dereferencedElement];
+	while(l && (l == ' ' || l == '\t')){
 		++dereferencedElement;
+		l = line[dereferencedElement];
 	}
-	if(dereferencedElement > *element){
-		*element = dereferencedElement;
-	}
+	*element = dereferencedElement;
 	return;
 }
 static bool isVariable(const char *const variable, unsigned int *const element){
 	unsigned int dereferencedElement = *element;
 	bool value = 0;
 	unsigned int currentCharacter = 0;
-	while(variable[currentCharacter] && line[dereferencedElement]){
-		if(variable[currentCharacter] >= 'A' && variable[currentCharacter] <= 'Z'){
-			if(!(line[dereferencedElement] == variable[currentCharacter] || line[dereferencedElement] == variable[currentCharacter] + 32)){
-				currentCharacter = 0;
-				break;
-			}
-		}else if(variable[currentCharacter] >= 'a' && variable[currentCharacter] <= 'z'){
-			if(!(line[dereferencedElement] == variable[currentCharacter] || line[dereferencedElement] == variable[currentCharacter] - 32)){
-				currentCharacter = 0;
-				break;
-			}
-		}else{
-			if(!(line[dereferencedElement] == variable[currentCharacter])){
-				currentCharacter = 0;
-				break;
-			}
+	char v = *variable;
+	char l = line[dereferencedElement];
+	while(v && l){
+		if((v >= 'A' && v <= 'Z' && l != v && l != v + 32) || (v >= 'a' && v <= 'z' && l != v && l != v - 32) || l != v){
+			currentCharacter = 0;
+			break;
 		}
-		++dereferencedElement;
 		++currentCharacter;
+		++dereferencedElement;
+		v = variable[currentCharacter];
+		l = line[dereferencedElement];
 	}
-	if(currentCharacter != 0){
+	if(currentCharacter){
 		*element = dereferencedElement;
 		value = 1;
 	}
@@ -2894,26 +2887,27 @@ static uint32_t getARGB(unsigned int *const element){
 		++dereferencedElement;
 	}
 	uint8_t charactersRead = 0;
-	while(line[dereferencedElement] && charactersRead < 8){
+	char l = line[dereferencedElement];
+	while(l && charactersRead < 8){
 		color *= 16;
-		if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
-			color += line[dereferencedElement];
+		color += l;
+		if(l >= '0' && l <= '9'){
 			color -= 48;
-		}else if(line[dereferencedElement] >= 'A' && line[dereferencedElement] <= 'F'){
-			color += line[dereferencedElement];
+		}else if(l >= 'A' && l <= 'F'){
 			color -= 55;
-		}else if(line[dereferencedElement] >= 'a' && line[dereferencedElement] <= 'f'){
-			color += line[dereferencedElement];
+		}else if(l >= 'a' && l <= 'f'){
 			color -= 87;
 		}else{
-			if(line[dereferencedElement] != ' '){
-				fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", programName, line[dereferencedElement]);
+			color -= l;
+			if(l != ' ' && l != '\t'){
+				fprintf(stderr, "%s: \'%c\' is not recognized as a hexadecimal number\n", programName, l);
 				color = 0x00000000;
 			}
 			break;
 		}
 		++dereferencedElement;
 		++charactersRead;
+		l = line[dereferencedElement];
 	}
 	if(charactersRead == 8){
 		*element = dereferencedElement;
@@ -2999,11 +2993,11 @@ static Shortcut getKey(unsigned int *const element){
 	return shortcut;
 }
 static Button getButton(unsigned int *const element){
+	unsigned int dereferencedElement = *element;
 	Button button = {
 		.button = AnyButton,
 		.masks = None
 	};
-	unsigned int dereferencedElement = *element;
 	bool lookingForValue = 1;
 	while(line[dereferencedElement]){
 		pushWhitespace(&dereferencedElement);

@@ -439,26 +439,18 @@ static void drawCommand(const char *const systemCommand, const Window container,
 static bool isCommand(const char *const command, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
-	while(command[element] || vector[element]){
-		if(vector[element] >= 'A' && vector[element] <= 'Z'){
-			if(!(vector[element] == command[element] || vector[element] == command[element] + 32)){
-				element = 0;
-				break;
-			}
-		}else if(vector[element] >= 'a' && vector[element] <= 'z'){
-			if(!(vector[element] == command[element] || vector[element] == command[element] - 32)){
-				element = 0;
-				break;
-			}
-		}else{
-			if(!(vector[element] == command[element])){
-				element = 0;
-				break;
-			}
+	char c = *command;
+	char v = *vector;
+	while(c || v){
+		if((v >= 'A' && v <= 'Z' && v != c && v != c + 32) || (v >= 'a' && v <= 'z' && v != c && v != c - 32) || v != c){
+			element = 0;
+			break;
 		}
 		++element;
+		c = command[element];
+		v = vector[element];
 	}
-	if(element != 0){
+	if(element){
 		value = 1;
 	}
 	return value;
