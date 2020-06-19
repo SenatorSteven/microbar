@@ -36,7 +36,7 @@ extern const char *workplacePath;
 extern unsigned int workplacePathLength;
 extern unsigned int drawableCommandPathLength;
 extern const char *drawableCommandPath;
-extern uint8_t mode;
+extern Mode mode;
 extern Display *display;
 extern unsigned int monitorAmount;
 extern unsigned int containerAmount;
@@ -49,11 +49,11 @@ static void grabKeys(const unsigned int sectionShortcutAmount, const unsigned in
 static void grabButtons(void);
 static XFontSet createFontSet(void);
 static GC createGC(void);
-static void executeCommands(const char drawableCommand, const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const uint32_t drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const char *const command, const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown);
-static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const uint32_t drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY);
+static void executeCommands(const char drawableCommand, const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const char *const command, const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown);
+static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY);
 static bool isCommand(const char *const command, const char *const vector);
 static void hideToggle(const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown);
-static void onExpose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const uint32_t *const textColor);
+static void onExpose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor);
 static void ungrabButtons(void);
 static void ungrabKeys(const unsigned int sectionShortcutAmount, const unsigned int containerShortcutAmount, const Shortcut interactAll, const Shortcut *const interactSection, const Shortcut *const interactContainer, const Shortcut hide, const Shortcut peek, const Shortcut restart, const Shortcut exit);
 
@@ -66,10 +66,10 @@ void eventLoop(void){
 	char _command[containerAmount][commandMaxLength + 1];
 	char _drawableCommand[containerAmount][drawableCommandMaxLength + 1];
 	char *text[containerAmount];
-	uint32_t textColor[containerAmount];
+	ARGB textColor[containerAmount];
 	char *command[containerAmount];
 	char *drawableCommand[containerAmount];
-	uint32_t drawableCommandColor[containerAmount];
+	ARGB drawableCommandColor[containerAmount];
 	for(unsigned int currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 		text[currentContainer] = _text[currentContainer];
 		command[currentContainer] = _command[currentContainer];
@@ -372,7 +372,7 @@ static GC createGC(void){
 	}
 	return gc;
 }
-static void executeCommands(const char drawableCommand, const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const uint32_t drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const char *const command, const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown){
+static void executeCommands(const char drawableCommand, const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const char *const command, const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown){
 	if(drawableCommand){
 		drawCommand(systemCommand, container, fontSet, gc, drawableCommandColor, drawableCommandOffsetX, drawableCommandOffsetY);
 	}
@@ -389,7 +389,7 @@ static void executeCommands(const char drawableCommand, const char *const system
 	}
 	return;
 }
-static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const uint32_t drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY){
+static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY){
 	if(fontSet && gc){
 		system(systemCommand);
 		FILE *const file = fopen(drawableCommandPath, "r");
@@ -471,7 +471,7 @@ static void hideToggle(const unsigned int *const topLevelWindowX, const unsigned
 	}
 	return;
 }
-static void onExpose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const uint32_t *const textColor){
+static void onExpose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor){
 	if(containerAmount && fontSet && gc){
 		unsigned int currentContainer;
 		unsigned int length;

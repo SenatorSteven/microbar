@@ -40,7 +40,7 @@ extern const char *workplacePath;
 extern unsigned int workplacePathLength;
 extern unsigned int drawableCommandPathLength;
 extern const char *drawableCommandPath;
-extern uint8_t mode;
+extern Mode mode;
 extern Display *display;
 extern unsigned int monitorAmount;
 extern unsigned int whichMonitor;
@@ -53,7 +53,7 @@ static void start(void);
 static bool createTopLevelWindows(void);
 static void setTopLevelWindowProperties(void);
 static bool createSubwindows(void);
-static bool createWindow(Window *const window, const Window parentWindow, const int x, const int y, unsigned int width, unsigned int height, const unsigned int border, uint32_t borderColor, uint32_t backgroundColor, const uint32_t globalBorderColor, const uint32_t globalBackgroundColor);
+static bool createWindow(Window *const window, const Window parentWindow, const int x, const int y, unsigned int width, unsigned int height, const unsigned int border, ARGB borderColor, ARGB backgroundColor, const ARGB globalBorderColor, const ARGB globalBackgroundColor);
 static void cleanup(void);
 
 int main(const int argumentCount, const char *const *const argumentVector){
@@ -186,8 +186,8 @@ static bool createTopLevelWindows(void){
 		unsigned int width[monitorAmount];
 		unsigned int height[monitorAmount];
 		unsigned int border[monitorAmount];
-		uint32_t borderColor[monitorAmount];
-		uint32_t backgroundColor[monitorAmount];
+		ARGB borderColor[monitorAmount];
+		ARGB backgroundColor[monitorAmount];
 		XVisualInfo visualInfo;
 		XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
 		XSetWindowAttributes setWindowAttributes = {
@@ -331,12 +331,12 @@ static bool createSubwindows(void){
 	unsigned int sectionAmount;
 	unsigned int rectangleAmount;
 	if(readConfigSectionRectangleAmount(&sectionAmount, &rectangleAmount)){
-		uint32_t globalSectionBorderColor;
-		uint32_t globalSectionBackgroundColor;
-		uint32_t globalContainerBorderColor[sectionAmount];
-		uint32_t globalContainerBackgroundColor[sectionAmount];
-		uint32_t globalRectangleBorderColor[containerAmount];
-		uint32_t globalRectangleBackgroundColor[containerAmount];
+		ARGB globalSectionBorderColor;
+		ARGB globalSectionBackgroundColor;
+		ARGB globalContainerBorderColor[sectionAmount];
+		ARGB globalContainerBackgroundColor[sectionAmount];
+		ARGB globalRectangleBorderColor[containerAmount];
+		ARGB globalRectangleBackgroundColor[containerAmount];
 		if(readConfigGlobalColors(sectionAmount, &globalSectionBorderColor, &globalSectionBackgroundColor, globalContainerBorderColor, globalContainerBackgroundColor, globalRectangleBorderColor, globalRectangleBackgroundColor)){
 			int *x[monitorAmount];
 			int *y[monitorAmount];
@@ -358,8 +358,8 @@ static bool createSubwindows(void){
 					unsigned int _width[monitorAmount][sectionAmount];
 					unsigned int _height[monitorAmount][sectionAmount];
 					unsigned int _border[monitorAmount][sectionAmount];
-					uint32_t borderColor[sectionAmount];
-					uint32_t backgroundColor[sectionAmount];
+					ARGB borderColor[sectionAmount];
+					ARGB backgroundColor[sectionAmount];
 					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 						x[currentMonitor] = _x[currentMonitor];
 						y[currentMonitor] = _y[currentMonitor];
@@ -386,8 +386,8 @@ static bool createSubwindows(void){
 					unsigned int _width[monitorAmount][containerAmount];
 					unsigned int _height[monitorAmount][containerAmount];
 					unsigned int _border[monitorAmount][containerAmount];
-					uint32_t borderColor[containerAmount];
-					uint32_t backgroundColor[containerAmount];
+					ARGB borderColor[containerAmount];
+					ARGB backgroundColor[containerAmount];
 					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 						x[currentMonitor] = _x[currentMonitor];
 						y[currentMonitor] = _y[currentMonitor];
@@ -427,8 +427,8 @@ static bool createSubwindows(void){
 				unsigned int _width[monitorAmount][rectangleAmount];
 				unsigned int _height[monitorAmount][rectangleAmount];
 				unsigned int _border[monitorAmount][rectangleAmount];
-				uint32_t borderColor[rectangleAmount];
-				uint32_t backgroundColor[rectangleAmount];
+				ARGB borderColor[rectangleAmount];
+				ARGB backgroundColor[rectangleAmount];
 				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 					x[currentMonitor] = _x[currentMonitor];
 					y[currentMonitor] = _y[currentMonitor];
@@ -464,7 +464,7 @@ static bool createSubwindows(void){
 	}
 	return value;
 }
-static bool createWindow(Window *const window, const Window parentWindow, const int x, const int y, unsigned int width, unsigned int height, const unsigned int border, uint32_t borderColor, uint32_t backgroundColor, const uint32_t globalBorderColor, const uint32_t globalBackgroundColor){
+static bool createWindow(Window *const window, const Window parentWindow, const int x, const int y, unsigned int width, unsigned int height, const unsigned int border, ARGB borderColor, ARGB backgroundColor, const ARGB globalBorderColor, const ARGB globalBackgroundColor){
 	bool value = 0;
 	if(width && height){
 		value = 1;

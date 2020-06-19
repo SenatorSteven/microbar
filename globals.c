@@ -33,7 +33,7 @@ const char *workplacePath;
 unsigned int workplacePathLength;
 unsigned int drawableCommandPathLength;
 const char *drawableCommandPath;
-uint8_t mode;
+Mode mode;
 Display *display;
 unsigned int monitorAmount;
 unsigned int whichMonitor;

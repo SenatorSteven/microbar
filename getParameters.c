@@ -27,49 +27,51 @@ SOFTWARE. */
 #include <stdio.h>
 #include "headers/defines.h"
 
-#define NoPositions /*-------*/ 0
-#define ConfigPosition /*----*/ (1 << 0)
-#define WorkplacePosition /*-*/ (1 << 1)
-#define HelpPosition /*------*/ (1 << 2)
-#define ExitPosition /*------*/ (1 << 3)
+#define NoParameters /*-------*/ 0
+#define ConfigParameter /*----*/ (1 << 0)
+#define WorkplaceParameter /*-*/ (1 << 1)
+#define HelpParameter /*------*/ (1 << 2)
+#define ExitParameter /*------*/ (1 << 3)
 
 extern const char *programName;
 extern const char *configPath;
 extern const char *workplacePath;
 
-static bool isArgument(const char *const argument, const char *const vector);
+typedef uint8_t ParameterList;
 
-bool getParameters(const unsigned int argumentCount, const char *const *const argumentVector){
+static bool isParameter(const char *const parameter, const char *const vector);
+
+bool getParameters(const unsigned int parameterCount, const char *const *const parameterVector){
 	bool value = 0;
-	programName = argumentVector[0];
-	if(argumentCount > 1){
+	programName = parameterVector[0];
+	if(parameterCount > 1){
 		workplacePath = NULL;
-		const char *currentArgumentVector;
-		uint8_t hasReadVariable = NoPositions;
+		const char *currentParameterVector;
+		ParameterList hasReadParameter = NoParameters;
 		DIR *dir;
 		FILE *file;
-		for(unsigned int currentArgument = 1; currentArgument < argumentCount; ++currentArgument){
-			currentArgumentVector = argumentVector[currentArgument];
-			if(!(hasReadVariable & ConfigPosition)){
-				if(isArgument("-c", currentArgumentVector) || isArgument("--config", currentArgumentVector)){
-					hasReadVariable |= ConfigPosition;
-					if(++currentArgument < argumentCount){
-						currentArgumentVector = argumentVector[currentArgument];
-						if(isArgument("-h", currentArgumentVector) || isArgument("--help", currentArgumentVector)){
+		for(unsigned int currentParameter = 1; currentParameter < parameterCount; ++currentParameter){
+			currentParameterVector = parameterVector[currentParameter];
+			if(!(hasReadParameter & ConfigParameter)){
+				if(isParameter("-c", currentParameterVector) || isParameter("--config", currentParameterVector)){
+					hasReadParameter |= ConfigParameter;
+					if(++currentParameter < parameterCount){
+						currentParameterVector = parameterVector[currentParameter];
+						if(isParameter("-h", currentParameterVector) || isParameter("--help", currentParameterVector)){
 							fprintf(stdout, "%s: usage: %s --config \"/path/to/file\"\n", programName, programName);
 							fprintf(stdout, "%sif the specified file doesn't exist, it will be created\n%sand it will contain the hardcoded default configuration\n", Tab, Tab);
-							hasReadVariable |= HelpPosition;
+							hasReadParameter |= HelpParameter;
 							break;
-						}else if(isArgument("-c", currentArgumentVector) || isArgument("--config", currentArgumentVector) || isArgument("-w", currentArgumentVector) || isArgument("--workplace", currentArgumentVector)){
+						}else if(isParameter("-c", currentParameterVector) || isParameter("--config", currentParameterVector) || isParameter("-w", currentParameterVector) || isParameter("--workplace", currentParameterVector)){
 							fprintf(stderr, "%s: no config value specified\n", programName);
-							hasReadVariable |= ExitPosition;
+							hasReadParameter |= ExitParameter;
 							break;
 						}else{
-							configPath = currentArgumentVector;
+							configPath = currentParameterVector;
 							if((dir = opendir(configPath))){
 								closedir(dir);
 								fprintf(stderr, "%s: \"%s\" config value is directory\n", programName, configPath);
-								hasReadVariable |= ExitPosition;
+								hasReadParameter |= ExitParameter;
 								break;
 							}else if((file = fopen(configPath, "r"))){
 								fclose(file);
@@ -80,74 +82,74 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 								continue;
 							}else{
 								fprintf(stderr, "%s: could not create config file\n", programName);
-								hasReadVariable |= ExitPosition;
+								hasReadParameter |= ExitParameter;
 								break;
 							}
 						}
 					}else{
 						fprintf(stderr, "%s: no config value specified\n", programName);
-						hasReadVariable |= ExitPosition;
+						hasReadParameter |= ExitParameter;
 						break;
 					}
 				}
 			}
-			if(!(hasReadVariable & WorkplacePosition)){
-				if(isArgument("-w", currentArgumentVector) || isArgument("--workplace", currentArgumentVector)){
-					hasReadVariable |= WorkplacePosition;
-					if(++currentArgument < argumentCount){
-						currentArgumentVector = argumentVector[currentArgument];
-						if(isArgument("-h", currentArgumentVector) || isArgument("--help", currentArgumentVector)){
+			if(!(hasReadParameter & WorkplaceParameter)){
+				if(isParameter("-w", currentParameterVector) || isParameter("--workplace", currentParameterVector)){
+					hasReadParameter |= WorkplaceParameter;
+					if(++currentParameter < parameterCount){
+						currentParameterVector = parameterVector[currentParameter];
+						if(isParameter("-h", currentParameterVector) || isParameter("--help", currentParameterVector)){
 							fprintf(stdout, "%s: usage: %s --workplace \"/path/to/directory/\"\n", programName, programName);
 							fprintf(stdout, "%sif the specified directory doesn't exist, it will not be created\n", Tab);
 							fprintf(stdout, "%sif not specified, workplace directory will be the directory of config\n", Tab);
-							hasReadVariable |= HelpPosition;
+							hasReadParameter |= HelpParameter;
 							break;
-						}else if(isArgument("-c", currentArgumentVector) || isArgument("--config", currentArgumentVector) || isArgument("-w", currentArgumentVector) || isArgument("--workplace", currentArgumentVector)){
+						}else if(isParameter("-c", currentParameterVector) || isParameter("--config", currentParameterVector) || isParameter("-w", currentParameterVector) || isParameter("--workplace", currentParameterVector)){
 							fprintf(stderr, "%s: no workplace value specified\n", programName);
-							hasReadVariable |= ExitPosition;
+							hasReadParameter |= ExitParameter;
 							break;
 						}else{
-							workplacePath = currentArgumentVector;
+							workplacePath = currentParameterVector;
 							if((dir = opendir(workplacePath))){
 								closedir(dir);
 								continue;
 							}else if((file = fopen(workplacePath, "r"))){
 								fclose(file);
 								fprintf(stderr, "%s: \"%s\" workplace value is file\n", programName, workplacePath);
-								hasReadVariable |= ExitPosition;
+								hasReadParameter |= ExitParameter;
 								break;
 							}else{
 								fprintf(stderr, "%s: \"%s\" workplace value is not valid\n", programName, workplacePath);
-								hasReadVariable |= ExitPosition;
+								hasReadParameter |= ExitParameter;
 								break;
 							}
 						}
 					}else{
 						fprintf(stderr, "%s: no workplace value specified\n", programName);
-						hasReadVariable |= ExitPosition;
+						hasReadParameter |= ExitParameter;
 						break;
 					}
 				}
 			}
-			if(isArgument("-h", currentArgumentVector) || isArgument("--help", currentArgumentVector)){
+			if(isParameter("-h", currentParameterVector) || isParameter("--help", currentParameterVector)){
 				fprintf(stdout, "%s: usage: %s [parameters] or %s [parameter] [--help]\n", programName, programName, programName);
 				fprintf(stdout, "%s[-h], [--help]     %sdisplay this message\n", Tab, Tab);
 				fprintf(stdout, "%s[-c], [--config]   %sspecify path to config, necessary\n", Tab, Tab);
 				fprintf(stdout, "%s[-w], [--workplace]%sspecify path to directory used for temporary files, optional\n", Tab, Tab);
-				hasReadVariable |= HelpPosition;
+				hasReadParameter |= HelpParameter;
 				break;
-			}else if(isArgument("-c", currentArgumentVector) || isArgument("--config", currentArgumentVector)){
+			}else if(isParameter("-c", currentParameterVector) || isParameter("--config", currentParameterVector)){
 				fprintf(stderr, "%s: the config parameter has already been specified\n", programName);
-			}else if(isArgument("-w", currentArgumentVector) || isArgument("--workplace", currentArgumentVector)){
+			}else if(isParameter("-w", currentParameterVector) || isParameter("--workplace", currentParameterVector)){
 				fprintf(stderr, "%s: the workplace parameter has already been specified\n", programName);
 			}
-			fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", programName, currentArgumentVector);
-			hasReadVariable |= ExitPosition;
+			fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", programName, currentParameterVector);
+			hasReadParameter |= ExitParameter;
 			break;
 		}
-		if(!(hasReadVariable & HelpPosition)){
-			if(hasReadVariable & ConfigPosition){
-				if(!(hasReadVariable & ExitPosition)){
+		if(!(hasReadParameter & HelpParameter)){
+			if(hasReadParameter & ConfigParameter){
+				if(!(hasReadParameter & ExitParameter)){
 					value = 1;
 				}
 			}else{
@@ -159,19 +161,29 @@ bool getParameters(const unsigned int argumentCount, const char *const *const ar
 	}
 	return value;
 }
-static bool isArgument(const char *const argument, const char *const vector){
+static bool isParameter(const char *const parameter, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
-	char a = argument[element];
-	char v = vector[element];
-	while(a || v){
-		if((v >= 'A' && v <= 'Z' && v != a && v != a + 32) || (v >= 'a' && v <= 'z' && v != a && v != a - 32) || v != a){
+	char v = *vector;
+	char p = *parameter;
+	while(v || p){
+		if(v >= 'A' && v <= 'Z'){
+			if(v != p && v != p - 32){
+				element = 0;
+				break;
+			}
+		}else if(v >= 'a' && v <= 'z'){
+			if(v != p && v != p + 32){
+				element = 0;
+				break;
+			}
+		}else if(v != p){
 			element = 0;
 			break;
 		}
 		++element;
-		a = argument[element];
 		v = vector[element];
+		p = parameter[element];
 	}
 	if(element){
 		value = 1;
