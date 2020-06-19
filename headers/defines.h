@@ -26,19 +26,40 @@ SOFTWARE. */
 #define DEFINES_H
 
 /* # /user-defined constants start # # # */
-#define Tab /*--------------------*/ "    "
-#define DefaultCharactersCount /*-*/ 255
-#define DefaultLinesCount /*------*/ 150
+#define Tab /*------------------------------*/ "    "
+#define DefaultCharactersCount /*-----------*/ 255
+#define DefaultLinesCount /*----------------*/ 150
 /* # /user-defined constants end # # # # */
 
-#define ContinueMode /*-----------*/ 0
-#define RestartMode /*------------*/ 1
-#define ExitMode /*---------------*/ 2
+#define ContinueMode /*---------------------*/ 0
+#define RestartMode /*----------------------*/ 1
+#define ExitMode /*-------------------------*/ 2
+
+#define ScanConfigMode /*-------------------*/ 1
+#define TopLevelWindowConfigMode /*---------*/ 2
+#define SectionRectangleAmountConfigMode /*-*/ 3
+#define GlobalColorsConfigMode /*-----------*/ 4
+#define SectionWindowsConfigMode /*---------*/ 5
+#define SectionChildrenConfigMode /*--------*/ 6
+#define ContainerWindowsConfigMode /*-------*/ 7
+#define ContainerChildrenConfigMode /*------*/ 8
+#define RectangleWindowsConfigMode /*-------*/ 9
+#define ArrayLengthsConfigMode /*-----------*/ 10
+#define FillArraysConfigMode /*-------------*/ 11
+#define VariableShortcutsConfigMode /*------*/ 12
+#define ShortcutsConfigMode /*--------------*/ 13
+#define ButtonsConfigMode /*----------------*/ 14
+#define FontAmountConfigMode /*-------------*/ 15
+#define FontLengthConfigMode /*-------------*/ 16
+#define FontSetConfigMode /*----------------*/ 17
+#define FontOffsetsConfigMode /*------------*/ 18
 
 typedef uint8_t bool;
+typedef uint8_t Mode;
+typedef uint32_t ARGB;
 
 typedef struct{
-	unsigned int keycode;
+	uint16_t keycode;
 	uint16_t masks;
 } Shortcut;
 
