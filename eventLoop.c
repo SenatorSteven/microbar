@@ -61,7 +61,22 @@ void eventLoop(void){
 	unsigned int textMaxLength;
 	unsigned int commandMaxLength;
 	unsigned int drawableCommandMaxLength;
-	readConfigArrayLengths(&textMaxLength, &commandMaxLength, &drawableCommandMaxLength);
+	{
+		unsigned int *_uintArray[1][3] = {{&textMaxLength, &commandMaxLength, &drawableCommandMaxLength}};
+		unsigned int **uintArray[1] = {*_uintArray};
+		ConfigInfo configInfo = {
+			.integer = NULL,
+			.unsignedInteger = uintArray,
+			.unsignedIntegerDimension0 = 1,
+			.unsignedIntegerDimension1 = 3,
+			.unsignedIntegerDimension2 = 1,
+			.argb = NULL,
+			.character = NULL
+		};
+		if(!readConfig(ArrayLengthsConfigMode, &configInfo)){
+			fprintf(stderr, "%s: could not read array lengths\n", programName);
+		}
+	}
 	char _text[containerAmount][textMaxLength + 1];
 	char _command[containerAmount][commandMaxLength + 1];
 	char _drawableCommand[containerAmount][drawableCommandMaxLength + 1];
@@ -75,7 +90,32 @@ void eventLoop(void){
 		command[currentContainer] = _command[currentContainer];
 		drawableCommand[currentContainer] = _drawableCommand[currentContainer];
 	}
-	readConfigFillArrays(text, textColor, command, drawableCommand, drawableCommandColor);
+	{
+		ARGB *_argbArray[1][2] = {{textColor, drawableCommandColor}};
+		ARGB **argbArray[1] = {*_argbArray};
+		char *_charArray[3][containerAmount];
+		char **charArray[3] = {_charArray[0], _charArray[1], _charArray[2]};
+		for(unsigned int currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+			charArray[0][currentContainer] = text[currentContainer];
+			charArray[1][currentContainer] = command[currentContainer];
+			charArray[2][currentContainer] = drawableCommand[currentContainer];
+		}
+		ConfigInfo configInfo = {
+			.integer = NULL,
+			.unsignedInteger = NULL,
+			.argb = argbArray,
+			.argbDimension0 = 1,
+			.argbDimension1 = 2,
+			.argbDimension2 = containerAmount,
+			.character = charArray,
+			.characterDimension0 = 3,
+			.characterDimension1 = containerAmount,
+			.characterDimension2 = 1
+		};
+		if(!readConfig(FillArraysConfigMode, &configInfo)){
+			fprintf(stderr, "%s: could not fill arrays\n", programName);
+		}
+	}
 	char _systemCommand[containerAmount][drawableCommandMaxLength + drawableCommandPathLength + 2];
 	const char *systemCommand[containerAmount];
 	{
@@ -105,7 +145,22 @@ void eventLoop(void){
 	}
 	unsigned int sectionShortcutAmount;
 	unsigned int containerShortcutAmount;
-	readConfigVariableShortcuts(&sectionShortcutAmount, &containerShortcutAmount);
+	{
+		unsigned int *_uintArray[1][2] = {{&sectionShortcutAmount, &containerShortcutAmount}};
+		unsigned int **uintArray[1] = {*_uintArray};
+		ConfigInfo configInfo = {
+			.integer = NULL,
+			.unsignedInteger = uintArray,
+			.unsignedIntegerDimension0 = 1,
+			.unsignedIntegerDimension1 = 2,
+			.unsignedIntegerDimension2 = 1,
+			.argb = NULL,
+			.character = NULL
+		};
+		if(!readConfig(VariableShortcutsConfigMode, &configInfo)){
+			fprintf(stderr, "%s: could not read variable shortcuts\n", programName);
+		}
+	}
 	Shortcut interactAll;
 	Shortcut interactSection[sectionShortcutAmount];
 	unsigned int sectionNumber[sectionShortcutAmount];
@@ -141,8 +196,21 @@ void eventLoop(void){
 		int textOffsetY[containerAmount];
 		int drawableCommandOffsetX[containerAmount];
 		int drawableCommandOffsetY[containerAmount];
-		if(!readConfigFontOffsets(textOffsetX, textOffsetY, drawableCommandOffsetX, drawableCommandOffsetY)){
-			fprintf(stderr, "%s: could not read font offsets\n", programName);
+		{
+			int *_intArray[1][4] = {{textOffsetX, textOffsetY, drawableCommandOffsetX, drawableCommandOffsetY}};
+			int **intArray[1] = {*_intArray};
+			ConfigInfo configInfo = {
+				.integer = intArray,
+				.integerDimension0 = 1,
+				.integerDimension1 = 4,
+				.integerDimension2 = containerAmount,
+				.unsignedInteger = NULL,
+				.argb = NULL,
+				.character = NULL
+			};
+			if(!readConfig(FontOffsetsConfigMode, &configInfo)){
+				fprintf(stderr, "%s: could not read font offsets\n", programName);
+			}
 		}
 		const GC gc = createGC();
 		unsigned int currentShortcut;
@@ -151,10 +219,38 @@ void eventLoop(void){
 		unsigned int endingPoint;
 		{
 			unsigned int rectangleAmount;
-			readConfigSectionRectangleAmount(&currentSection, &rectangleAmount);
+			unsigned int *_uintArray[1][2] = {{&currentSection, &rectangleAmount}};
+			unsigned int **uintArray[1] = {*_uintArray};
+			ConfigInfo configInfo = {
+				.integer = NULL,
+				.unsignedInteger = uintArray,
+				.unsignedIntegerDimension0 = 1,
+				.unsignedIntegerDimension1 = 2,
+				.unsignedIntegerDimension2 = 1,
+				.argb = NULL,
+				.character = NULL
+			};
+			if(!readConfig(SectionRectangleAmountConfigMode, &configInfo)){
+				fprintf(stderr, "%s: could not read section rectangle amount\n", programName);
+			}
 		}
 		unsigned int sectionChildrenAmount[currentSection];
-		readConfigSectionChildren(currentSection, sectionChildrenAmount);
+		{
+			unsigned int *_uintArray[1][1] = {{sectionChildrenAmount}};
+			unsigned int **uintArray[1] = {*_uintArray};
+			ConfigInfo configInfo = {
+				.integer = NULL,
+				.unsignedInteger = uintArray,
+				.unsignedIntegerDimension0 = 1,
+				.unsignedIntegerDimension1 = 1,
+				.unsignedIntegerDimension2 = currentSection,
+				.argb = NULL,
+				.character = NULL
+			};
+			if(!readConfig(SectionChildrenConfigMode, &configInfo)){
+				fprintf(stderr, "%s: could not read section children amount\n", programName);
+			}
+		}
 		int rrEventBase = 0;
 		{
 			int rrErrorBase;
@@ -308,7 +404,7 @@ static void grabKeys(const unsigned int sectionShortcutAmount, const unsigned in
 	return;
 }
 static void grabButtons(void){
-	if(readConfigButtons()){
+	if(readConfig(ButtonsConfigMode, NULL)){
 		XSync(display, False);
 	}else{
 		fprintf(stderr, "%s: could not read buttons\n", programName);
@@ -318,38 +414,63 @@ static void grabButtons(void){
 static XFontSet createFontSet(void){
 	XFontSet fontSet = NULL;
 	unsigned int fontAmount;
-	if(readConfigFontAmount(&fontAmount)){
+	ConfigInfo configInfo = {
+		.integer = NULL,
+		.argb = NULL,
+		.character = NULL
+	};
+	{
+		unsigned int *_uintArray[1][1] = {{&fontAmount}};
+		unsigned int **uintArray[1] = {*_uintArray};
+		configInfo.unsignedInteger = uintArray;
+		configInfo.unsignedIntegerDimension0 = 1;
+		configInfo.unsignedIntegerDimension1 = 1;
+		configInfo.unsignedIntegerDimension2 = 1;
+		if(!readConfig(FontAmountConfigMode, &configInfo)){
+			fontAmount = 0;
+		}
+	}
+	if(fontAmount){
+		unsigned int userFontLength[fontAmount];
+		{
+			unsigned int *_uintArray[1][1] = {{userFontLength}};
+			unsigned int **uintArray[1] = {*_uintArray};
+			configInfo.unsignedInteger = uintArray;
+			configInfo.unsignedIntegerDimension2 = fontAmount;
+			if(!readConfig(FontLengthConfigMode, &configInfo)){
+				fontAmount = 0;
+			}
+		}
 		if(fontAmount){
-			unsigned int userFontLength[fontAmount];
-			if(readConfigFontLength(fontAmount, userFontLength)){
-				unsigned int setLength = fontAmount;
-				setLength -= 1;
-				unsigned int currentFont;
-				for(currentFont = 0; currentFont < fontAmount; ++currentFont){
-					setLength += userFontLength[currentFont];
+			unsigned int setLength = fontAmount;
+			--setLength;
+			unsigned int currentFont;
+			for(currentFont = 0; currentFont < fontAmount; ++currentFont){
+				setLength += userFontLength[currentFont];
+			}
+			char set[setLength + 1];
+			{
+				char *_charArray[1][1] = {{set}};
+				char **charArray[1] = {*_charArray};
+				configInfo.unsignedInteger = NULL;
+				configInfo.character = charArray;
+				configInfo.characterDimension0 = 1;
+				configInfo.characterDimension1 = 1;
+				configInfo.characterDimension2 = 1;
+				if(!readConfig(FontSetConfigMode, &configInfo)){
+					fontAmount = 0;
 				}
-				char set[setLength + 1];
-				{
-					unsigned int element = 0;
-					for(currentFont = 0; currentFont < fontAmount; ++currentFont){
-						if(readConfigFillFontArray(currentFont, &set[element])){
-							element += userFontLength[currentFont];
-							if(currentFont < fontAmount - 1){
-								set[element] = ',';
-								++element;
-							}
-						}
-					}
-					set[element] = '\0';
-				}
+			}
+			if(fontAmount){
 				char **missingFont;
 				unsigned int missingAmount;
-				fontSet = XCreateFontSet(display, set, &missingFont, (int *)&missingAmount, NULL);
-				for(currentFont = 0; currentFont < missingAmount; ++currentFont){
-					fprintf(stderr, "%s: missing font: %s\n", programName, missingFont[currentFont]);
-				}
-				if(missingFont){
-					XFreeStringList(missingFont);
+				if((fontSet = XCreateFontSet(display, set, &missingFont, (int *)&missingAmount, NULL))){
+					for(currentFont = 0; currentFont < missingAmount; ++currentFont){
+						fprintf(stderr, "%s: missing font: %s\n", programName, missingFont[currentFont]);
+					}
+					if(missingFont){
+						XFreeStringList(missingFont);
+					}
 				}
 			}
 		}
@@ -439,16 +560,26 @@ static void drawCommand(const char *const systemCommand, const Window container,
 static bool isCommand(const char *const command, const char *const vector){
 	bool value = 0;
 	unsigned int element = 0;
-	char c = *command;
 	char v = *vector;
-	while(c || v){
-		if((v >= 'A' && v <= 'Z' && v != c && v != c + 32) || (v >= 'a' && v <= 'z' && v != c && v != c - 32) || v != c){
+	char c = *command;
+	while(v || c){
+		if(v >= 'A' && v <= 'Z'){
+			if(v != c && v != c - 32){
+				element = 0;
+				break;
+			}
+		}else if(v >= 'a' && v <= 'z'){
+			if(v != c && v != c + 32){
+				element = 0;
+				break;
+			}
+		}else if(v != c){
 			element = 0;
 			break;
 		}
 		++element;
-		c = command[element];
 		v = vector[element];
+		c = command[element];
 	}
 	if(element){
 		value = 1;
@@ -475,15 +606,17 @@ static void onExpose(const char *const *const text, const XFontSet fontSet, cons
 	if(containerAmount && fontSet && gc){
 		unsigned int currentContainer;
 		unsigned int length;
+		const char *currentText;
 		XRectangle overallSize;
 		XWindowAttributes windowAttributes;
 		int x;
 		int y;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-				if(text[currentContainer]){
+				currentText = text[currentContainer];
+				if(currentText){
 					length = 0;
-					while(text[currentContainer][length]){
+					while(currentText[length]){
 						++length;
 					}
 					XmbTextExtents(fontSet, line, length, NULL, &overallSize);
@@ -500,7 +633,7 @@ static void onExpose(const char *const *const text, const XFontSet fontSet, cons
 					y += textOffsetY[currentContainer];
 					XSetForeground(display, gc, textColor[currentContainer]);
 					XClearWindow(display, container[currentMonitor][currentContainer]);
-					XmbDrawString(display, container[currentMonitor][currentContainer], fontSet, gc, x, y, text[currentContainer], length);
+					XmbDrawString(display, container[currentMonitor][currentContainer], fontSet, gc, x, y, currentText, length);
 				}
 			}
 		}

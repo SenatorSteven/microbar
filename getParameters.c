@@ -25,6 +25,7 @@ SOFTWARE. */
 #include <dirent.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <X11/Xlib.h>
 #include "headers/defines.h"
 
 #define NoParameters /*-------*/ 0

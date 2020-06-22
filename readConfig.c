@@ -97,15 +97,80 @@ static Shortcut getShortcut(unsigned int *const element);
 static Button getButton(unsigned int *const element);
 static void printLineError(const unsigned int currentLine);
 
-bool readConfigScan(void){
+bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 	bool value = 0;
-	whichMonitor = monitorAmount;
-	containerAmount = 0;
+	ConfigInfo ci;
+	if(configInfo){
+		ci = *configInfo;
+	}
+	if(configMode == ScanConfigMode){
+		whichMonitor = monitorAmount;
+		containerAmount = 0;
+	}else if(configMode != ButtonsConfigMode){
+		unsigned int currentDimension0;
+		unsigned int currentDimension1;
+		unsigned int currentDimension2;
+		if(ci.integer){
+			int **dimension0;
+			int *dimension1;
+			for(currentDimension0 = 0; currentDimension0 < ci.integerDimension0; ++currentDimension0){
+				dimension0 = ci.integer[currentDimension0];
+				for(currentDimension1 = 0; currentDimension1 < ci.integerDimension1; ++currentDimension1){
+					dimension1 = dimension0[currentDimension1];
+					for(currentDimension2 = 0; currentDimension2 < ci.integerDimension2; ++currentDimension2){
+						dimension1[currentDimension2] = 0;
+					}
+				}
+			}
+		}
+		if(ci.unsignedInteger){
+			unsigned int **dimension0;
+			unsigned int *dimension1;
+			for(currentDimension0 = 0; currentDimension0 < ci.unsignedIntegerDimension0; ++currentDimension0){
+				dimension0 = ci.unsignedInteger[currentDimension0];
+				for(currentDimension1 = 0; currentDimension1 < ci.unsignedIntegerDimension1; ++currentDimension1){
+					dimension1 = dimension0[currentDimension1];
+					for(currentDimension2 = 0; currentDimension2 < ci.unsignedIntegerDimension2; ++currentDimension2){
+						dimension1[currentDimension2] = 0;
+					}
+				}
+			}
+		}
+		if(ci.argb){
+			ARGB **dimension0;
+			ARGB *dimension1;
+			for(currentDimension0 = 0; currentDimension0 < ci.argbDimension0; ++currentDimension0){
+				dimension0 = ci.argb[currentDimension0];
+				for(currentDimension1 = 0; currentDimension1 < ci.argbDimension1; ++currentDimension1){
+					dimension1 = dimension0[currentDimension1];
+					for(currentDimension2 = 0; currentDimension2 < ci.argbDimension2; ++currentDimension2){
+						dimension1[currentDimension2] = 0x00000000;
+					}
+				}
+			}
+		}
+		if(ci.character){
+			char **dimension0;
+			char *dimension1;
+			for(currentDimension0 = 0; currentDimension0 < ci.characterDimension0; ++currentDimension0){
+				dimension0 = ci.character[currentDimension0];
+				for(currentDimension1 = 0; currentDimension1 < ci.characterDimension1; ++currentDimension1){
+					dimension1 = dimension0[currentDimension1];
+					for(currentDimension2 = 0; currentDimension2 < ci.characterDimension2; ++currentDimension2){
+						dimension1[currentDimension2] = '\0';
+					}
+				}
+			}
+		}
+	}
 	FILE *const file = getConfigFile();
 	if(file){
 		unsigned int maxLinesCount = DefaultLinesCount;
 		unsigned int element;
 		VariableList hasReadVariable = NoVariables;
+		unsigned int counter0 = 0;
+		unsigned int counter1 = 0;
+		unsigned int e;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine(file)){
 				break;
@@ -125,127 +190,1021 @@ bool readConfigScan(void){
 							continue;
 						}
 					}
-					if(!(hasReadVariable & MonitorVariable)){
-						if(isVariable("monitor", &element)){
+					if(configMode == ScanConfigMode){
+						if(!(hasReadVariable & MonitorVariable)){
+							if(isVariable("monitor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									if(!isVariable("all", &element)){
+										whichMonitor = getUnsignedInteger(currentLine, None, &element);
+										if(whichMonitor < monitorAmount){
+											monitorAmount = 1;
+										}else{
+											whichMonitor = monitorAmount;
+										}
+									}
+									hasReadVariable |= MonitorVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == FontAmountConfigMode){
+						if(isVariable("font", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								++ci.unsignedInteger[0][0][0];
+							}
+							continue;
+						}
+					}else if(configMode == FontLengthConfigMode){
+						if(isVariable("font", &element)){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								if(!isVariable("all", &element)){
-									whichMonitor = getUnsignedInteger(currentLine, None, &element);
-									if(whichMonitor < monitorAmount){
-										monitorAmount = 1;
-									}else{
-										whichMonitor = monitorAmount;
+								ci.unsignedInteger[0][0][counter0] = getQuotedStringLength(&element);
+								++counter0;
+							}
+							continue;
+						}
+					}else if(configMode == VariableShortcutsConfigMode){
+						if(isVariable("keycode", &element)){
+							pushWhitespace(&element);
+							getShortcut(&element);
+							if(isVariable("interact", &element)){
+								pushWhitespace(&element);
+								if(isVariable("section", &element)){
+									++ci.unsignedInteger[0][0][0];
+								}else if(isVariable("container", &element)){
+									++ci.unsignedInteger[0][1][0];
+								}
+							}
+							continue;
+						}
+					}else if(configMode == FontSetConfigMode){
+						if(isVariable("font", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								pushWhitespace(&element);
+								if(counter1){
+									ci.character[0][0][counter0] = ',';
+									++counter0;
+								}
+								counter0 += getQuotedString(&ci.character[0][0][counter0], &element);
+								ci.character[0][0][counter0] = '\0';
+								++counter1;
+							}
+							continue;
+						}
+					}else if(configMode == TopLevelWindowsConfigMode){
+						if(!(hasReadVariable & XVariable)){
+							if(isVariable("x", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[0][0][currentMonitor] = getInteger(ci.window[0][0], &element);
+										element = e;
+									}
+									hasReadVariable |= XVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & YVariable)){
+							if(isVariable("y", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[0][1][currentMonitor] = getInteger(ci.window[0][0], &element);
+										element = e;
+									}
+									hasReadVariable |= YVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & WidthVariable)){
+							if(isVariable("width", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[0][0][currentMonitor] = getInteger(ci.window[0][0], &element);
+										element = e;
+									}
+									hasReadVariable |= WidthVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & HeightVariable)){
+							if(isVariable("height", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[0][1][currentMonitor] = getInteger(ci.window[0][0], &element);
+										element = e;
+									}
+									hasReadVariable |= HeightVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderColorVariable)){
+							if(isVariable("borderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][0][0] = getARGB(&element);
+									hasReadVariable |= BorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderVariable)){
+							if(isVariable("border", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[0][2][currentMonitor] = getInteger(ci.window[0][0], &element);
+										element = e;
+									}
+									hasReadVariable |= BorderVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BackgroundColorVariable)){
+							if(isVariable("backgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][1][0] = getARGB(&element);
+									hasReadVariable |= BackgroundColorVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == SectionWindowsConfigMode){
+						if(!(hasReadVariable & GlobalSectionBorderColorVariable)){
+							if(isVariable("globalSectionBorderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalSectionBorderColor = getARGB(&element);
+									for(unsigned int currentSection = counter0; currentSection < ci.argbDimension2; ++currentSection){
+										ci.argb[0][0][currentSection] = globalSectionBorderColor;
+									}
+									hasReadVariable |= GlobalSectionBorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & GlobalSectionBackgroundColorVariable)){
+							if(isVariable("globalSectionBackgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalSectionBackgroundColor = getARGB(&element);
+									for(unsigned int currentSection = counter0; currentSection < ci.argbDimension2; ++currentSection){
+										ci.argb[0][1][currentSection] = globalSectionBackgroundColor;
+									}
+									hasReadVariable |= GlobalSectionBackgroundColorVariable;
+								}
+								continue;
+							}
+						}
+					}
+					if(isVariable("section", &element)){
+						pushWhitespace(&element);
+						if(isVariable("{", &element)){
+							if(configMode == SectionRectangleAmountConfigMode){
+								++ci.unsignedInteger[0][0][0];
+							}
+							hasReadVariable |= SectionVariable;
+						}
+						continue;
+					}
+					if(configMode == ScanConfigMode){
+						if(line[element]){
+							if(!isVariable("x",                            &element) &&
+							   !isVariable("y",                            &element) &&
+							   !isVariable("width",                        &element) &&
+							   !isVariable("height",                       &element) &&
+							   !isVariable("border",                       &element) &&
+							   !isVariable("borderColor",                  &element) &&
+							   !isVariable("backgroundColor",              &element) &&
+							   !isVariable("globalSectionBorderColor",     &element) &&
+							   !isVariable("globalSectionBackgroundColor", &element) &&
+							   !isVariable("font",                         &element) &&
+							   !isVariable("keycode",                      &element)){
+								printLineError(currentLine);
+								continue;
+							}
+						}
+					}
+				}else if(!(hasReadVariable & ContainerVariable)){
+					if(configMode == FillArraysConfigMode){
+						if(!(hasReadVariable & GlobalTextColorVariable)){
+							if(isVariable("globalTextColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalTextColor = getARGB(&element);
+									for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
+										ci.argb[0][0][currentContainer] = globalTextColor;
+									}
+									hasReadVariable |= GlobalTextColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & GlobalDrawableCommandColorVariable)){
+							if(isVariable("globalDrawableCommandColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalDrawableCommandColor = getARGB(&element);
+									for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
+										ci.argb[0][1][currentContainer] = globalDrawableCommandColor;
+									}
+									hasReadVariable |= GlobalDrawableCommandColorVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == SectionWindowsConfigMode){
+						if(!(hasReadVariable & XVariable)){
+							if(isVariable("x", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[0][currentMonitor][counter0] = getInteger(ci.window[0][currentMonitor], &element);
+										element = e;
+									}
+									hasReadVariable |= XVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & YVariable)){
+							if(isVariable("y", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[1][currentMonitor][counter0] = getInteger(ci.window[0][currentMonitor], &element);
+										element = e;
+									}
+									hasReadVariable |= YVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & WidthVariable)){
+							if(isVariable("width", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[0][currentMonitor][counter0] = getUnsignedInteger(currentLine, ci.window[0][currentMonitor], &element);
+										element = e;
+									}
+									hasReadVariable |= WidthVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & HeightVariable)){
+							if(isVariable("height", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[1][currentMonitor][counter0] = getUnsignedInteger(currentLine, ci.window[0][currentMonitor], &element);
+										element = e;
+									}
+									hasReadVariable |= HeightVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderColorVariable)){
+							if(isVariable("borderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][0][counter0] = getARGB(&element);
+									hasReadVariable |= BorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderVariable)){
+							if(isVariable("border", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[2][currentMonitor][counter0] = getUnsignedInteger(currentLine, ci.window[0][currentMonitor], &element);
+										element = e;
+									}
+									hasReadVariable |= BorderVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BackgroundColorVariable)){
+							if(isVariable("backgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][1][counter0] = getARGB(&element);
+									hasReadVariable |= BackgroundColorVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == ContainerWindowsConfigMode){
+						if(!(hasReadVariable & GlobalContainerBorderColorVariable)){
+							if(isVariable("globalContainerBorderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalContainerBorderColor = getARGB(&element);
+									for(unsigned int currentContainer = counter1; currentContainer < containerAmount; ++currentContainer){
+										ci.argb[0][0][currentContainer] = globalContainerBorderColor;
+									}
+									hasReadVariable |= GlobalContainerBorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & GlobalContainerBackgroundColorVariable)){
+							if(isVariable("globalContainerBackgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalContainerBackgroundColor = getARGB(&element);
+									for(unsigned int currentContainer = counter1; currentContainer < containerAmount; ++currentContainer){
+										ci.argb[0][1][currentContainer] = globalContainerBackgroundColor;
+									}
+									hasReadVariable |= GlobalContainerBackgroundColorVariable;
+								}
+								continue;
+							}
+						}
+					}
+					if(isVariable("container", &element)){
+						pushWhitespace(&element);
+						if(isVariable("{", &element)){
+							if(configMode == ScanConfigMode){
+								++containerAmount;
+							}else if(configMode == SectionChildrenConfigMode){
+								++ci.unsignedInteger[0][0][counter0];
+							}
+							hasReadVariable |= ContainerVariable;
+						}
+						continue;
+					}
+					if(isVariable("}", &element)){
+						if(configMode == SectionChildrenConfigMode){
+							++counter0;
+						}else if(configMode == FillArraysConfigMode){
+							if(hasReadVariable & GlobalTextColorVariable){
+								hasReadVariable ^= GlobalTextColorVariable;
+							}
+							if(hasReadVariable & GlobalDrawableCommandColorVariable){
+								hasReadVariable ^= GlobalDrawableCommandColorVariable;
+							}
+							for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
+								ci.argb[0][0][currentContainer] = 0x00000000;
+								ci.argb[0][1][currentContainer] = 0x00000000;
+							}
+						}else if(configMode == ContainerWindowsConfigMode){
+							++counter0;
+							if(hasReadVariable & GlobalContainerBorderColorVariable){
+								hasReadVariable ^= GlobalContainerBorderColorVariable;
+							}
+							if(hasReadVariable & GlobalContainerBackgroundColorVariable){
+								hasReadVariable ^= GlobalContainerBackgroundColorVariable;
+							}
+							for(unsigned int currentContainer = counter1; currentContainer < containerAmount; ++currentContainer){
+								ci.argb[0][0][currentContainer] = 0x00000000;
+								ci.argb[0][1][currentContainer] = 0x00000000;
+							}
+						}else if(configMode == SectionWindowsConfigMode){
+							if(hasReadVariable & XVariable){
+								hasReadVariable ^= XVariable;
+							}
+							if(hasReadVariable & YVariable){
+								hasReadVariable ^= YVariable;
+							}
+							if(hasReadVariable & WidthVariable){
+								hasReadVariable ^= WidthVariable;
+							}
+							if(hasReadVariable & HeightVariable){
+								hasReadVariable ^= HeightVariable;
+							}
+							if(hasReadVariable & BorderVariable){
+								hasReadVariable ^= BorderVariable;
+							}
+							if(hasReadVariable & BorderColorVariable){
+								hasReadVariable ^= BorderColorVariable;
+							}
+							if(hasReadVariable & BackgroundColorVariable){
+								hasReadVariable ^= BackgroundColorVariable;
+							}
+							++counter0;
+						}
+						hasReadVariable ^= SectionVariable;
+						continue;
+					}
+					if(configMode == ScanConfigMode){
+						if(line[element]){
+							if(!isVariable("x",                              &element) &&
+							   !isVariable("y",                              &element) &&
+							   !isVariable("width",                          &element) &&
+							   !isVariable("height",                         &element) &&
+							   !isVariable("border",                         &element) &&
+							   !isVariable("borderColor",                    &element) &&
+							   !isVariable("backgroundColor",                &element) &&
+							   !isVariable("globalContainerBackgroundColor", &element) &&
+							   !isVariable("globalContainerBorderColor",     &element) &&
+							   !isVariable("globalTextColor",                &element) &&
+							   !isVariable("globalDrawableCommandColor",     &element)){
+								printLineError(currentLine);
+								continue;
+							}
+						}
+					}
+				}else if(!(hasReadVariable & RectangleVariable)){
+					if(configMode == ButtonsConfigMode){
+						if(!(hasReadVariable & ButtonVariable)){
+							if(isVariable("button", &element)){
+								pushWhitespace(&element);
+								const Button button = getButton(&element);
+								if(button.button != AnyButton){
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										XGrabButton(display, button.button, button.masks, container[currentMonitor][counter0], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
 									}
 								}
-								hasReadVariable |= MonitorVariable;
+								hasReadVariable |= ButtonVariable;
+								continue;
 							}
-							continue;
+						}
+					}else if(configMode == ArrayLengthsConfigMode){
+						if(!(hasReadVariable & TextVariable)){
+							if(isVariable("text", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									unsigned int length = getQuotedStringLength(&element);
+									if(length > ci.unsignedInteger[0][0][0]){
+										ci.unsignedInteger[0][0][0] = length;
+									}
+									hasReadVariable |= TextVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & CommandVariable)){
+							if(isVariable("command", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									unsigned int length = getQuotedStringLength(&element);
+									if(length > ci.unsignedInteger[0][1][0]){
+										ci.unsignedInteger[0][1][0] = length;
+									}
+									hasReadVariable |= CommandVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandVariable)){
+							if(isVariable("drawableCommand", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									unsigned int length = getQuotedStringLength(&element);
+									if(length > ci.unsignedInteger[0][2][0]){
+										ci.unsignedInteger[0][2][0] = length;
+									}
+									hasReadVariable |= DrawableCommandVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == FontOffsetsConfigMode){
+						if(!(hasReadVariable & TextOffsetXVariable)){
+							if(isVariable("textOffsetX", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][0][counter0] = getInteger(None, &element);
+									hasReadVariable |= TextOffsetXVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & TextOffsetYVariable)){
+							if(isVariable("textOffsetY", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][1][counter0] = getInteger(None, &element);
+									hasReadVariable |= TextOffsetYVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandOffsetXVariable)){
+							if(isVariable("drawableCommandOffsetX", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][2][counter0] = getInteger(None, &element);
+									hasReadVariable |= DrawableCommandOffsetXVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandOffsetYVariable)){
+							if(isVariable("drawableCommandOffsetY", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][3][counter0] = getInteger(None, &element);
+									hasReadVariable |= DrawableCommandOffsetYVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == FillArraysConfigMode){
+						if(!(hasReadVariable & TextVariable)){
+							if(isVariable("text", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.character[0][counter0][getQuotedString(ci.character[0][counter0], &element)] = '\0';
+									hasReadVariable |= TextVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & TextColorVariable)){
+							if(isVariable("textColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][0][counter0] = getARGB(&element);
+									hasReadVariable |= TextColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & CommandVariable)){
+							if(isVariable("command", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.character[1][counter0][getQuotedString(ci.character[1][counter0], &element)] = '\0';
+									hasReadVariable |= CommandVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandVariable)){
+							if(isVariable("drawableCommand", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.character[2][counter0][getQuotedString(ci.character[2][counter0], &element)] = '\0';
+									hasReadVariable |= DrawableCommandVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandColorVariable)){
+							if(isVariable("drawableCommandColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][1][counter0] = getARGB(&element);
+								}
+								continue;
+							}
+						}
+					}else if(configMode == ContainerWindowsConfigMode){
+						if(!(hasReadVariable & XVariable)){
+							if(isVariable("x", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= XVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & YVariable)){
+							if(isVariable("y", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= YVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & WidthVariable)){
+							if(isVariable("width", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= WidthVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & HeightVariable)){
+							if(isVariable("height", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= HeightVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderColorVariable)){
+							if(isVariable("borderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][0][counter1] = getARGB(&element);
+									hasReadVariable |= BorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderVariable)){
+							if(isVariable("border", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[2][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= BorderVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BackgroundColorVariable)){
+							if(isVariable("backgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][1][counter1] = getARGB(&element);
+									hasReadVariable |= BackgroundColorVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == RectangleWindowsConfigMode){
+						if(!(hasReadVariable & GlobalRectangleBorderColorVariable)){
+							if(isVariable("globalRectangleBorderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalRectangleBorderColor = getARGB(&element);
+									for(unsigned int currentRectangle = counter1; currentRectangle < ci.argbDimension2; ++currentRectangle){
+										ci.argb[0][0][currentRectangle] = globalRectangleBorderColor;
+									}
+									hasReadVariable |= GlobalRectangleBorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & GlobalRectangleBackgroundColorVariable)){
+							if(isVariable("globalRectangleBackgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalRectangleBackgroundColor = getARGB(&element);
+									for(unsigned int currentRectangle = counter1; currentRectangle < ci.argbDimension2; ++currentRectangle){
+										ci.argb[0][1][currentRectangle] = globalRectangleBackgroundColor;
+									}
+									hasReadVariable |= GlobalRectangleBackgroundColorVariable;
+								}
+								continue;
+							}
 						}
 					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-					if(line[element]){
-						if(!isVariable("x",                            &element) &&
-						   !isVariable("y",                            &element) &&
-						   !isVariable("width",                        &element) &&
-						   !isVariable("height",                       &element) &&
-						   !isVariable("border",                       &element) &&
-						   !isVariable("borderColor",                  &element) &&
-						   !isVariable("backgroundColor",              &element) &&
-						   !isVariable("globalSectionBorderColor",     &element) &&
-						   !isVariable("globalSectionBackgroundColor", &element) &&
-						   !isVariable("font",                         &element) &&
-						   !isVariable("keycode",                      &element)){
-							printLineError(currentLine);
-							continue;
-						}
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							++containerAmount;
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-					if(line[element]){
-						if(!isVariable("x",                              &element) &&
-						   !isVariable("y",                              &element) &&
-						   !isVariable("width",                          &element) &&
-						   !isVariable("height",                         &element) &&
-						   !isVariable("border",                         &element) &&
-						   !isVariable("borderColor",                    &element) &&
-						   !isVariable("backgroundColor",                &element) &&
-						   !isVariable("globalContainerBackgroundColor", &element) &&
-						   !isVariable("globalContainerBorderColor",     &element) &&
-						   !isVariable("globalTextColor",                &element) &&
-						   !isVariable("globalDrawableCommandColor",     &element)){
-							printLineError(currentLine);
-							continue;
-						}
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
 					if(isVariable("rectangle", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
+							if(configMode == ContainerChildrenConfigMode){
+								++ci.unsignedInteger[0][0][counter0];
+							}else if(configMode == SectionRectangleAmountConfigMode){
+								++ci.unsignedInteger[0][1][0];
+							}
 							hasReadVariable |= RectangleVariable;
 						}
 						continue;
 					}
 					if(isVariable("}", &element)){
+						if(configMode == ButtonsConfigMode){
+							if(hasReadVariable & ButtonVariable){
+								hasReadVariable ^= ButtonVariable;
+							}
+							++counter0;
+						}else if(configMode == ContainerChildrenConfigMode){
+							++counter0;
+						}else if(configMode == ArrayLengthsConfigMode){
+							if(hasReadVariable & TextVariable){
+								hasReadVariable ^= TextVariable;
+							}
+							if(hasReadVariable & CommandVariable){
+								hasReadVariable ^= CommandVariable;
+							}
+							if(hasReadVariable & DrawableCommandVariable){
+								hasReadVariable ^= DrawableCommandVariable;
+							}
+						}else if(configMode == FontOffsetsConfigMode){
+							if(hasReadVariable & TextOffsetXVariable){
+								hasReadVariable ^= TextOffsetXVariable;
+							}
+							if(hasReadVariable & TextOffsetYVariable){
+								hasReadVariable ^= TextOffsetYVariable;
+							}
+							if(hasReadVariable & DrawableCommandOffsetXVariable){
+								hasReadVariable ^= DrawableCommandOffsetXVariable;
+							}
+							if(hasReadVariable & DrawableCommandOffsetYVariable){
+								hasReadVariable ^= DrawableCommandOffsetYVariable;
+							}
+							++counter0;
+						}else if(configMode == FillArraysConfigMode){
+							if(hasReadVariable & TextVariable){
+								hasReadVariable ^= TextVariable;
+							}
+							if(hasReadVariable & TextColorVariable){
+								hasReadVariable ^= TextColorVariable;
+							}
+							if(hasReadVariable & CommandVariable){
+								hasReadVariable ^= CommandVariable;
+							}
+							if(hasReadVariable & DrawableCommandVariable){
+								hasReadVariable ^= DrawableCommandVariable;
+							}
+							if(hasReadVariable & DrawableCommandColorVariable){
+								hasReadVariable ^= DrawableCommandColorVariable;
+							}
+							++counter0;
+						}else if(configMode == RectangleWindowsConfigMode){
+							++counter0;
+							if(hasReadVariable & GlobalRectangleBorderColorVariable){
+								hasReadVariable ^= GlobalRectangleBorderColorVariable;
+							}
+							if(hasReadVariable & GlobalRectangleBackgroundColorVariable){
+								hasReadVariable ^= GlobalRectangleBackgroundColorVariable;
+							}
+							for(unsigned int currentRectangle = counter1; currentRectangle < ci.argbDimension2; ++currentRectangle){
+								ci.argb[0][0][currentRectangle] = 0x00000000;
+								ci.argb[0][1][currentRectangle] = 0x00000000;
+							}
+						}else if(configMode == ContainerWindowsConfigMode){
+							if(hasReadVariable & XVariable){
+								hasReadVariable ^= XVariable;
+							}
+							if(hasReadVariable & YVariable){
+								hasReadVariable ^= YVariable;
+							}
+							if(hasReadVariable & WidthVariable){
+								hasReadVariable ^= WidthVariable;
+							}
+							if(hasReadVariable & HeightVariable){
+								hasReadVariable ^= HeightVariable;
+							}
+							if(hasReadVariable & BorderVariable){
+								hasReadVariable ^= BorderVariable;
+							}
+							if(hasReadVariable & BorderColorVariable){
+								hasReadVariable ^= BorderColorVariable;
+							}
+							if(hasReadVariable & BackgroundColorVariable){
+								hasReadVariable ^= BackgroundColorVariable;
+							}
+							++counter1;
+						}
 						hasReadVariable ^= ContainerVariable;
 						continue;
 					}
-					if(line[element]){
-						if(!isVariable("x",                              &element) &&
-						   !isVariable("y",                              &element) &&
-						   !isVariable("width",                          &element) &&
-						   !isVariable("height",                         &element) &&
-						   !isVariable("border",                         &element) &&
-						   !isVariable("borderColor",                    &element) &&
-						   !isVariable("backgroundColor",                &element) &&
-						   !isVariable("globalRectangleBackgroundColor", &element) &&
-						   !isVariable("globalRectangleBorderColor",     &element) &&
-						   !isVariable("text",                           &element) &&
-						   !isVariable("textColor",                      &element) &&
-						   !isVariable("textOffsetXVariable",            &element) &&
-						   !isVariable("textOffsetYVariable",            &element) &&
-						   !isVariable("command",                        &element) &&
-						   !isVariable("drawableCommand",                &element) &&
-						   !isVariable("drawableCommandColor",           &element) &&
-						   !isVariable("drawableCommandOffsetXVariable", &element) &&
-						   !isVariable("drawableCommandOffsetYVariable", &element) &&
-						   !isVariable("button",                         &element)){
-							printLineError(currentLine);
-							continue;
+					if(configMode == ScanConfigMode){
+						if(line[element]){
+							if(!isVariable("x",                              &element) &&
+							   !isVariable("y",                              &element) &&
+							   !isVariable("width",                          &element) &&
+							   !isVariable("height",                         &element) &&
+							   !isVariable("border",                         &element) &&
+							   !isVariable("borderColor",                    &element) &&
+							   !isVariable("backgroundColor",                &element) &&
+							   !isVariable("globalRectangleBackgroundColor", &element) &&
+							   !isVariable("globalRectangleBorderColor",     &element) &&
+							   !isVariable("text",                           &element) &&
+							   !isVariable("textColor",                      &element) &&
+							   !isVariable("textOffsetXVariable",            &element) &&
+							   !isVariable("textOffsetYVariable",            &element) &&
+							   !isVariable("command",                        &element) &&
+							   !isVariable("drawableCommand",                &element) &&
+							   !isVariable("drawableCommandColor",           &element) &&
+							   !isVariable("drawableCommandOffsetXVariable", &element) &&
+							   !isVariable("drawableCommandOffsetYVariable", &element) &&
+							   !isVariable("button",                         &element)){
+								printLineError(currentLine);
+								continue;
+							}
 						}
 					}
 				}else{
+					if(configMode == RectangleWindowsConfigMode){
+						if(!(hasReadVariable & XVariable)){
+							if(isVariable("x", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= XVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & YVariable)){
+							if(isVariable("y", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.integer[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= YVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & WidthVariable)){
+							if(isVariable("width", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= WidthVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & HeightVariable)){
+							if(isVariable("height", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= HeightVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderColorVariable)){
+							if(isVariable("borderColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][0][counter1] = getARGB(&element);
+									hasReadVariable |= BorderColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BorderVariable)){
+							if(isVariable("border", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									e = element;
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										ci.unsignedInteger[2][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
+										element = e;
+									}
+									hasReadVariable |= BorderVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & BackgroundColorVariable)){
+							if(isVariable("backgroundColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][1][counter1] = getARGB(&element);
+									hasReadVariable |= BackgroundColorVariable;
+								}
+								continue;
+							}
+						}
+					}
 					if(isVariable("}", &element)){
+						if(configMode == RectangleWindowsConfigMode){
+							if(hasReadVariable & XVariable){
+								hasReadVariable ^= XVariable;
+							}
+							if(hasReadVariable & YVariable){
+								hasReadVariable ^= YVariable;
+							}
+							if(hasReadVariable & WidthVariable){
+								hasReadVariable ^= WidthVariable;
+							}
+							if(hasReadVariable & HeightVariable){
+								hasReadVariable ^= HeightVariable;
+							}
+							if(hasReadVariable & BorderVariable){
+								hasReadVariable ^= BorderVariable;
+							}
+							if(hasReadVariable & BorderColorVariable){
+								hasReadVariable ^= BorderColorVariable;
+							}
+							if(hasReadVariable & BackgroundColorVariable){
+								hasReadVariable ^= BackgroundColorVariable;
+							}
+							++counter1;
+						}
 						hasReadVariable ^= RectangleVariable;
 						continue;
 					}
-					if(line[element]){
-						if(!isVariable("x",               &element) &&
-						   !isVariable("y",               &element) &&
-						   !isVariable("width",           &element) &&
-						   !isVariable("height",          &element) &&
-						   !isVariable("border",          &element) &&
-						   !isVariable("borderColor",     &element) &&
-						   !isVariable("backgroundColor", &element)){
-							printLineError(currentLine);
-							continue;
+					if(configMode == ScanConfigMode){
+						if(line[element]){
+							if(!isVariable("x",               &element) &&
+							   !isVariable("y",               &element) &&
+							   !isVariable("width",           &element) &&
+							   !isVariable("height",          &element) &&
+							   !isVariable("border",          &element) &&
+							   !isVariable("borderColor",     &element) &&
+							   !isVariable("backgroundColor", &element)){
+								printLineError(currentLine);
+								continue;
+							}
 						}
 					}
 				}
@@ -254,1598 +1213,8 @@ bool readConfigScan(void){
 		fclose(file);
 		value = 1;
 	}
-	return value;
-}
-bool readConfigTopLevelWindow(const Window parentWindow, int *const x, int *const y, unsigned int *const width, unsigned int *const height, unsigned int *const border, ARGB *const borderColor, ARGB *const backgroundColor){
-	bool value = 0;
-	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		x[currentMonitor] = 0;
-		y[currentMonitor] = 0;
-		width[currentMonitor] = 0;
-		height[currentMonitor] = 0;
-		border[currentMonitor] = 0;
-		borderColor[currentMonitor] = 0x00000000;
-		backgroundColor[currentMonitor] = 0x00000000;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		unsigned int elementCopy;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & XVariable)){
-						if(isVariable("x", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									x[currentMonitor] = getInteger(parentWindow, &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= XVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & YVariable)){
-						if(isVariable("y", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									y[currentMonitor] = getInteger(parentWindow, &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= YVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & WidthVariable)){
-						if(isVariable("width", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									width[currentMonitor] = getUnsignedInteger(currentLine, parentWindow, &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= WidthVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & HeightVariable)){
-						if(isVariable("height", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									height[currentMonitor] = getUnsignedInteger(currentLine, parentWindow, &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= HeightVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderColorVariable)){
-						if(isVariable("borderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									borderColor[currentMonitor] = getARGB(&element);
-									element = elementCopy;
-								}
-								hasReadVariable |= BorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderVariable)){
-						if(isVariable("border", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									border[currentMonitor] = getUnsignedInteger(currentLine, parentWindow, &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= BorderVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BackgroundColorVariable)){
-						if(isVariable("backgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									backgroundColor[currentMonitor] = getARGB(&element);
-									element = elementCopy;
-								}
-								hasReadVariable |= BackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigSectionRectangleAmount(unsigned int *const sectionAmount, unsigned int *const rectangleAmount){
-	bool value = 0;
-	*sectionAmount = 0;
-	*rectangleAmount = 0;
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							++(*sectionAmount);
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							++(*rectangleAmount);
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigGlobalColors(const unsigned int sectionAmount, ARGB *const globalSectionBorderColor, ARGB *const globalSectionBackgroundColor, ARGB *const globalContainerBorderColor, ARGB *const globalContainerBackgroundColor, ARGB *const globalRectangleBorderColor, ARGB *const globalRectangleBackgroundColor){
-	bool value = 0;
-	*globalSectionBorderColor = 0x00000000;
-	*globalSectionBackgroundColor = 0x00000000;
-	unsigned int currentSection;
-	unsigned int currentContainer;
-	for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
-		globalContainerBorderColor[currentSection] = 0x00000000;
-		globalContainerBackgroundColor[currentSection] = 0x00000000;
-	}
-	for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-		globalRectangleBorderColor[currentContainer] = 0x00000000;
-		globalRectangleBackgroundColor[currentContainer] = 0x00000000;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentSection = 0;
-		currentContainer = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & GlobalSectionBorderColorVariable)){
-						if(isVariable("globalSectionBorderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								*globalSectionBorderColor = getARGB(&element);
-								hasReadVariable |= GlobalSectionBorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & GlobalSectionBackgroundColorVariable)){
-						if(isVariable("globalSectionBackgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								*globalSectionBackgroundColor = getARGB(&element);
-								hasReadVariable |= GlobalSectionBackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(!(hasReadVariable & GlobalContainerBorderColorVariable)){
-						if(isVariable("globalContainerBorderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								globalContainerBorderColor[currentSection] = getARGB(&element);
-								hasReadVariable |= GlobalContainerBorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & GlobalContainerBackgroundColorVariable)){
-						if(isVariable("globalContainerBackgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								globalContainerBackgroundColor[currentSection] = getARGB(&element);
-								hasReadVariable |= GlobalContainerBackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & GlobalContainerBorderColorVariable){
-							hasReadVariable ^= GlobalContainerBorderColorVariable;
-						}
-						if(hasReadVariable & GlobalContainerBackgroundColorVariable){
-							hasReadVariable ^= GlobalContainerBackgroundColorVariable;
-						}
-						++currentSection;
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(!(hasReadVariable & GlobalRectangleBorderColorVariable)){
-						if(isVariable("globalRectangleBorderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								globalRectangleBorderColor[currentContainer] = getARGB(&element);
-								hasReadVariable |= GlobalRectangleBorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & GlobalRectangleBackgroundColorVariable)){
-						if(isVariable("globalRectangleBackgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								globalRectangleBackgroundColor[currentContainer] = getARGB(&element);
-								hasReadVariable |= GlobalRectangleBackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & GlobalRectangleBorderColorVariable){
-							hasReadVariable ^= GlobalRectangleBorderColorVariable;
-						}
-						if(hasReadVariable & GlobalRectangleBackgroundColorVariable){
-							hasReadVariable ^= GlobalRectangleBackgroundColorVariable;
-						}
-						++currentContainer;
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigSectionWindows(const Window *const parentWindow, const unsigned int sectionAmount, int *const *const x, int *const *const y, unsigned int *const *const width, unsigned int *const *const height, unsigned int *const *const border, ARGB *const borderColor, ARGB *const backgroundColor){
-	bool value = 0;
-	unsigned int currentSection;
-	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
-			x[currentMonitor][currentSection] = 0;
-			y[currentMonitor][currentSection] = 0;
-			width[currentMonitor][currentSection] = 0;
-			height[currentMonitor][currentSection] = 0;
-			border[currentMonitor][currentSection] = 0;
-		}
-	}
-	for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
-		borderColor[currentSection] = 0x00000000;
-		backgroundColor[currentSection] = 0x00000000;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentSection = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		unsigned int elementCopy;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(!(hasReadVariable & XVariable)){
-						if(isVariable("x", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									x[currentMonitor][currentSection] = getInteger(parentWindow[currentMonitor], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= XVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & YVariable)){
-						if(isVariable("y", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									y[currentMonitor][currentSection] = getInteger(parentWindow[currentMonitor], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= YVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & WidthVariable)){
-						if(isVariable("width", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									width[currentMonitor][currentSection] = getUnsignedInteger(currentLine, parentWindow[currentMonitor], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= WidthVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & HeightVariable)){
-						if(isVariable("height", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									height[currentMonitor][currentSection] = getUnsignedInteger(currentLine, parentWindow[currentMonitor], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= HeightVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderColorVariable)){
-						if(isVariable("borderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								borderColor[currentSection] = getARGB(&element);
-								hasReadVariable |= BorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderVariable)){
-						if(isVariable("border", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									border[currentMonitor][currentSection] = getUnsignedInteger(currentLine, parentWindow[currentMonitor], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= BorderVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BackgroundColorVariable)){
-						if(isVariable("backgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								backgroundColor[currentSection] = getARGB(&element);
-								hasReadVariable |= BackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & XVariable){
-							hasReadVariable ^= XVariable;
-						}
-						if(hasReadVariable & YVariable){
-							hasReadVariable ^= YVariable;
-						}
-						if(hasReadVariable & WidthVariable){
-							hasReadVariable ^= WidthVariable;
-						}
-						if(hasReadVariable & HeightVariable){
-							hasReadVariable ^= HeightVariable;
-						}
-						if(hasReadVariable & BorderVariable){
-							hasReadVariable ^= BorderVariable;
-						}
-						if(hasReadVariable & BorderColorVariable){
-							hasReadVariable ^= BorderColorVariable;
-						}
-						if(hasReadVariable & BackgroundColorVariable){
-							hasReadVariable ^= BackgroundColorVariable;
-						}
-						++currentSection;
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigSectionChildren(const unsigned int sectionAmount, unsigned int *const sectionChildrenAmount){
-	bool value = 0;
-	unsigned int currentSection;
-	for(currentSection = 0; currentSection < sectionAmount; ++currentSection){
-		sectionChildrenAmount[currentSection] = 0;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentSection = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							++sectionChildrenAmount[currentSection];
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						++currentSection;
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigContainerWindows(Window *const *const parentWindow, int *const *const x, int *const *const y, unsigned int *const *const width, unsigned int *const *const height, unsigned int *const *const border, ARGB *const borderColor, ARGB *const backgroundColor){
-	bool value = 0;
-	unsigned int currentContainer;
-	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-			x[currentMonitor][currentContainer] = 0;
-			y[currentMonitor][currentContainer] = 0;
-			width[currentMonitor][currentContainer] = 0;
-			height[currentMonitor][currentContainer] = 0;
-			border[currentMonitor][currentContainer] = 0;
-		}
-	}
-	for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-		borderColor[currentContainer] = 0x00000000;
-		backgroundColor[currentContainer] = 0x00000000;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentContainer = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		unsigned int currentSection = 0;
-		unsigned int elementCopy;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						++currentSection;
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(!(hasReadVariable & XVariable)){
-						if(isVariable("x", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									x[currentMonitor][currentContainer] = getInteger(parentWindow[currentMonitor][currentSection], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= XVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & YVariable)){
-						if(isVariable("y", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									y[currentMonitor][currentContainer] = getInteger(parentWindow[currentMonitor][currentSection], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= YVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & WidthVariable)){
-						if(isVariable("width", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									width[currentMonitor][currentContainer] = getUnsignedInteger(currentLine, parentWindow[currentMonitor][currentSection], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= WidthVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & HeightVariable)){
-						if(isVariable("height", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									height[currentMonitor][currentContainer] = getUnsignedInteger(currentLine, parentWindow[currentMonitor][currentSection], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= HeightVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderColorVariable)){
-						if(isVariable("borderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								borderColor[currentContainer] = getARGB(&element);
-								hasReadVariable |= BorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderVariable)){
-						if(isVariable("border", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									border[currentMonitor][currentContainer] = getUnsignedInteger(currentLine, parentWindow[currentMonitor][currentSection], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= BorderVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BackgroundColorVariable)){
-						if(isVariable("backgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								backgroundColor[currentContainer] = getARGB(&element);
-								hasReadVariable |= BackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & XVariable){
-							hasReadVariable ^= XVariable;
-						}
-						if(hasReadVariable & YVariable){
-							hasReadVariable ^= YVariable;
-						}
-						if(hasReadVariable & WidthVariable){
-							hasReadVariable ^= WidthVariable;
-						}
-						if(hasReadVariable & HeightVariable){
-							hasReadVariable ^= HeightVariable;
-						}
-						if(hasReadVariable & BorderVariable){
-							hasReadVariable ^= BorderVariable;
-						}
-						if(hasReadVariable & BorderColorVariable){
-							hasReadVariable ^= BorderColorVariable;
-						}
-						if(hasReadVariable & BackgroundColorVariable){
-							hasReadVariable ^= BackgroundColorVariable;
-						}
-						++currentContainer;
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigContainerChildren(unsigned int *const containerChildrenAmount){
-	bool value = 0;
-	unsigned int currentContainer;
-	for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-		containerChildrenAmount[currentContainer] = 0;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentContainer = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							++containerChildrenAmount[currentContainer];
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						++currentContainer;
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigRectangleWindows(Window *const *const parentWindow, const unsigned int rectangleAmount, int *const *const x, int *const *const y, unsigned int *const *const width, unsigned int *const *const height, unsigned int *const *const border, ARGB *const borderColor, ARGB *const backgroundColor){
-	bool value = 0;
-	unsigned int currentRectangle;
-	for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-		for(currentRectangle = 0; currentRectangle < rectangleAmount; ++currentRectangle){
-			x[currentMonitor][currentRectangle] = 0;
-			y[currentMonitor][currentRectangle] = 0;
-			width[currentMonitor][currentRectangle] = 0;
-			height[currentMonitor][currentRectangle] = 0;
-			border[currentMonitor][currentRectangle] = 0;
-		}
-	}
-	for(currentRectangle = 0; currentRectangle < rectangleAmount; ++currentRectangle){
-		borderColor[currentRectangle] = 0x00000000;
-		backgroundColor[currentRectangle] = 0x00000000;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentRectangle = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		unsigned int currentContainer = 0;
-		unsigned int elementCopy;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						++currentContainer;
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(!(hasReadVariable & XVariable)){
-						if(isVariable("x", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									x[currentMonitor][currentRectangle] = getInteger(parentWindow[currentMonitor][currentContainer], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= XVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & YVariable)){
-						if(isVariable("y", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									y[currentMonitor][currentRectangle] = getInteger(parentWindow[currentMonitor][currentContainer], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= YVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & WidthVariable)){
-						if(isVariable("width", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									width[currentMonitor][currentRectangle] = getUnsignedInteger(currentLine, parentWindow[currentMonitor][currentContainer], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= WidthVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & HeightVariable)){
-						if(isVariable("height", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									height[currentMonitor][currentRectangle] = getUnsignedInteger(currentLine, parentWindow[currentMonitor][currentContainer], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= HeightVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderColorVariable)){
-						if(isVariable("borderColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								borderColor[currentRectangle] = getARGB(&element);
-								hasReadVariable |= BorderColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BorderVariable)){
-						if(isVariable("border", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								elementCopy = element;
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									border[currentMonitor][currentRectangle] = getUnsignedInteger(currentLine, parentWindow[currentMonitor][currentContainer], &element);
-									element = elementCopy;
-								}
-								hasReadVariable |= BorderVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & BackgroundColorVariable)){
-						if(isVariable("backgroundColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								backgroundColor[currentRectangle] = getARGB(&element);
-								hasReadVariable |= BackgroundColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & XVariable){
-							hasReadVariable ^= XVariable;
-						}
-						if(hasReadVariable & YVariable){
-							hasReadVariable ^= YVariable;
-						}
-						if(hasReadVariable & WidthVariable){
-							hasReadVariable ^= WidthVariable;
-						}
-						if(hasReadVariable & HeightVariable){
-							hasReadVariable ^= HeightVariable;
-						}
-						if(hasReadVariable & BorderVariable){
-							hasReadVariable ^= BorderVariable;
-						}
-						if(hasReadVariable & BorderColorVariable){
-							hasReadVariable ^= BorderColorVariable;
-						}
-						if(hasReadVariable & BackgroundColorVariable){
-							hasReadVariable ^= BackgroundColorVariable;
-						}
-						++currentRectangle;
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigArrayLengths(unsigned int *const textMaxWordLength, unsigned int *const commandMaxWordLength, unsigned int *const drawableCommandMaxWordLength){
-	bool value = 0;
-	*textMaxWordLength = 0;
-	*commandMaxWordLength = 0;
-	*drawableCommandMaxWordLength = 0;
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(!(hasReadVariable & TextVariable)){
-						if(isVariable("text", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								unsigned int length = getQuotedStringLength(&element);
-								if(length > *textMaxWordLength){
-									*textMaxWordLength = length;
-								}
-								hasReadVariable |= TextVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & CommandVariable)){
-						if(isVariable("command", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								unsigned int length = getQuotedStringLength(&element);
-								if(length > *commandMaxWordLength){
-									*commandMaxWordLength = length;
-								}
-								hasReadVariable |= CommandVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & DrawableCommandVariable)){
-						if(isVariable("drawableCommand", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								unsigned int length = getQuotedStringLength(&element);
-								if(length > *drawableCommandMaxWordLength){
-									*drawableCommandMaxWordLength = length;
-								}
-								hasReadVariable |= DrawableCommandVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & TextVariable){
-							hasReadVariable ^= TextVariable;
-						}
-						if(hasReadVariable & CommandVariable){
-							hasReadVariable ^= CommandVariable;
-						}
-						if(hasReadVariable & DrawableCommandVariable){
-							hasReadVariable ^= DrawableCommandVariable;
-						}
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigFillArrays(char *const *const text, ARGB *const textColor, char *const *const command, char *const *const drawableCommand, ARGB *const drawableCommandColor){
-	bool value = 0;
-	unsigned int currentContainer;
-	for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-		*text[currentContainer] = '\0';
-		textColor[currentContainer] = 0x00000000;
-		*command[currentContainer] = '\0';
-		*drawableCommand[currentContainer] = '\0';
-		drawableCommandColor[currentContainer] = 0x00000000;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentContainer = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		ARGB globalTextColor = 0x00000000;
-		ARGB globalDrawableCommandColor = 0x00000000;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(!(hasReadVariable & GlobalTextColorVariable)){
-						if(isVariable("globalTextColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								globalTextColor = getARGB(&element);
-								hasReadVariable |= GlobalTextColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & GlobalDrawableCommandColorVariable)){
-						if(isVariable("globalDrawableCommandColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								globalDrawableCommandColor = getARGB(&element);
-								hasReadVariable |= GlobalDrawableCommandColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & GlobalTextColorVariable){
-							hasReadVariable ^= GlobalTextColorVariable;
-						}
-						if(hasReadVariable & GlobalDrawableCommandColorVariable){
-							hasReadVariable ^= GlobalDrawableCommandColorVariable;
-						}
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(!(hasReadVariable & TextVariable)){
-						if(isVariable("text", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								text[currentContainer][getQuotedString(text[currentContainer], &element)] = '\0';
-								hasReadVariable |= TextVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & TextColorVariable)){
-						if(isVariable("textColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								textColor[currentContainer] = getARGB(&element);
-								hasReadVariable |= TextColorVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & CommandVariable)){
-						if(isVariable("command", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								command[currentContainer][getQuotedString(command[currentContainer], &element)] = '\0';
-								hasReadVariable |= CommandVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & DrawableCommandVariable)){
-						if(isVariable("drawableCommand", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								drawableCommand[currentContainer][getQuotedString(drawableCommand[currentContainer], &element)] = '\0';
-								hasReadVariable |= DrawableCommandVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & DrawableCommandColorVariable)){
-						if(isVariable("drawableCommandColor", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								drawableCommandColor[currentContainer] = getARGB(&element);
-								hasReadVariable |= DrawableCommandColorVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & TextVariable){
-							hasReadVariable ^= TextVariable;
-						}
-						if(hasReadVariable & TextColorVariable){
-							hasReadVariable ^= TextColorVariable;
-						}
-						if(hasReadVariable & CommandVariable){
-							hasReadVariable ^= CommandVariable;
-						}
-						if(hasReadVariable & DrawableCommandVariable){
-							hasReadVariable ^= DrawableCommandVariable;
-						}
-						if(hasReadVariable & DrawableCommandColorVariable){
-							hasReadVariable ^= DrawableCommandColorVariable;
-						}
-						++currentContainer;
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-			if(!textColor[currentContainer]){
-				textColor[currentContainer] = globalTextColor;
-			}
-			if(!drawableCommandColor[currentContainer]){
-				drawableCommandColor[currentContainer] = globalDrawableCommandColor;
-			}
-		}
-		value = 1;
-	}
-	return value;
-}
-bool readConfigVariableShortcuts(unsigned int *const sectionShortcutAmount, unsigned int *const containerShortcutAmount){
-	bool value = 0;
-	*sectionShortcutAmount = 0;
-	*containerShortcutAmount = 0;
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("keycode", &element)){
-						pushWhitespace(&element);
-						getShortcut(&element);
-						if(isVariable("interact", &element)){
-							pushWhitespace(&element);
-							if(isVariable("section", &element)){
-								++(*sectionShortcutAmount);
-							}else if(isVariable("container", &element)){
-								++(*containerShortcutAmount);
-							}
-						}
-						continue;
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
+	if(configInfo){
+		*configInfo = ci;
 	}
 	return value;
 }
@@ -1966,476 +1335,6 @@ bool readConfigShortcuts(const unsigned int sectionShortcutAmount, const unsigne
 					}
 					if(isVariable("}", &element)){
 						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigButtons(void){
-	bool value = 0;
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		unsigned int currentContainer = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(!(hasReadVariable & ButtonVariable)){
-						if(isVariable("button", &element)){
-							pushWhitespace(&element);
-							const Button button = getButton(&element);
-							if(button.button != AnyButton){
-								for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-									XGrabButton(display, button.button, button.masks, container[currentMonitor][currentContainer], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
-								}
-							}
-							hasReadVariable |= ButtonVariable;
-							continue;
-						}
-					}
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & ButtonVariable){
-							hasReadVariable ^= ButtonVariable;
-						}
-						++currentContainer;
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigFontAmount(unsigned int *const fontAmount){
-	bool value = 0;
-	*fontAmount = 0;
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("font", &element)){
-						pushWhitespace(&element);
-						if(isVariable("=", &element)){
-							++(*fontAmount);
-						}
-						continue;
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigFontLength(const unsigned int fontAmount, unsigned int *const userFontLength){
-	bool value = 0;
-	unsigned int currentFont;
-	for(currentFont = 0; currentFont < fontAmount; ++currentFont){
-		userFontLength[currentFont] = 0;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentFont = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("font", &element)){
-						pushWhitespace(&element);
-						if(isVariable("=", &element)){
-							pushWhitespace(&element);
-							userFontLength[currentFont] = getQuotedStringLength(&element);
-							++currentFont;
-						}
-						continue;
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigFillFontArray(const unsigned int currentFont, char *const font){
-	bool value = 0;
-	FILE *const file = getConfigFile();
-	if(file){
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		unsigned int fontsRead = 0;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("font", &element)){
-						if(fontsRead == currentFont){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								getQuotedString(font, &element);
-							}
-							++fontsRead;
-							break;
-						}else{
-							++fontsRead;
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= ContainerVariable;
-						continue;
-					}
-				}else{
-					if(isVariable("}", &element)){
-						hasReadVariable ^= RectangleVariable;
-						continue;
-					}
-				}
-			}
-		}
-		fclose(file);
-		value = 1;
-	}
-	return value;
-}
-bool readConfigFontOffsets(int *const textOffsetX, int *const textOffsetY, int *const drawableCommandOffsetX, int *const drawableCommandOffsetY){
-	bool value = 0;
-	unsigned int currentContainer;
-	for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-		textOffsetX[currentContainer] = 0;
-		textOffsetY[currentContainer] = 0;
-		drawableCommandOffsetX[currentContainer] = 0;
-		drawableCommandOffsetY[currentContainer] = 0;
-	}
-	FILE *const file = getConfigFile();
-	if(file){
-		currentContainer = 0;
-		unsigned int maxLinesCount = DefaultLinesCount;
-		unsigned int element;
-		VariableList hasReadVariable = NoVariables;
-		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
-			if(!getLine(file)){
-				break;
-			}
-			element = 0;
-			pushWhitespace(&element);
-			if(!isVariable("#", &element)){
-				if(!(hasReadVariable & SectionVariable)){
-					if(!(hasReadVariable & LinesVariable)){
-						if(isVariable("lines", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								maxLinesCount = getUnsignedInteger(currentLine, None, &element);
-								hasReadVariable |= LinesVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("section", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= SectionVariable;
-						}
-						continue;
-					}
-				}else if(!(hasReadVariable & ContainerVariable)){
-					if(isVariable("container", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= ContainerVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						hasReadVariable ^= SectionVariable;
-						continue;
-					}
-				}else if(!(hasReadVariable & RectangleVariable)){
-					if(!(hasReadVariable & TextOffsetXVariable)){
-						if(isVariable("textOffsetX", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								textOffsetX[currentContainer] = getInteger(None, &element);;
-								hasReadVariable |= TextOffsetXVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & TextOffsetYVariable)){
-						if(isVariable("textOffsetY", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								textOffsetY[currentContainer] = getInteger(None, &element);;
-								hasReadVariable |= TextOffsetYVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & DrawableCommandOffsetXVariable)){
-						if(isVariable("drawableCommandOffsetX", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								drawableCommandOffsetX[currentContainer] = getInteger(None, &element);;
-								hasReadVariable |= DrawableCommandOffsetXVariable;
-							}
-							continue;
-						}
-					}
-					if(!(hasReadVariable & DrawableCommandOffsetYVariable)){
-						if(isVariable("drawableCommandOffsetY", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								drawableCommandOffsetY[currentContainer] = getInteger(None, &element);;
-								hasReadVariable |= DrawableCommandOffsetYVariable;
-							}
-							continue;
-						}
-					}
-					if(isVariable("rectangle", &element)){
-						pushWhitespace(&element);
-						if(isVariable("{", &element)){
-							hasReadVariable |= RectangleVariable;
-						}
-						continue;
-					}
-					if(isVariable("}", &element)){
-						if(hasReadVariable & TextOffsetXVariable){
-							hasReadVariable ^= TextOffsetXVariable;
-						}
-						if(hasReadVariable & TextOffsetYVariable){
-							hasReadVariable ^= TextOffsetYVariable;
-						}
-						if(hasReadVariable & DrawableCommandOffsetXVariable){
-							hasReadVariable ^= DrawableCommandOffsetXVariable;
-						}
-						if(hasReadVariable & DrawableCommandOffsetYVariable){
-							hasReadVariable ^= DrawableCommandOffsetYVariable;
-						}
-						hasReadVariable ^= ContainerVariable;
-						++currentContainer;
 						continue;
 					}
 				}else{
@@ -2653,19 +1552,19 @@ static bool getLine(FILE *const file){
 	return value;
 }
 static void pushWhitespace(unsigned int *const element){
-	unsigned int dereferencedElement = *element;
-	char l = line[dereferencedElement];
+	unsigned int e = *element;
+	char l = line[e];
 	while(l && (l == ' ' || l == '\t')){
-		l = line[++dereferencedElement];
+		l = line[++e];
 	}
-	*element = dereferencedElement;
+	*element = e;
 	return;
 }
 static bool isVariable(const char *const variable, unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	bool value = 0;
+	unsigned int e = *element;
 	unsigned int currentCharacter = 0;
-	char l = line[dereferencedElement];
+	char l = line[e];
 	char v = *variable;
 	while(l && v){
 		if(l >= 'A' && l <= 'Z'){
@@ -2682,11 +1581,11 @@ static bool isVariable(const char *const variable, unsigned int *const element){
 			currentCharacter = 0;
 			break;
 		}
-		l = line[++dereferencedElement];
+		l = line[++e];
 		v = variable[++currentCharacter];
 	}
 	if(currentCharacter){
-		*element = dereferencedElement;
+		*element = e;
 		value = 1;
 	}
 	return value;
@@ -2700,8 +1599,8 @@ static unsigned int getUnsignedInteger(const unsigned int currentLine, const Win
 	return number;
 }
 static int getInteger(Window parentWindow, unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	int number = 0;
+	unsigned int e = *element;
 	int numberRead = 0;
 	int numberOperatedOn = 0;
 	MathOperation operation = NoMathOperation;
@@ -2727,35 +1626,35 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 			XGetWindowAttributes(display, parentWindow, &windowAttributes);
 		}
 	}
-	while(line[dereferencedElement]){
-		pushWhitespace(&dereferencedElement);
-		if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
+	while(line[e]){
+		pushWhitespace(&e);
+		if(line[e] >= '0' && line[e] <= '9'){
 			numberRead *= 10;
-			numberRead += line[dereferencedElement];
+			numberRead += line[e];
 			numberRead -= 48;
-			++dereferencedElement;
-		}else if(isVariable("ParentWidth", &dereferencedElement)){
+			++e;
+		}else if(isVariable("ParentWidth", &e)){
 			if(parentWindow){
 				numberRead = windowAttributes.width;
 			}
-		}else if(isVariable("ParentHeight", &dereferencedElement)){
+		}else if(isVariable("ParentHeight", &e)){
 			if(parentWindow){
 				numberRead = windowAttributes.height;
 			}
-		}else if(line[dereferencedElement] == '('){
-			++dereferencedElement;
-			numberRead = getInteger(parentWindow, &dereferencedElement);
-		}else if(line[dereferencedElement] == ')'){
-			++dereferencedElement;
+		}else if(line[e] == '('){
+			++e;
+			numberRead = getInteger(parentWindow, &e);
+		}else if(line[e] == ')'){
+			++e;
 			break;
-		}else if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-' || line[dereferencedElement] == '*' || line[dereferencedElement] == '/'){
+		}else if(line[e] == '+' || line[e] == '-' || line[e] == '*' || line[e] == '/'){
 			if(number == 0 && numberRead == 0){
-				if(line[dereferencedElement] == '/'){
+				if(line[e] == '/'){
 					break;
 				}
 			}
 			if(operation == AdditionMathOperation){
-				if(line[dereferencedElement] != '*' && line[dereferencedElement] != '/'){
+				if(line[e] != '*' && line[e] != '/'){
 					if(numberOperatedOn == 0){
 						number += numberRead;
 					}else{
@@ -2770,7 +1669,7 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 					lastOperation = operation;
 				}
 			}else if(operation == SubtractionMathOperation){
-				if(line[dereferencedElement] != '*' && line[dereferencedElement] != '/'){
+				if(line[e] != '*' && line[e] != '/'){
 					if(numberOperatedOn == 0){
 						number -= numberRead;
 					}else{
@@ -2790,7 +1689,7 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 				}else{
 					numberOperatedOn *= numberRead;
 				}
-				if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-'){
+				if(line[e] == '+' || line[e] == '-'){
 					if(lastOperation == AdditionMathOperation){
 						number += numberOperatedOn;
 					}else if(lastOperation == SubtractionMathOperation){
@@ -2804,7 +1703,7 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 				}else{
 					numberOperatedOn /= numberRead;
 				}
-				if(line[dereferencedElement] == '+' || line[dereferencedElement] == '-'){
+				if(line[e] == '+' || line[e] == '-'){
 					if(lastOperation == AdditionMathOperation){
 						number += numberOperatedOn;
 					}else if(lastOperation == SubtractionMathOperation){
@@ -2817,17 +1716,17 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 					number = numberRead;
 				}
 			}
-			if(line[dereferencedElement] == '+'){
+			if(line[e] == '+'){
 				operation = AdditionMathOperation;
-			}else if(line[dereferencedElement] == '-'){
+			}else if(line[e] == '-'){
 				operation = SubtractionMathOperation;
-			}else if(line[dereferencedElement] == '*'){
+			}else if(line[e] == '*'){
 				operation = MultiplicationMathOperation;
-			}else if(line[dereferencedElement] == '/'){
+			}else if(line[e] == '/'){
 				operation = DivisionMathOperation;
 			}
 			numberRead = 0;
-			++dereferencedElement;
+			++e;
 		}else{
 			break;
 		}
@@ -2879,17 +1778,17 @@ static int getInteger(Window parentWindow, unsigned int *const element){
 			number = numberRead;
 		}
 	}
-	*element = dereferencedElement;
+	*element = e;
 	return number;
 }
 static ARGB getARGB(unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	ARGB color = 0x00000000;
-	if(line[dereferencedElement] == '#'){
-		++dereferencedElement;
+	unsigned int e = *element;
+	if(line[e] == '#'){
+		++e;
 	}
 	uint8_t charactersRead = 0;
-	char l = line[dereferencedElement];
+	char l = line[e];
 	while(l && charactersRead < 8){
 		color *= 16;
 		color += l;
@@ -2907,82 +1806,82 @@ static ARGB getARGB(unsigned int *const element){
 			}
 			break;
 		}
-		++dereferencedElement;
+		++e;
 		++charactersRead;
-		l = line[dereferencedElement];
+		l = line[e];
 	}
 	if(charactersRead == 8){
-		*element = dereferencedElement;
+		*element = e;
 	}
 	return color;
 }
 static unsigned int getQuotedStringLength(unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	unsigned int length = 0;
-	const char quotation = line[dereferencedElement];
-	++dereferencedElement;
-	while(line[dereferencedElement] != quotation && line[dereferencedElement]){
+	unsigned int e = *element;
+	const char quotation = line[e];
+	++e;
+	while(line[e] != quotation && line[e]){
 		++length;
-		++dereferencedElement;
+		++e;
 	}
-	*element = dereferencedElement;
+	*element = e;
 	return length;
 }
 static unsigned int getQuotedString(char *const string, unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	unsigned int currentCharacter = 0;
-	const char quotation = line[dereferencedElement];
-	++dereferencedElement;
-	while(line[dereferencedElement] != quotation && line[dereferencedElement]){
-		string[currentCharacter] = line[dereferencedElement];
+	unsigned int e = *element;
+	const char quotation = line[e];
+	++e;
+	while(line[e] != quotation && line[e]){
+		string[currentCharacter] = line[e];
 		++currentCharacter;
-		++dereferencedElement;
+		++e;
 	}
-	*element = dereferencedElement;
+	*element = e;
 	return currentCharacter;
 }
 static Shortcut getShortcut(unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	Shortcut shortcut = {
 		.keycode = AnyKey,
 		.masks = None
 	};
+	unsigned int e = *element;
 	bool lookingForValue = 1;
-	while(line[dereferencedElement]){
-		pushWhitespace(&dereferencedElement);
+	while(line[e]){
+		pushWhitespace(&e);
 		if(lookingForValue){
-			if(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9'){
+			if(line[e] >= '0' && line[e] <= '9'){
 				do{
 					shortcut.keycode *= 10;
-					shortcut.keycode += line[dereferencedElement];
+					shortcut.keycode += line[e];
 					shortcut.keycode -= 48;
-					++dereferencedElement;
-				}while(line[dereferencedElement] >= '0' && line[dereferencedElement] <= '9');
-			}else if(isVariable("AnyModifier", &dereferencedElement)){
+					++e;
+				}while(line[e] >= '0' && line[e] <= '9');
+			}else if(isVariable("AnyModifier", &e)){
 				shortcut.masks |= AnyModifier;
-			}else if(isVariable("Shift", &dereferencedElement)){
+			}else if(isVariable("Shift", &e)){
 				shortcut.masks |= ShiftMask;
-			}else if(isVariable("Lock", &dereferencedElement)){
+			}else if(isVariable("Lock", &e)){
 				shortcut.masks |= LockMask;
-			}else if(isVariable("Control", &dereferencedElement)){
+			}else if(isVariable("Control", &e)){
 				shortcut.masks |= ControlMask;
-			}else if(isVariable("Mod1", &dereferencedElement)){
+			}else if(isVariable("Mod1", &e)){
 				shortcut.masks |= Mod1Mask;
-			}else if(isVariable("Mod2", &dereferencedElement)){
+			}else if(isVariable("Mod2", &e)){
 				shortcut.masks |= Mod2Mask;
-		 	}else if(isVariable("Mod3", &dereferencedElement)){
+		 	}else if(isVariable("Mod3", &e)){
 				shortcut.masks |= Mod3Mask;
-			}else if(isVariable("Mod4", &dereferencedElement)){
+			}else if(isVariable("Mod4", &e)){
 				shortcut.masks |= Mod4Mask;
-			}else if(isVariable("Mod5", &dereferencedElement)){
+			}else if(isVariable("Mod5", &e)){
 				shortcut.masks |= Mod5Mask;
 			}else{
 				break;
 			}
 			lookingForValue = 0;
 		}else{
-			if(line[dereferencedElement] == '+'){
-				++dereferencedElement;
+			if(line[e] == '+'){
+				++e;
 				lookingForValue = 1;
 			}else{
 				break;
@@ -2990,55 +1889,55 @@ static Shortcut getShortcut(unsigned int *const element){
 		}
 	}
 	if(shortcut.keycode != AnyKey){
-		*element = dereferencedElement;
+		*element = e;
 	}
 	return shortcut;
 }
 static Button getButton(unsigned int *const element){
-	unsigned int dereferencedElement = *element;
 	Button button = {
 		.button = AnyButton,
 		.masks = None
 	};
+	unsigned int e = *element;
 	bool lookingForValue = 1;
-	while(line[dereferencedElement]){
-		pushWhitespace(&dereferencedElement);
+	while(line[e]){
+		pushWhitespace(&e);
 		if(lookingForValue){
-			if(isVariable("Button1", &dereferencedElement)){
+			if(isVariable("Button1", &e)){
 				button.button = Button1;
-			}else if(isVariable("Button2", &dereferencedElement)){
+			}else if(isVariable("Button2", &e)){
 				button.button = Button2;
-			}else if(isVariable("Button3", &dereferencedElement)){
+			}else if(isVariable("Button3", &e)){
 				button.button = Button3;
-			}else if(isVariable("Button4", &dereferencedElement)){
+			}else if(isVariable("Button4", &e)){
 				button.button = Button4;
-			}else if(isVariable("Button5", &dereferencedElement)){
+			}else if(isVariable("Button5", &e)){
 				button.button = Button5;
-			}else if(isVariable("AnyModifier", &dereferencedElement)){
+			}else if(isVariable("AnyModifier", &e)){
 				button.masks |= AnyModifier;
-			}else if(isVariable("Shift", &dereferencedElement)){
+			}else if(isVariable("Shift", &e)){
 				button.masks |= ShiftMask;
-			}else if(isVariable("Lock", &dereferencedElement)){
+			}else if(isVariable("Lock", &e)){
 				button.masks |= LockMask;
-			}else if(isVariable("Control", &dereferencedElement)){
+			}else if(isVariable("Control", &e)){
 				button.masks |= ControlMask;
-			}else if(isVariable("Mod1", &dereferencedElement)){
+			}else if(isVariable("Mod1", &e)){
 				button.masks |= Mod1Mask;
-			}else if(isVariable("Mod2", &dereferencedElement)){
+			}else if(isVariable("Mod2", &e)){
 				button.masks |= Mod2Mask;
-			}else if(isVariable("Mod3", &dereferencedElement)){
+			}else if(isVariable("Mod3", &e)){
 				button.masks |= Mod3Mask;
-			}else if(isVariable("Mod4", &dereferencedElement)){
+			}else if(isVariable("Mod4", &e)){
 				button.masks |= Mod4Mask;
-			}else if(isVariable("Mod5", &dereferencedElement)){
+			}else if(isVariable("Mod5", &e)){
 				button.masks |= Mod5Mask;
 			}else{
 				break;
 			}
 			lookingForValue = 0;
 		}else{
-			if(line[dereferencedElement] == '+'){
-				++dereferencedElement;
+			if(line[e] == '+'){
+				++e;
 				lookingForValue = 1;
 			}else{
 				break;
@@ -3046,7 +1945,7 @@ static Button getButton(unsigned int *const element){
 		}
 	}
 	if(button.button != AnyButton){
-		*element = dereferencedElement;
+		*element = e;
 	}
 	return button;
 }
