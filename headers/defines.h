@@ -35,28 +35,48 @@ SOFTWARE. */
 #define RestartMode /*----------------------*/ 1
 #define ExitMode /*-------------------------*/ 2
 
-#define ScanConfigMode /*-------------------*/ 1
-#define TopLevelWindowConfigMode /*---------*/ 2
-#define SectionRectangleAmountConfigMode /*-*/ 3
-#define GlobalColorsConfigMode /*-----------*/ 4
-#define SectionWindowsConfigMode /*---------*/ 5
-#define SectionChildrenConfigMode /*--------*/ 6
-#define ContainerWindowsConfigMode /*-------*/ 7
-#define ContainerChildrenConfigMode /*------*/ 8
-#define RectangleWindowsConfigMode /*-------*/ 9
-#define ArrayLengthsConfigMode /*-----------*/ 10
-#define FillArraysConfigMode /*-------------*/ 11
-#define VariableShortcutsConfigMode /*------*/ 12
-#define ShortcutsConfigMode /*--------------*/ 13
-#define ButtonsConfigMode /*----------------*/ 14
-#define FontAmountConfigMode /*-------------*/ 15
-#define FontLengthConfigMode /*-------------*/ 16
-#define FontSetConfigMode /*----------------*/ 17
-#define FontOffsetsConfigMode /*------------*/ 18
+#define ScanConfigMode /*-------------------*/ 0
+#define TopLevelWindowsConfigMode /*--------*/ 1
+#define SectionRectangleAmountConfigMode /*-*/ 2
+#define SectionWindowsConfigMode /*---------*/ 3
+#define SectionChildrenConfigMode /*--------*/ 4
+#define ContainerWindowsConfigMode /*-------*/ 5
+#define ContainerChildrenConfigMode /*------*/ 6
+#define RectangleWindowsConfigMode /*-------*/ 7
+#define ArrayLengthsConfigMode /*-----------*/ 8
+#define FillArraysConfigMode /*-------------*/ 9
+#define VariableShortcutsConfigMode /*------*/ 10
+#define ShortcutsConfigMode /*--------------*/ 11
+#define ButtonsConfigMode /*----------------*/ 12
+#define FontAmountConfigMode /*-------------*/ 13
+#define FontLengthConfigMode /*-------------*/ 14
+#define FontSetConfigMode /*----------------*/ 15
+#define FontOffsetsConfigMode /*------------*/ 16
 
 typedef uint8_t bool;
 typedef uint8_t Mode;
 typedef uint32_t ARGB;
+typedef uint8_t ConfigMode;
+
+typedef struct{
+	const Window **window;
+	int ***integer;
+	unsigned int integerDimension0;
+	unsigned int integerDimension1;
+	unsigned int integerDimension2;
+	unsigned int ***unsignedInteger;
+	unsigned int unsignedIntegerDimension0;
+	unsigned int unsignedIntegerDimension1;
+	unsigned int unsignedIntegerDimension2;
+	ARGB ***argb;
+	unsigned int argbDimension0;
+	unsigned int argbDimension1;
+	unsigned int argbDimension2;
+	char ***character;
+	unsigned int characterDimension0;
+	unsigned int characterDimension1;
+	unsigned int characterDimension2;
+} ConfigInfo;
 
 typedef struct{
 	uint16_t keycode;
