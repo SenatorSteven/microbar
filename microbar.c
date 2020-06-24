@@ -138,7 +138,13 @@ static void start(void){
 				}
 			}
 			if(monitorAmount){
-				if(readConfig(ScanConfigMode, NULL)){
+				{
+					ConfigInfo ci;
+					if(!readConfig(ScanConfigMode, ci)){
+						mode = ExitMode;
+					}
+				}
+				if(mode == ContinueMode){
 					Window _topLevelWindow[monitorAmount];
 					topLevelWindow = _topLevelWindow;
 					if(createTopLevelWindows()){
@@ -218,7 +224,7 @@ static bool createTopLevelWindows(void){
 				.argbDimension2 = 1,
 				.character = NULL
 			};
-			if(!readConfig(TopLevelWindowsConfigMode, &configInfo)){
+			if(!readConfig(TopLevelWindowsConfigMode, configInfo)){
 				mode = ExitMode;
 			}
 		}
@@ -371,7 +377,7 @@ static bool createSubwindows(void){
 			.argb = NULL,
 			.character = NULL
 		};
-		if(!readConfig(SectionRectangleAmountConfigMode, &configInfo)){
+		if(!readConfig(SectionRectangleAmountConfigMode, configInfo)){
 			mode = ExitMode;
 		}
 	}
@@ -436,7 +442,7 @@ static bool createSubwindows(void){
 						.argbDimension2 = sectionAmount,
 						.character = NULL
 					};
-					if(!readConfig(SectionWindowsConfigMode, &configInfo)){
+					if(!readConfig(SectionWindowsConfigMode, configInfo)){
 						mode = ExitMode;
 					}
 				}
@@ -481,7 +487,7 @@ static bool createSubwindows(void){
 						.argb = NULL,
 						.character = NULL
 					};
-					if(!readConfig(SectionChildrenConfigMode, &configInfo)){
+					if(!readConfig(SectionChildrenConfigMode, configInfo)){
 						mode = ExitMode;
 					}
 				}
@@ -516,7 +522,7 @@ static bool createSubwindows(void){
 							.argbDimension2 = containerAmount,
 							.character = NULL
 						};
-						if(!readConfig(ContainerWindowsConfigMode, &configInfo)){
+						if(!readConfig(ContainerWindowsConfigMode, configInfo)){
 							mode = ExitMode;
 						}
 					}
@@ -559,7 +565,7 @@ static bool createSubwindows(void){
 				.argb = NULL,
 				.character = NULL
 			};
-			if(!readConfig(ContainerChildrenConfigMode, &configInfo)){
+			if(!readConfig(ContainerChildrenConfigMode, configInfo)){
 				mode = ExitMode;
 			}
 		}
@@ -609,7 +615,7 @@ static bool createSubwindows(void){
 					.argbDimension2 = rectangleAmount,
 					.character = NULL
 				};
-				if(!readConfig(RectangleWindowsConfigMode, &configInfo)){
+				if(!readConfig(RectangleWindowsConfigMode, configInfo)){
 					mode = ExitMode;
 				}
 			}

@@ -97,12 +97,8 @@ static Shortcut getShortcut(unsigned int *const element);
 static Button getButton(unsigned int *const element);
 static void printLineError(const unsigned int currentLine);
 
-bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
+bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 	bool value = 0;
-	ConfigInfo ci;
-	if(configInfo){
-		ci = *configInfo;
-	}
 	if(configMode == ScanConfigMode){
 		whichMonitor = monitorAmount;
 		containerAmount = 0;
@@ -208,53 +204,6 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 								}
 								continue;
 							}
-						}
-					}else if(configMode == FontAmountConfigMode){
-						if(isVariable("font", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								++ci.unsignedInteger[0][0][0];
-							}
-							continue;
-						}
-					}else if(configMode == FontLengthConfigMode){
-						if(isVariable("font", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								ci.unsignedInteger[0][0][counter0] = getQuotedStringLength(&element);
-								++counter0;
-							}
-							continue;
-						}
-					}else if(configMode == VariableShortcutsConfigMode){
-						if(isVariable("keycode", &element)){
-							pushWhitespace(&element);
-							getShortcut(&element);
-							if(isVariable("interact", &element)){
-								pushWhitespace(&element);
-								if(isVariable("section", &element)){
-									++ci.unsignedInteger[0][0][0];
-								}else if(isVariable("container", &element)){
-									++ci.unsignedInteger[0][1][0];
-								}
-							}
-							continue;
-						}
-					}else if(configMode == FontSetConfigMode){
-						if(isVariable("font", &element)){
-							pushWhitespace(&element);
-							if(isVariable("=", &element)){
-								pushWhitespace(&element);
-								if(counter1){
-									ci.character[0][0][counter0] = ',';
-									++counter0;
-								}
-								counter0 += getQuotedString(&ci.character[0][0][counter0], &element);
-								ci.character[0][0][counter0] = '\0';
-								++counter1;
-							}
-							continue;
 						}
 					}else if(configMode == TopLevelWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
@@ -383,6 +332,53 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 								continue;
 							}
 						}
+					}else if(configMode == VariableShortcutsConfigMode){
+						if(isVariable("keycode", &element)){
+							pushWhitespace(&element);
+							getShortcut(&element);
+							if(isVariable("interact", &element)){
+								pushWhitespace(&element);
+								if(isVariable("section", &element)){
+									++ci.unsignedInteger[0][0][0];
+								}else if(isVariable("container", &element)){
+									++ci.unsignedInteger[0][1][0];
+								}
+							}
+							continue;
+						}
+					}else if(configMode == FontAmountConfigMode){
+						if(isVariable("font", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								++ci.unsignedInteger[0][0][0];
+							}
+							continue;
+						}
+					}else if(configMode == FontLengthConfigMode){
+						if(isVariable("font", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								pushWhitespace(&element);
+								ci.unsignedInteger[0][0][counter0] = getQuotedStringLength(&element);
+								++counter0;
+							}
+							continue;
+						}
+					}else if(configMode == FontSetConfigMode){
+						if(isVariable("font", &element)){
+							pushWhitespace(&element);
+							if(isVariable("=", &element)){
+								pushWhitespace(&element);
+								if(counter1){
+									ci.character[0][0][counter0] = ',';
+									++counter0;
+								}
+								counter0 += getQuotedString(&ci.character[0][0][counter0], &element);
+								ci.character[0][0][counter0] = '\0';
+								++counter1;
+							}
+							continue;
+						}
 					}
 					if(isVariable("section", &element)){
 						pushWhitespace(&element);
@@ -396,7 +392,8 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 					}
 					if(configMode == ScanConfigMode){
 						if(line[element]){
-							if(!isVariable("x",                            &element) &&
+							if(!isVariable("monitor",                      &element) &&
+							   !isVariable("x",                            &element) &&
 							   !isVariable("y",                            &element) &&
 							   !isVariable("width",                        &element) &&
 							   !isVariable("height",                       &element) &&
@@ -413,36 +410,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 						}
 					}
 				}else if(!(hasReadVariable & ContainerVariable)){
-					if(configMode == FillArraysConfigMode){
-						if(!(hasReadVariable & GlobalTextColorVariable)){
-							if(isVariable("globalTextColor", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									const ARGB globalTextColor = getARGB(&element);
-									for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
-										ci.argb[0][0][currentContainer] = globalTextColor;
-									}
-									hasReadVariable |= GlobalTextColorVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & GlobalDrawableCommandColorVariable)){
-							if(isVariable("globalDrawableCommandColor", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									const ARGB globalDrawableCommandColor = getARGB(&element);
-									for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
-										ci.argb[0][1][currentContainer] = globalDrawableCommandColor;
-									}
-									hasReadVariable |= GlobalDrawableCommandColorVariable;
-								}
-								continue;
-							}
-						}
-					}else if(configMode == SectionWindowsConfigMode){
+					if(configMode == SectionWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
 							if(isVariable("x", &element)){
 								pushWhitespace(&element);
@@ -569,6 +537,35 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 								continue;
 							}
 						}
+					}else if(configMode == FillArraysConfigMode){
+						if(!(hasReadVariable & GlobalTextColorVariable)){
+							if(isVariable("globalTextColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalTextColor = getARGB(&element);
+									for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
+										ci.argb[0][0][currentContainer] = globalTextColor;
+									}
+									hasReadVariable |= GlobalTextColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & GlobalDrawableCommandColorVariable)){
+							if(isVariable("globalDrawableCommandColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									const ARGB globalDrawableCommandColor = getARGB(&element);
+									for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
+										ci.argb[0][1][currentContainer] = globalDrawableCommandColor;
+									}
+									hasReadVariable |= GlobalDrawableCommandColorVariable;
+								}
+								continue;
+							}
+						}
 					}
 					if(isVariable("container", &element)){
 						pushWhitespace(&element);
@@ -583,32 +580,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 						continue;
 					}
 					if(isVariable("}", &element)){
-						if(configMode == SectionChildrenConfigMode){
-							++counter0;
-						}else if(configMode == FillArraysConfigMode){
-							if(hasReadVariable & GlobalTextColorVariable){
-								hasReadVariable ^= GlobalTextColorVariable;
-							}
-							if(hasReadVariable & GlobalDrawableCommandColorVariable){
-								hasReadVariable ^= GlobalDrawableCommandColorVariable;
-							}
-							for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
-								ci.argb[0][0][currentContainer] = 0x00000000;
-								ci.argb[0][1][currentContainer] = 0x00000000;
-							}
-						}else if(configMode == ContainerWindowsConfigMode){
-							++counter0;
-							if(hasReadVariable & GlobalContainerBorderColorVariable){
-								hasReadVariable ^= GlobalContainerBorderColorVariable;
-							}
-							if(hasReadVariable & GlobalContainerBackgroundColorVariable){
-								hasReadVariable ^= GlobalContainerBackgroundColorVariable;
-							}
-							for(unsigned int currentContainer = counter1; currentContainer < containerAmount; ++currentContainer){
-								ci.argb[0][0][currentContainer] = 0x00000000;
-								ci.argb[0][1][currentContainer] = 0x00000000;
-							}
-						}else if(configMode == SectionWindowsConfigMode){
+						if(configMode == SectionWindowsConfigMode){
 							if(hasReadVariable & XVariable){
 								hasReadVariable ^= XVariable;
 							}
@@ -631,6 +603,31 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 								hasReadVariable ^= BackgroundColorVariable;
 							}
 							++counter0;
+						}else if(configMode == SectionChildrenConfigMode){
+							++counter0;
+						}else if(configMode == ContainerWindowsConfigMode){
+							++counter0;
+							if(hasReadVariable & GlobalContainerBorderColorVariable){
+								hasReadVariable ^= GlobalContainerBorderColorVariable;
+							}
+							if(hasReadVariable & GlobalContainerBackgroundColorVariable){
+								hasReadVariable ^= GlobalContainerBackgroundColorVariable;
+							}
+							for(unsigned int currentContainer = counter1; currentContainer < containerAmount; ++currentContainer){
+								ci.argb[0][0][currentContainer] = 0x00000000;
+								ci.argb[0][1][currentContainer] = 0x00000000;
+							}
+						}else if(configMode == FillArraysConfigMode){
+							if(hasReadVariable & GlobalTextColorVariable){
+								hasReadVariable ^= GlobalTextColorVariable;
+							}
+							if(hasReadVariable & GlobalDrawableCommandColorVariable){
+								hasReadVariable ^= GlobalDrawableCommandColorVariable;
+							}
+							for(unsigned int currentContainer = counter0; currentContainer < containerAmount; ++currentContainer){
+								ci.argb[0][0][currentContainer] = 0x00000000;
+								ci.argb[0][1][currentContainer] = 0x00000000;
+							}
 						}
 						hasReadVariable ^= SectionVariable;
 						continue;
@@ -644,8 +641,8 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 							   !isVariable("border",                         &element) &&
 							   !isVariable("borderColor",                    &element) &&
 							   !isVariable("backgroundColor",                &element) &&
-							   !isVariable("globalContainerBackgroundColor", &element) &&
 							   !isVariable("globalContainerBorderColor",     &element) &&
+							   !isVariable("globalContainerBackgroundColor", &element) &&
 							   !isVariable("globalTextColor",                &element) &&
 							   !isVariable("globalDrawableCommandColor",     &element)){
 								printLineError(currentLine);
@@ -654,164 +651,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 						}
 					}
 				}else if(!(hasReadVariable & RectangleVariable)){
-					if(configMode == ButtonsConfigMode){
-						if(!(hasReadVariable & ButtonVariable)){
-							if(isVariable("button", &element)){
-								pushWhitespace(&element);
-								const Button button = getButton(&element);
-								if(button.button != AnyButton){
-									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-										XGrabButton(display, button.button, button.masks, container[currentMonitor][counter0], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
-									}
-								}
-								hasReadVariable |= ButtonVariable;
-								continue;
-							}
-						}
-					}else if(configMode == ArrayLengthsConfigMode){
-						if(!(hasReadVariable & TextVariable)){
-							if(isVariable("text", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									unsigned int length = getQuotedStringLength(&element);
-									if(length > ci.unsignedInteger[0][0][0]){
-										ci.unsignedInteger[0][0][0] = length;
-									}
-									hasReadVariable |= TextVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & CommandVariable)){
-							if(isVariable("command", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									unsigned int length = getQuotedStringLength(&element);
-									if(length > ci.unsignedInteger[0][1][0]){
-										ci.unsignedInteger[0][1][0] = length;
-									}
-									hasReadVariable |= CommandVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & DrawableCommandVariable)){
-							if(isVariable("drawableCommand", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									unsigned int length = getQuotedStringLength(&element);
-									if(length > ci.unsignedInteger[0][2][0]){
-										ci.unsignedInteger[0][2][0] = length;
-									}
-									hasReadVariable |= DrawableCommandVariable;
-								}
-								continue;
-							}
-						}
-					}else if(configMode == FontOffsetsConfigMode){
-						if(!(hasReadVariable & TextOffsetXVariable)){
-							if(isVariable("textOffsetX", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.integer[0][0][counter0] = getInteger(None, &element);
-									hasReadVariable |= TextOffsetXVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & TextOffsetYVariable)){
-							if(isVariable("textOffsetY", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.integer[0][1][counter0] = getInteger(None, &element);
-									hasReadVariable |= TextOffsetYVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & DrawableCommandOffsetXVariable)){
-							if(isVariable("drawableCommandOffsetX", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.integer[0][2][counter0] = getInteger(None, &element);
-									hasReadVariable |= DrawableCommandOffsetXVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & DrawableCommandOffsetYVariable)){
-							if(isVariable("drawableCommandOffsetY", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.integer[0][3][counter0] = getInteger(None, &element);
-									hasReadVariable |= DrawableCommandOffsetYVariable;
-								}
-								continue;
-							}
-						}
-					}else if(configMode == FillArraysConfigMode){
-						if(!(hasReadVariable & TextVariable)){
-							if(isVariable("text", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.character[0][counter0][getQuotedString(ci.character[0][counter0], &element)] = '\0';
-									hasReadVariable |= TextVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & TextColorVariable)){
-							if(isVariable("textColor", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.argb[0][0][counter0] = getARGB(&element);
-									hasReadVariable |= TextColorVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & CommandVariable)){
-							if(isVariable("command", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.character[1][counter0][getQuotedString(ci.character[1][counter0], &element)] = '\0';
-									hasReadVariable |= CommandVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & DrawableCommandVariable)){
-							if(isVariable("drawableCommand", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.character[2][counter0][getQuotedString(ci.character[2][counter0], &element)] = '\0';
-									hasReadVariable |= DrawableCommandVariable;
-								}
-								continue;
-							}
-						}
-						if(!(hasReadVariable & DrawableCommandColorVariable)){
-							if(isVariable("drawableCommandColor", &element)){
-								pushWhitespace(&element);
-								if(isVariable("=", &element)){
-									pushWhitespace(&element);
-									ci.argb[0][1][counter0] = getARGB(&element);
-								}
-								continue;
-							}
-						}
-					}else if(configMode == ContainerWindowsConfigMode){
+					if(configMode == ContainerWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
 							if(isVariable("x", &element)){
 								pushWhitespace(&element);
@@ -938,81 +778,178 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 								continue;
 							}
 						}
+					}else if(configMode == ArrayLengthsConfigMode){
+						if(!(hasReadVariable & TextVariable)){
+							if(isVariable("text", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									unsigned int length = getQuotedStringLength(&element);
+									if(length > ci.unsignedInteger[0][0][0]){
+										ci.unsignedInteger[0][0][0] = length;
+									}
+									hasReadVariable |= TextVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & CommandVariable)){
+							if(isVariable("command", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									unsigned int length = getQuotedStringLength(&element);
+									if(length > ci.unsignedInteger[0][1][0]){
+										ci.unsignedInteger[0][1][0] = length;
+									}
+									hasReadVariable |= CommandVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandVariable)){
+							if(isVariable("drawableCommand", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									unsigned int length = getQuotedStringLength(&element);
+									if(length > ci.unsignedInteger[0][2][0]){
+										ci.unsignedInteger[0][2][0] = length;
+									}
+									hasReadVariable |= DrawableCommandVariable;
+								}
+								continue;
+							}
+						}
+					}else if(configMode == FillArraysConfigMode){
+						if(!(hasReadVariable & TextVariable)){
+							if(isVariable("text", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.character[0][counter0][getQuotedString(ci.character[0][counter0], &element)] = '\0';
+									hasReadVariable |= TextVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & TextColorVariable)){
+							if(isVariable("textColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][0][counter0] = getARGB(&element);
+									hasReadVariable |= TextColorVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & CommandVariable)){
+							if(isVariable("command", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.character[1][counter0][getQuotedString(ci.character[1][counter0], &element)] = '\0';
+									hasReadVariable |= CommandVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandVariable)){
+							if(isVariable("drawableCommand", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.character[2][counter0][getQuotedString(ci.character[2][counter0], &element)] = '\0';
+									hasReadVariable |= DrawableCommandVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandColorVariable)){
+							if(isVariable("drawableCommandColor", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.argb[0][1][counter0] = getARGB(&element);
+								}
+								continue;
+							}
+						}
+					}else if(configMode == ButtonsConfigMode){
+						if(!(hasReadVariable & ButtonVariable)){
+							if(isVariable("button", &element)){
+								pushWhitespace(&element);
+								const Button button = getButton(&element);
+								if(button.button != AnyButton){
+									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+										XGrabButton(display, button.button, button.masks, container[currentMonitor][counter0], True, NoEventMask, GrabModeAsync, GrabModeAsync, None, None);
+									}
+								}
+								hasReadVariable |= ButtonVariable;
+								continue;
+							}
+						}
+					}else if(configMode == FontOffsetsConfigMode){
+						if(!(hasReadVariable & TextOffsetXVariable)){
+							if(isVariable("textOffsetX", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][0][counter0] = getInteger(None, &element);
+									hasReadVariable |= TextOffsetXVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & TextOffsetYVariable)){
+							if(isVariable("textOffsetY", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][1][counter0] = getInteger(None, &element);
+									hasReadVariable |= TextOffsetYVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandOffsetXVariable)){
+							if(isVariable("drawableCommandOffsetX", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][2][counter0] = getInteger(None, &element);
+									hasReadVariable |= DrawableCommandOffsetXVariable;
+								}
+								continue;
+							}
+						}
+						if(!(hasReadVariable & DrawableCommandOffsetYVariable)){
+							if(isVariable("drawableCommandOffsetY", &element)){
+								pushWhitespace(&element);
+								if(isVariable("=", &element)){
+									pushWhitespace(&element);
+									ci.integer[0][3][counter0] = getInteger(None, &element);
+									hasReadVariable |= DrawableCommandOffsetYVariable;
+								}
+								continue;
+							}
+						}
 					}
 					if(isVariable("rectangle", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							if(configMode == ContainerChildrenConfigMode){
-								++ci.unsignedInteger[0][0][counter0];
-							}else if(configMode == SectionRectangleAmountConfigMode){
+							if(configMode == SectionRectangleAmountConfigMode){
 								++ci.unsignedInteger[0][1][0];
+							}else if(configMode == ContainerChildrenConfigMode){
+								++ci.unsignedInteger[0][0][counter0];
 							}
 							hasReadVariable |= RectangleVariable;
 						}
 						continue;
 					}
 					if(isVariable("}", &element)){
-						if(configMode == ButtonsConfigMode){
-							if(hasReadVariable & ButtonVariable){
-								hasReadVariable ^= ButtonVariable;
-							}
-							++counter0;
-						}else if(configMode == ContainerChildrenConfigMode){
-							++counter0;
-						}else if(configMode == ArrayLengthsConfigMode){
-							if(hasReadVariable & TextVariable){
-								hasReadVariable ^= TextVariable;
-							}
-							if(hasReadVariable & CommandVariable){
-								hasReadVariable ^= CommandVariable;
-							}
-							if(hasReadVariable & DrawableCommandVariable){
-								hasReadVariable ^= DrawableCommandVariable;
-							}
-						}else if(configMode == FontOffsetsConfigMode){
-							if(hasReadVariable & TextOffsetXVariable){
-								hasReadVariable ^= TextOffsetXVariable;
-							}
-							if(hasReadVariable & TextOffsetYVariable){
-								hasReadVariable ^= TextOffsetYVariable;
-							}
-							if(hasReadVariable & DrawableCommandOffsetXVariable){
-								hasReadVariable ^= DrawableCommandOffsetXVariable;
-							}
-							if(hasReadVariable & DrawableCommandOffsetYVariable){
-								hasReadVariable ^= DrawableCommandOffsetYVariable;
-							}
-							++counter0;
-						}else if(configMode == FillArraysConfigMode){
-							if(hasReadVariable & TextVariable){
-								hasReadVariable ^= TextVariable;
-							}
-							if(hasReadVariable & TextColorVariable){
-								hasReadVariable ^= TextColorVariable;
-							}
-							if(hasReadVariable & CommandVariable){
-								hasReadVariable ^= CommandVariable;
-							}
-							if(hasReadVariable & DrawableCommandVariable){
-								hasReadVariable ^= DrawableCommandVariable;
-							}
-							if(hasReadVariable & DrawableCommandColorVariable){
-								hasReadVariable ^= DrawableCommandColorVariable;
-							}
-							++counter0;
-						}else if(configMode == RectangleWindowsConfigMode){
-							++counter0;
-							if(hasReadVariable & GlobalRectangleBorderColorVariable){
-								hasReadVariable ^= GlobalRectangleBorderColorVariable;
-							}
-							if(hasReadVariable & GlobalRectangleBackgroundColorVariable){
-								hasReadVariable ^= GlobalRectangleBackgroundColorVariable;
-							}
-							for(unsigned int currentRectangle = counter1; currentRectangle < ci.argbDimension2; ++currentRectangle){
-								ci.argb[0][0][currentRectangle] = 0x00000000;
-								ci.argb[0][1][currentRectangle] = 0x00000000;
-							}
-						}else if(configMode == ContainerWindowsConfigMode){
+						if(configMode == ContainerWindowsConfigMode){
 							if(hasReadVariable & XVariable){
 								hasReadVariable ^= XVariable;
 							}
@@ -1035,6 +972,66 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 								hasReadVariable ^= BackgroundColorVariable;
 							}
 							++counter1;
+						}else if(configMode == ContainerChildrenConfigMode){
+							++counter0;
+						}else if(configMode == RectangleWindowsConfigMode){
+							++counter0;
+							if(hasReadVariable & GlobalRectangleBorderColorVariable){
+								hasReadVariable ^= GlobalRectangleBorderColorVariable;
+							}
+							if(hasReadVariable & GlobalRectangleBackgroundColorVariable){
+								hasReadVariable ^= GlobalRectangleBackgroundColorVariable;
+							}
+							for(unsigned int currentRectangle = counter1; currentRectangle < ci.argbDimension2; ++currentRectangle){
+								ci.argb[0][0][currentRectangle] = 0x00000000;
+								ci.argb[0][1][currentRectangle] = 0x00000000;
+							}
+						}else if(configMode == ArrayLengthsConfigMode){
+							if(hasReadVariable & TextVariable){
+								hasReadVariable ^= TextVariable;
+							}
+							if(hasReadVariable & CommandVariable){
+								hasReadVariable ^= CommandVariable;
+							}
+							if(hasReadVariable & DrawableCommandVariable){
+								hasReadVariable ^= DrawableCommandVariable;
+							}
+						}else if(configMode == FillArraysConfigMode){
+							if(hasReadVariable & TextVariable){
+								hasReadVariable ^= TextVariable;
+							}
+							if(hasReadVariable & TextColorVariable){
+								hasReadVariable ^= TextColorVariable;
+							}
+							if(hasReadVariable & CommandVariable){
+								hasReadVariable ^= CommandVariable;
+							}
+							if(hasReadVariable & DrawableCommandVariable){
+								hasReadVariable ^= DrawableCommandVariable;
+							}
+							if(hasReadVariable & DrawableCommandColorVariable){
+								hasReadVariable ^= DrawableCommandColorVariable;
+							}
+							++counter0;
+						}else if(configMode == ButtonsConfigMode){
+							if(hasReadVariable & ButtonVariable){
+								hasReadVariable ^= ButtonVariable;
+							}
+							++counter0;
+						}else if(configMode == FontOffsetsConfigMode){
+							if(hasReadVariable & TextOffsetXVariable){
+								hasReadVariable ^= TextOffsetXVariable;
+							}
+							if(hasReadVariable & TextOffsetYVariable){
+								hasReadVariable ^= TextOffsetYVariable;
+							}
+							if(hasReadVariable & DrawableCommandOffsetXVariable){
+								hasReadVariable ^= DrawableCommandOffsetXVariable;
+							}
+							if(hasReadVariable & DrawableCommandOffsetYVariable){
+								hasReadVariable ^= DrawableCommandOffsetYVariable;
+							}
+							++counter0;
 						}
 						hasReadVariable ^= ContainerVariable;
 						continue;
@@ -1048,17 +1045,17 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 							   !isVariable("border",                         &element) &&
 							   !isVariable("borderColor",                    &element) &&
 							   !isVariable("backgroundColor",                &element) &&
-							   !isVariable("globalRectangleBackgroundColor", &element) &&
 							   !isVariable("globalRectangleBorderColor",     &element) &&
+							   !isVariable("globalRectangleBackgroundColor", &element) &&
 							   !isVariable("text",                           &element) &&
 							   !isVariable("textColor",                      &element) &&
-							   !isVariable("textOffsetXVariable",            &element) &&
-							   !isVariable("textOffsetYVariable",            &element) &&
+							   !isVariable("textOffsetX",                    &element) &&
+							   !isVariable("textOffsetY",                    &element) &&
 							   !isVariable("command",                        &element) &&
 							   !isVariable("drawableCommand",                &element) &&
 							   !isVariable("drawableCommandColor",           &element) &&
-							   !isVariable("drawableCommandOffsetXVariable", &element) &&
-							   !isVariable("drawableCommandOffsetYVariable", &element) &&
+							   !isVariable("drawableCommandOffsetX",         &element) &&
+							   !isVariable("drawableCommandOffsetY",         &element) &&
 							   !isVariable("button",                         &element)){
 								printLineError(currentLine);
 								continue;
@@ -1212,9 +1209,6 @@ bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo){
 		}
 		fclose(file);
 		value = 1;
-	}
-	if(configInfo){
-		*configInfo = ci;
 	}
 	return value;
 }

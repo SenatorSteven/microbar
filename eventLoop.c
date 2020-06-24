@@ -73,7 +73,7 @@ void eventLoop(void){
 			.argb = NULL,
 			.character = NULL
 		};
-		if(!readConfig(ArrayLengthsConfigMode, &configInfo)){
+		if(!readConfig(ArrayLengthsConfigMode, configInfo)){
 			fprintf(stderr, "%s: could not read array lengths\n", programName);
 		}
 	}
@@ -112,7 +112,7 @@ void eventLoop(void){
 			.characterDimension1 = containerAmount,
 			.characterDimension2 = 1
 		};
-		if(!readConfig(FillArraysConfigMode, &configInfo)){
+		if(!readConfig(FillArraysConfigMode, configInfo)){
 			fprintf(stderr, "%s: could not fill arrays\n", programName);
 		}
 	}
@@ -157,7 +157,7 @@ void eventLoop(void){
 			.argb = NULL,
 			.character = NULL
 		};
-		if(!readConfig(VariableShortcutsConfigMode, &configInfo)){
+		if(!readConfig(VariableShortcutsConfigMode, configInfo)){
 			fprintf(stderr, "%s: could not read variable shortcuts\n", programName);
 		}
 	}
@@ -208,7 +208,7 @@ void eventLoop(void){
 				.argb = NULL,
 				.character = NULL
 			};
-			if(!readConfig(FontOffsetsConfigMode, &configInfo)){
+			if(!readConfig(FontOffsetsConfigMode, configInfo)){
 				fprintf(stderr, "%s: could not read font offsets\n", programName);
 			}
 		}
@@ -230,7 +230,7 @@ void eventLoop(void){
 				.argb = NULL,
 				.character = NULL
 			};
-			if(!readConfig(SectionRectangleAmountConfigMode, &configInfo)){
+			if(!readConfig(SectionRectangleAmountConfigMode, configInfo)){
 				fprintf(stderr, "%s: could not read section rectangle amount\n", programName);
 			}
 		}
@@ -247,7 +247,7 @@ void eventLoop(void){
 				.argb = NULL,
 				.character = NULL
 			};
-			if(!readConfig(SectionChildrenConfigMode, &configInfo)){
+			if(!readConfig(SectionChildrenConfigMode, configInfo)){
 				fprintf(stderr, "%s: could not read section children amount\n", programName);
 			}
 		}
@@ -404,7 +404,8 @@ static void grabKeys(const unsigned int sectionShortcutAmount, const unsigned in
 	return;
 }
 static void grabButtons(void){
-	if(readConfig(ButtonsConfigMode, NULL)){
+	ConfigInfo ci;
+	if(readConfig(ButtonsConfigMode, ci)){
 		XSync(display, False);
 	}else{
 		fprintf(stderr, "%s: could not read buttons\n", programName);
@@ -426,7 +427,7 @@ static XFontSet createFontSet(void){
 		configInfo.unsignedIntegerDimension0 = 1;
 		configInfo.unsignedIntegerDimension1 = 1;
 		configInfo.unsignedIntegerDimension2 = 1;
-		if(!readConfig(FontAmountConfigMode, &configInfo)){
+		if(!readConfig(FontAmountConfigMode, configInfo)){
 			fontAmount = 0;
 		}
 	}
@@ -437,7 +438,7 @@ static XFontSet createFontSet(void){
 			unsigned int **uintArray[1] = {*_uintArray};
 			configInfo.unsignedInteger = uintArray;
 			configInfo.unsignedIntegerDimension2 = fontAmount;
-			if(!readConfig(FontLengthConfigMode, &configInfo)){
+			if(!readConfig(FontLengthConfigMode, configInfo)){
 				fontAmount = 0;
 			}
 		}
@@ -457,7 +458,7 @@ static XFontSet createFontSet(void){
 				configInfo.characterDimension0 = 1;
 				configInfo.characterDimension1 = 1;
 				configInfo.characterDimension2 = 1;
-				if(!readConfig(FontSetConfigMode, &configInfo)){
+				if(!readConfig(FontSetConfigMode, configInfo)){
 					fontAmount = 0;
 				}
 			}
