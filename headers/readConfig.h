@@ -25,7 +25,7 @@ SOFTWARE. */
 #ifndef READCONFIG_H
 #define READCONFIG_H
 
-bool readConfig(const ConfigMode configMode, ConfigInfo *const configInfo);
+bool readConfig(const ConfigMode configMode, ConfigInfo configInfo);
 bool readConfigShortcuts(const unsigned int sectionShortcutAmount, const unsigned int containerShortcutAmount, Shortcut *const interactAll, Shortcut *const interactSection, unsigned int *const sectionNumber, Shortcut *const interactContainer, unsigned int *const containerNumber, Shortcut *const hide, Shortcut *const peek, Shortcut *const restart, Shortcut *const exit);
 
 #endif
