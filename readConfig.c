@@ -392,7 +392,8 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 					}
 					if(configMode == ScanConfigMode){
 						if(line[element]){
-							if(!isVariable("monitor",                      &element) &&
+							if(!isVariable("lines",                        &element) &&
+							   !isVariable("monitor",                      &element) &&
 							   !isVariable("x",                            &element) &&
 							   !isVariable("y",                            &element) &&
 							   !isVariable("width",                        &element) &&
