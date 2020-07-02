@@ -162,14 +162,14 @@ static void start(void){
 						cleanup();
 					}else{
 						fprintf(stderr, "%s: could not create top level windows\n", programName);
-						break;
+						mode = ExitMode;
 					}
 				}else{
-					break;
+					mode = ExitMode;
 				}
 			}else{
 				fprintf(stderr, "%s: there are no monitors to display on\n", programName);
-				break;
+				mode = ExitMode;
 			}
 			XCloseDisplay(display);
 		}else{
@@ -195,11 +195,6 @@ static bool createTopLevelWindows(void){
 		unsigned int border[monitorAmount];
 		ARGB borderColor;
 		ARGB backgroundColor;
-		XVisualInfo visualInfo;
-		XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
-		XSetWindowAttributes setWindowAttributes = {
-			.colormap = XCreateColormap(display, rootWindow, visualInfo.visual, AllocNone)
-		};
 		{
 			const Window *windowArray[1] = {&rootWindow};
 			int *_intArray[1][2] = {{x, y}};
@@ -229,6 +224,11 @@ static bool createTopLevelWindows(void){
 			}
 		}
 		if(mode == ContinueMode){
+			XVisualInfo visualInfo;
+			XMatchVisualInfo(display, XDefaultScreen(display), 32, TrueColor, &visualInfo);
+			XSetWindowAttributes setWindowAttributes = {
+				.colormap = XCreateColormap(display, rootWindow, visualInfo.visual, AllocNone)
+			};
 			for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 				value = 0;
 				if(width[currentMonitor] && height[currentMonitor]){
@@ -300,12 +300,12 @@ static void setTopLevelWindowProperties(void){
 			sizeHints.y = windowAttributes.y;
 			sizeHints.width = windowAttributes.width;
 			sizeHints.height = windowAttributes.height;
-			sizeHints.min_width = windowAttributes.width;
-			sizeHints.min_height = windowAttributes.height;
-			sizeHints.max_width = windowAttributes.width;
-			sizeHints.max_height = windowAttributes.height;
-			sizeHints.base_width = windowAttributes.width;
-			sizeHints.base_height = windowAttributes.height;
+			sizeHints.min_width = sizeHints.width;
+			sizeHints.min_height = sizeHints.height;
+			sizeHints.max_width = sizeHints.width;
+			sizeHints.max_height = sizeHints.height;
+			sizeHints.base_width = sizeHints.width;
+			sizeHints.base_height = sizeHints.height;
 			XSetWMName(display, topLevelWindow[currentMonitor], &textProperty);
 			XSetWMNormalHints(display, topLevelWindow[currentMonitor], &sizeHints);
 			XSetWMHints(display, topLevelWindow[currentMonitor], &WMHints);
@@ -413,19 +413,10 @@ static bool createSubwindows(void){
 				}
 				{
 					const Window *windowArray[1] = {topLevelWindow};
-					int *_intArray[2][monitorAmount];
-					int **intArray[2] = {_intArray[0], _intArray[1]};
-					unsigned int *_uintArray[3][monitorAmount];
-					unsigned int **uintArray[3] = {_uintArray[0], _uintArray[1], _uintArray[2]};
+					int **intArray[2] = {x, y};
+					unsigned int **uintArray[3] = {width, height, border};
 					ARGB *_argbArray[1][2] = {{borderColor, backgroundColor}};
 					ARGB **argbArray[1] = {*_argbArray};
-					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-						intArray[0][currentMonitor] = x[currentMonitor];
-						intArray[1][currentMonitor] = y[currentMonitor];
-						uintArray[0][currentMonitor] = width[currentMonitor];
-						uintArray[1][currentMonitor] = height[currentMonitor];
-						uintArray[2][currentMonitor] = border[currentMonitor];
-					}
 					ConfigInfo configInfo = {
 						.window = (const Window **)windowArray,
 						.integer = intArray,
@@ -493,19 +484,10 @@ static bool createSubwindows(void){
 				}
 				if(mode == ContinueMode){
 					{
-						int *_intArray[2][monitorAmount];
-						int **intArray[2] = {_intArray[0], _intArray[1]};
-						unsigned int *_uintArray[3][monitorAmount];
-						unsigned int **uintArray[3] = {_uintArray[0], _uintArray[1], _uintArray[2]};
+						int **intArray[2] = {x, y};
+						unsigned int **uintArray[3] = {width, height, border};
 						ARGB *_argbArray[1][2] = {{borderColor, backgroundColor}};
 						ARGB **argbArray[1] = {*_argbArray};
-						for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-							intArray[0][currentMonitor] = x[currentMonitor];
-							intArray[1][currentMonitor] = y[currentMonitor];
-							uintArray[0][currentMonitor] = width[currentMonitor];
-							uintArray[1][currentMonitor] = height[currentMonitor];
-							uintArray[2][currentMonitor] = border[currentMonitor];
-						}
 						ConfigInfo configInfo = {
 							.window = (const Window **)section,
 							.integer = intArray,
@@ -586,19 +568,10 @@ static bool createSubwindows(void){
 				border[currentMonitor] = _border[currentMonitor];
 			}
 			{
-				int *_intArray[2][monitorAmount];
-				int **intArray[2] = {_intArray[0], _intArray[1]};
-				unsigned int *_uintArray[3][monitorAmount];
-				unsigned int **uintArray[3] = {_uintArray[0], _uintArray[1], _uintArray[2]};
+				int **intArray[2] = {x, y};
+				unsigned int **uintArray[3] = {width, height, border};
 				ARGB *_argbArray[1][2] = {{borderColor, backgroundColor}};
 				ARGB **argbArray[1] = {*_argbArray};
-				for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
-					intArray[0][currentMonitor] = x[currentMonitor];
-					intArray[1][currentMonitor] = y[currentMonitor];
-					uintArray[0][currentMonitor] = width[currentMonitor];
-					uintArray[1][currentMonitor] = height[currentMonitor];
-					uintArray[2][currentMonitor] = border[currentMonitor];
-				}
 				ConfigInfo configInfo = {
 					.window = (const Window **)container,
 					.integer = intArray,
@@ -637,10 +610,10 @@ static bool createSubwindows(void){
 				}
 				XSync(display, False);
 			}else{
-				fprintf(stderr, "%s: could not create rectangles %u, n\n", programName, currentMonitor);
+				fprintf(stderr, "%s: could not create rectangles\n", programName);
 			}
 		}else{
-			fprintf(stderr, "%s: could not create rectangles %u, n\n", programName, currentMonitor);
+			fprintf(stderr, "%s: could not create rectangles\n", programName);
 		}
 		value = 1;
 	}
@@ -650,12 +623,13 @@ static bool createWindow(Window *const window, const Window parentWindow, const 
 	bool value = 0;
 	if(width && height){
 		value = 1;
-	}
-	if(!width){
-		width = 1;
-	}
-	if(!height){
-		height = 1;
+	}else{
+		if(!width){
+			width = 1;
+		}
+		if(!height){
+			height = 1;
+		}
 	}
 	if(!(*window = XCreateSimpleWindow(display, parentWindow, x, y, width, height, border, borderColor, backgroundColor))){
 		value = 0;

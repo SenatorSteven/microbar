@@ -53,7 +53,7 @@ static void executeCommands(const char drawableCommand, const char *const system
 static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY);
 static bool isCommand(const char *const command, const char *const vector);
 static void hideToggle(const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown);
-static void onExpose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor);
+static void expose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor);
 static void ungrabButtons(void);
 static void ungrabKeys(const unsigned int sectionShortcutAmount, const unsigned int containerShortcutAmount, const Shortcut interactAll, const Shortcut *const interactSection, const Shortcut *const interactContainer, const Shortcut hide, const Shortcut peek, const Shortcut restart, const Shortcut exit);
 
@@ -93,13 +93,7 @@ void eventLoop(void){
 	{
 		ARGB *_argbArray[1][2] = {{textColor, drawableCommandColor}};
 		ARGB **argbArray[1] = {*_argbArray};
-		char *_charArray[3][containerAmount];
-		char **charArray[3] = {_charArray[0], _charArray[1], _charArray[2]};
-		for(unsigned int currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
-			charArray[0][currentContainer] = text[currentContainer];
-			charArray[1][currentContainer] = command[currentContainer];
-			charArray[2][currentContainer] = drawableCommand[currentContainer];
-		}
+		char **charArray[3] = {text, command, drawableCommand};
 		ConfigInfo configInfo = {
 			.integer = NULL,
 			.unsignedInteger = NULL,
@@ -251,10 +245,13 @@ void eventLoop(void){
 				fprintf(stderr, "%s: could not read section children amount\n", programName);
 			}
 		}
-		int rrEventBase = 0;
+		int rrEventBase;
 		{
 			int rrErrorBase;
-			XRRQueryExtension(display, &rrEventBase, &rrErrorBase);
+			if(!XRRQueryExtension(display, &rrEventBase, &rrErrorBase)){
+				fprintf(stderr, "%s: could not query the xrandr extension\n", programName);
+				rrEventBase = 0;
+			}
 		}
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			XMapWindow(display, topLevelWindow[currentMonitor]);
@@ -356,7 +353,7 @@ void eventLoop(void){
 				}
 			}else if(event.type == Expose){
 				if(!event.xexpose.count){
-					onExpose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor);
+					expose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor);
 				}
 			}else if(event.type == RRScreenChangeNotify + rrEventBase){
 				mode = RestartMode;
@@ -378,14 +375,17 @@ static void grabKeys(const unsigned int sectionShortcutAmount, const unsigned in
 	if(interactAll.keycode != AnyKey){
 		XGrabKey(display, interactAll.keycode, interactAll.masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
 	}
-	for(unsigned int currentSectionShortcut = 0; currentSectionShortcut < sectionShortcutAmount; ++currentSectionShortcut){
-		if(interactSection[currentSectionShortcut].keycode != AnyKey){
-			XGrabKey(display, interactSection[currentSectionShortcut].keycode, interactSection[currentSectionShortcut].masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+	{
+		unsigned int currentShortcut;
+		for(currentShortcut = 0; currentShortcut < sectionShortcutAmount; ++currentShortcut){
+			if(interactSection[currentShortcut].keycode != AnyKey){
+				XGrabKey(display, interactSection[currentShortcut].keycode, interactSection[currentShortcut].masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+			}
 		}
-	}
-	for(unsigned int currentContainerShortcut = 0; currentContainerShortcut < containerShortcutAmount; ++currentContainerShortcut){
-		if(interactContainer[currentContainerShortcut].keycode != AnyKey){
-			XGrabKey(display, interactContainer[currentContainerShortcut].keycode, interactContainer[currentContainerShortcut].masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+		for(currentShortcut = 0; currentShortcut < containerShortcutAmount; ++currentShortcut){
+			if(interactContainer[currentShortcut].keycode != AnyKey){
+				XGrabKey(display, interactContainer[currentShortcut].keycode, interactContainer[currentShortcut].masks, XDefaultRootWindow(display), True, GrabModeAsync, GrabModeAsync);
+			}
 		}
 	}
 	if(hide.keycode != AnyKey){
@@ -603,25 +603,29 @@ static void hideToggle(const unsigned int *const topLevelWindowX, const unsigned
 	}
 	return;
 }
-static void onExpose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor){
+static void expose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor){
 	if(containerAmount && fontSet && gc){
+		const Window *c;
 		unsigned int currentContainer;
-		unsigned int length;
 		const char *currentText;
+		Window co;
+		unsigned int length;
 		XRectangle overallSize;
 		XWindowAttributes windowAttributes;
 		int x;
 		int y;
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+			c = container[currentMonitor];
 			for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
 				currentText = text[currentContainer];
 				if(currentText){
+					co = c[currentContainer];
 					length = 0;
 					while(currentText[length]){
 						++length;
 					}
-					XmbTextExtents(fontSet, line, length, NULL, &overallSize);
-					XGetWindowAttributes(display, container[currentMonitor][currentContainer], &windowAttributes);
+					XmbTextExtents(fontSet, currentText, length, NULL, &overallSize);
+					XGetWindowAttributes(display, co, &windowAttributes);
 					x = windowAttributes.width;
 					x -= overallSize.width;
 					x /= 2;
@@ -633,8 +637,8 @@ static void onExpose(const char *const *const text, const XFontSet fontSet, cons
 					y -= overallSize.y;
 					y += textOffsetY[currentContainer];
 					XSetForeground(display, gc, textColor[currentContainer]);
-					XClearWindow(display, container[currentMonitor][currentContainer]);
-					XmbDrawString(display, container[currentMonitor][currentContainer], fontSet, gc, x, y, currentText, length);
+					XClearWindow(display, co);
+					XmbDrawString(display, co, fontSet, gc, x, y, currentText, length);
 				}
 			}
 		}

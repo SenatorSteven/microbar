@@ -97,12 +97,12 @@ static Shortcut getShortcut(unsigned int *const element);
 static Button getButton(unsigned int *const element);
 static void printLineError(const unsigned int currentLine);
 
-bool readConfig(const ConfigMode configMode, ConfigInfo ci){
+bool readConfig(const ConfigMode cm, ConfigInfo ci){
 	bool value = 0;
-	if(configMode == ScanConfigMode){
+	if(cm == ScanConfigMode){
 		whichMonitor = monitorAmount;
 		containerAmount = 0;
-	}else if(configMode != ButtonsConfigMode){
+	}else if(cm != ButtonsConfigMode){
 		unsigned int currentDimension0;
 		unsigned int currentDimension1;
 		unsigned int currentDimension2;
@@ -166,7 +166,6 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 		VariableList hasReadVariable = NoVariables;
 		unsigned int counter0 = 0;
 		unsigned int counter1 = 0;
-		unsigned int e;
 		for(unsigned int currentLine = 1; currentLine <= maxLinesCount; ++currentLine){
 			if(!getLine(file)){
 				break;
@@ -186,7 +185,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 							continue;
 						}
 					}
-					if(configMode == ScanConfigMode){
+					if(cm == ScanConfigMode){
 						if(!(hasReadVariable & MonitorVariable)){
 							if(isVariable("monitor", &element)){
 								pushWhitespace(&element);
@@ -205,13 +204,13 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == TopLevelWindowsConfigMode){
+					}else if(cm == TopLevelWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
 							if(isVariable("x", &element)){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[0][0][currentMonitor] = getInteger(ci.window[0][0], &element);
 										element = e;
@@ -226,7 +225,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[0][1][currentMonitor] = getInteger(ci.window[0][0], &element);
 										element = e;
@@ -241,7 +240,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[0][0][currentMonitor] = getInteger(ci.window[0][0], &element);
 										element = e;
@@ -256,7 +255,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[0][1][currentMonitor] = getInteger(ci.window[0][0], &element);
 										element = e;
@@ -282,7 +281,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[0][2][currentMonitor] = getInteger(ci.window[0][0], &element);
 										element = e;
@@ -303,7 +302,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == SectionWindowsConfigMode){
+					}else if(cm == SectionWindowsConfigMode){
 						if(!(hasReadVariable & GlobalSectionBorderColorVariable)){
 							if(isVariable("globalSectionBorderColor", &element)){
 								pushWhitespace(&element);
@@ -332,7 +331,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == VariableShortcutsConfigMode){
+					}else if(cm == VariableShortcutsConfigMode){
 						if(isVariable("keycode", &element)){
 							pushWhitespace(&element);
 							getShortcut(&element);
@@ -346,7 +345,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 							}
 							continue;
 						}
-					}else if(configMode == FontAmountConfigMode){
+					}else if(cm == FontAmountConfigMode){
 						if(isVariable("font", &element)){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
@@ -354,7 +353,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 							}
 							continue;
 						}
-					}else if(configMode == FontLengthConfigMode){
+					}else if(cm == FontLengthConfigMode){
 						if(isVariable("font", &element)){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
@@ -364,18 +363,17 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 							}
 							continue;
 						}
-					}else if(configMode == FontSetConfigMode){
+					}else if(cm == FontSetConfigMode){
 						if(isVariable("font", &element)){
 							pushWhitespace(&element);
 							if(isVariable("=", &element)){
 								pushWhitespace(&element);
-								if(counter1){
+								if(counter0){
 									ci.character[0][0][counter0] = ',';
 									++counter0;
 								}
 								counter0 += getQuotedString(&ci.character[0][0][counter0], &element);
 								ci.character[0][0][counter0] = '\0';
-								++counter1;
 							}
 							continue;
 						}
@@ -383,14 +381,14 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 					if(isVariable("section", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							if(configMode == SectionRectangleAmountConfigMode){
+							if(cm == SectionRectangleAmountConfigMode){
 								++ci.unsignedInteger[0][0][0];
 							}
 							hasReadVariable |= SectionVariable;
 						}
 						continue;
 					}
-					if(configMode == ScanConfigMode){
+					if(cm == ScanConfigMode){
 						if(line[element]){
 							if(!isVariable("lines",                        &element) &&
 							   !isVariable("monitor",                      &element) &&
@@ -411,13 +409,13 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						}
 					}
 				}else if(!(hasReadVariable & ContainerVariable)){
-					if(configMode == SectionWindowsConfigMode){
+					if(cm == SectionWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
 							if(isVariable("x", &element)){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[0][currentMonitor][counter0] = getInteger(ci.window[0][currentMonitor], &element);
 										element = e;
@@ -432,7 +430,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[1][currentMonitor][counter0] = getInteger(ci.window[0][currentMonitor], &element);
 										element = e;
@@ -447,7 +445,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[0][currentMonitor][counter0] = getUnsignedInteger(currentLine, ci.window[0][currentMonitor], &element);
 										element = e;
@@ -462,7 +460,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[1][currentMonitor][counter0] = getUnsignedInteger(currentLine, ci.window[0][currentMonitor], &element);
 										element = e;
@@ -488,7 +486,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[2][currentMonitor][counter0] = getUnsignedInteger(currentLine, ci.window[0][currentMonitor], &element);
 										element = e;
@@ -509,7 +507,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == ContainerWindowsConfigMode){
+					}else if(cm == ContainerWindowsConfigMode){
 						if(!(hasReadVariable & GlobalContainerBorderColorVariable)){
 							if(isVariable("globalContainerBorderColor", &element)){
 								pushWhitespace(&element);
@@ -538,7 +536,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == FillArraysConfigMode){
+					}else if(cm == FillArraysConfigMode){
 						if(!(hasReadVariable & GlobalTextColorVariable)){
 							if(isVariable("globalTextColor", &element)){
 								pushWhitespace(&element);
@@ -571,9 +569,9 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 					if(isVariable("container", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							if(configMode == ScanConfigMode){
+							if(cm == ScanConfigMode){
 								++containerAmount;
-							}else if(configMode == SectionChildrenConfigMode){
+							}else if(cm == SectionChildrenConfigMode){
 								++ci.unsignedInteger[0][0][counter0];
 							}
 							hasReadVariable |= ContainerVariable;
@@ -581,7 +579,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						continue;
 					}
 					if(isVariable("}", &element)){
-						if(configMode == SectionWindowsConfigMode){
+						if(cm == SectionWindowsConfigMode){
 							if(hasReadVariable & XVariable){
 								hasReadVariable ^= XVariable;
 							}
@@ -604,9 +602,9 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								hasReadVariable ^= BackgroundColorVariable;
 							}
 							++counter0;
-						}else if(configMode == SectionChildrenConfigMode){
+						}else if(cm == SectionChildrenConfigMode){
 							++counter0;
-						}else if(configMode == ContainerWindowsConfigMode){
+						}else if(cm == ContainerWindowsConfigMode){
 							++counter0;
 							if(hasReadVariable & GlobalContainerBorderColorVariable){
 								hasReadVariable ^= GlobalContainerBorderColorVariable;
@@ -618,7 +616,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								ci.argb[0][0][currentContainer] = 0x00000000;
 								ci.argb[0][1][currentContainer] = 0x00000000;
 							}
-						}else if(configMode == FillArraysConfigMode){
+						}else if(cm == FillArraysConfigMode){
 							if(hasReadVariable & GlobalTextColorVariable){
 								hasReadVariable ^= GlobalTextColorVariable;
 							}
@@ -633,7 +631,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						hasReadVariable ^= SectionVariable;
 						continue;
 					}
-					if(configMode == ScanConfigMode){
+					if(cm == ScanConfigMode){
 						if(line[element]){
 							if(!isVariable("x",                              &element) &&
 							   !isVariable("y",                              &element) &&
@@ -652,13 +650,13 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						}
 					}
 				}else if(!(hasReadVariable & RectangleVariable)){
-					if(configMode == ContainerWindowsConfigMode){
+					if(cm == ContainerWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
 							if(isVariable("x", &element)){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -673,7 +671,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -688,7 +686,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -703,7 +701,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -729,7 +727,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[2][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -750,7 +748,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == RectangleWindowsConfigMode){
+					}else if(cm == RectangleWindowsConfigMode){
 						if(!(hasReadVariable & GlobalRectangleBorderColorVariable)){
 							if(isVariable("globalRectangleBorderColor", &element)){
 								pushWhitespace(&element);
@@ -779,13 +777,13 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == ArrayLengthsConfigMode){
+					}else if(cm == ArrayLengthsConfigMode){
 						if(!(hasReadVariable & TextVariable)){
 							if(isVariable("text", &element)){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									unsigned int length = getQuotedStringLength(&element);
+									const unsigned int length = getQuotedStringLength(&element);
 									if(length > ci.unsignedInteger[0][0][0]){
 										ci.unsignedInteger[0][0][0] = length;
 									}
@@ -799,7 +797,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									unsigned int length = getQuotedStringLength(&element);
+									const unsigned int length = getQuotedStringLength(&element);
 									if(length > ci.unsignedInteger[0][1][0]){
 										ci.unsignedInteger[0][1][0] = length;
 									}
@@ -813,7 +811,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									unsigned int length = getQuotedStringLength(&element);
+									const unsigned int length = getQuotedStringLength(&element);
 									if(length > ci.unsignedInteger[0][2][0]){
 										ci.unsignedInteger[0][2][0] = length;
 									}
@@ -822,7 +820,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == FillArraysConfigMode){
+					}else if(cm == FillArraysConfigMode){
 						if(!(hasReadVariable & TextVariable)){
 							if(isVariable("text", &element)){
 								pushWhitespace(&element);
@@ -877,7 +875,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == ButtonsConfigMode){
+					}else if(cm == ButtonsConfigMode){
 						if(!(hasReadVariable & ButtonVariable)){
 							if(isVariable("button", &element)){
 								pushWhitespace(&element);
@@ -891,7 +889,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								continue;
 							}
 						}
-					}else if(configMode == FontOffsetsConfigMode){
+					}else if(cm == FontOffsetsConfigMode){
 						if(!(hasReadVariable & TextOffsetXVariable)){
 							if(isVariable("textOffsetX", &element)){
 								pushWhitespace(&element);
@@ -940,9 +938,9 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 					if(isVariable("rectangle", &element)){
 						pushWhitespace(&element);
 						if(isVariable("{", &element)){
-							if(configMode == SectionRectangleAmountConfigMode){
+							if(cm == SectionRectangleAmountConfigMode){
 								++ci.unsignedInteger[0][1][0];
-							}else if(configMode == ContainerChildrenConfigMode){
+							}else if(cm == ContainerChildrenConfigMode){
 								++ci.unsignedInteger[0][0][counter0];
 							}
 							hasReadVariable |= RectangleVariable;
@@ -950,7 +948,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						continue;
 					}
 					if(isVariable("}", &element)){
-						if(configMode == ContainerWindowsConfigMode){
+						if(cm == ContainerWindowsConfigMode){
 							if(hasReadVariable & XVariable){
 								hasReadVariable ^= XVariable;
 							}
@@ -973,9 +971,9 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								hasReadVariable ^= BackgroundColorVariable;
 							}
 							++counter1;
-						}else if(configMode == ContainerChildrenConfigMode){
+						}else if(cm == ContainerChildrenConfigMode){
 							++counter0;
-						}else if(configMode == RectangleWindowsConfigMode){
+						}else if(cm == RectangleWindowsConfigMode){
 							++counter0;
 							if(hasReadVariable & GlobalRectangleBorderColorVariable){
 								hasReadVariable ^= GlobalRectangleBorderColorVariable;
@@ -987,7 +985,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								ci.argb[0][0][currentRectangle] = 0x00000000;
 								ci.argb[0][1][currentRectangle] = 0x00000000;
 							}
-						}else if(configMode == ArrayLengthsConfigMode){
+						}else if(cm == ArrayLengthsConfigMode){
 							if(hasReadVariable & TextVariable){
 								hasReadVariable ^= TextVariable;
 							}
@@ -997,7 +995,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 							if(hasReadVariable & DrawableCommandVariable){
 								hasReadVariable ^= DrawableCommandVariable;
 							}
-						}else if(configMode == FillArraysConfigMode){
+						}else if(cm == FillArraysConfigMode){
 							if(hasReadVariable & TextVariable){
 								hasReadVariable ^= TextVariable;
 							}
@@ -1014,12 +1012,12 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								hasReadVariable ^= DrawableCommandColorVariable;
 							}
 							++counter0;
-						}else if(configMode == ButtonsConfigMode){
+						}else if(cm == ButtonsConfigMode){
 							if(hasReadVariable & ButtonVariable){
 								hasReadVariable ^= ButtonVariable;
 							}
 							++counter0;
-						}else if(configMode == FontOffsetsConfigMode){
+						}else if(cm == FontOffsetsConfigMode){
 							if(hasReadVariable & TextOffsetXVariable){
 								hasReadVariable ^= TextOffsetXVariable;
 							}
@@ -1037,7 +1035,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						hasReadVariable ^= ContainerVariable;
 						continue;
 					}
-					if(configMode == ScanConfigMode){
+					if(cm == ScanConfigMode){
 						if(line[element]){
 							if(!isVariable("x",                              &element) &&
 							   !isVariable("y",                              &element) &&
@@ -1064,13 +1062,13 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						}
 					}
 				}else{
-					if(configMode == RectangleWindowsConfigMode){
+					if(cm == RectangleWindowsConfigMode){
 						if(!(hasReadVariable & XVariable)){
 							if(isVariable("x", &element)){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -1085,7 +1083,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.integer[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -1100,7 +1098,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[0][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -1115,7 +1113,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[1][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -1141,7 +1139,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									e = element;
+									const unsigned int e = element;
 									for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 										ci.unsignedInteger[2][currentMonitor][counter1] = getUnsignedInteger(currentLine, ci.window[currentMonitor][counter0], &element);
 										element = e;
@@ -1164,7 +1162,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						}
 					}
 					if(isVariable("}", &element)){
-						if(configMode == RectangleWindowsConfigMode){
+						if(cm == RectangleWindowsConfigMode){
 							if(hasReadVariable & XVariable){
 								hasReadVariable ^= XVariable;
 							}
@@ -1191,7 +1189,7 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 						hasReadVariable ^= RectangleVariable;
 						continue;
 					}
-					if(configMode == ScanConfigMode){
+					if(cm == ScanConfigMode){
 						if(line[element]){
 							if(!isVariable("x",               &element) &&
 							   !isVariable("y",               &element) &&
@@ -1215,26 +1213,24 @@ bool readConfig(const ConfigMode configMode, ConfigInfo ci){
 }
 bool readConfigShortcuts(const unsigned int sectionShortcutAmount, const unsigned int containerShortcutAmount, Shortcut *const interactAll, Shortcut *const interactSection, unsigned int *const sectionNumber, Shortcut *const interactContainer, unsigned int *const containerNumber, Shortcut *const hide, Shortcut *const peek, Shortcut *const restart, Shortcut *const exit){
 	bool value = 0;
+	Shortcut s = {
+		.keycode = AnyKey,
+		.masks = None
+	};
+	(*interactAll) = s;
+	(*hide) = s;
+	(*peek) = s;
+	(*restart) = s;
+	(*exit) = s;
 	unsigned int currentSectionShortcut;
 	unsigned int currentContainerShortcut;
-	{
-		const Shortcut shortcut = {
-			.keycode = AnyKey,
-			.masks = None
-		};
-		(*interactAll) = shortcut;
-		(*hide) = shortcut;
-		(*peek) = shortcut;
-		(*restart) = shortcut;
-		(*exit) = shortcut;
-		for(currentSectionShortcut = 0; currentSectionShortcut < sectionShortcutAmount; ++currentSectionShortcut){
-			interactSection[currentSectionShortcut] = shortcut;
-			sectionNumber[currentSectionShortcut] = 0;
-		}
-		for(currentContainerShortcut = 0; currentContainerShortcut < containerShortcutAmount; ++currentContainerShortcut){
-			interactContainer[currentContainerShortcut] = shortcut;
-			containerNumber[currentContainerShortcut] = 0;
-		}
+	for(currentSectionShortcut = 0; currentSectionShortcut < sectionShortcutAmount; ++currentSectionShortcut){
+		interactSection[currentSectionShortcut] = s;
+		sectionNumber[currentSectionShortcut] = 0;
+	}
+	for(currentContainerShortcut = 0; currentContainerShortcut < containerShortcutAmount; ++currentContainerShortcut){
+		interactContainer[currentContainerShortcut] = s;
+		containerNumber[currentContainerShortcut] = 0;
 	}
 	FILE *const file = getConfigFile();
 	if(file){
@@ -1264,39 +1260,39 @@ bool readConfigShortcuts(const unsigned int sectionShortcutAmount, const unsigne
 					}
 					if(isVariable("keycode", &element)){
 						pushWhitespace(&element);
-						const Shortcut shortcut = getShortcut(&element);
+						s = getShortcut(&element);
 						if(isVariable("interact", &element)){
 							pushWhitespace(&element);
 							if(isVariable("all", &element)){
 								if(!(hasReadVariable & InteractAllVariable)){
-									(*interactAll) = shortcut;
+									(*interactAll) = s;
 								}
 							}else if(isVariable("section", &element)){
 								pushWhitespace(&element);
-								interactSection[currentSectionShortcut] = shortcut;
+								interactSection[currentSectionShortcut] = s;
 								sectionNumber[currentSectionShortcut] = getUnsignedInteger(currentLine, None, &element);
 								++currentSectionShortcut;
 							}else if(isVariable("container", &element)){
 								pushWhitespace(&element);
-								interactContainer[currentContainerShortcut] = shortcut;
+								interactContainer[currentContainerShortcut] = s;
 								containerNumber[currentContainerShortcut] = getUnsignedInteger(currentLine, None, &element);
 								++currentContainerShortcut;
 							}
 						}else if(isVariable("hide", &element)){
 							if(!(hasReadVariable & HideVariable)){
-								(*hide) = shortcut;
+								(*hide) = s;
 							}
 						}else if(isVariable("peek", &element)){
 							if(!(hasReadVariable & PeekVariable)){
-								(*peek) = shortcut;
+								(*peek) = s;
 							}
 						}else if(isVariable("restart", &element)){
 							if(!(hasReadVariable & RestartVariable)){
-								(*restart) = shortcut;
+								(*restart) = s;
 							}
 						}else if(isVariable("exit", &element)){
 							if(!(hasReadVariable & ExitVariable)){
-								(*exit) = shortcut;
+								(*exit) = s;
 							}
 						}
 						continue;
