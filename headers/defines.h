@@ -61,21 +61,21 @@ typedef uint8_t ConfigMode;
 typedef struct{
 	const Window **window;
 	int ***integer;
-	unsigned int integerDimension0;
-	unsigned int integerDimension1;
-	unsigned int integerDimension2;
+	uint8_t integerDimension0;
+	uint8_t integerDimension1;
+	uint8_t integerDimension2;
 	unsigned int ***unsignedInteger;
-	unsigned int unsignedIntegerDimension0;
-	unsigned int unsignedIntegerDimension1;
-	unsigned int unsignedIntegerDimension2;
+	uint8_t unsignedIntegerDimension0;
+	uint8_t unsignedIntegerDimension1;
+	uint8_t unsignedIntegerDimension2;
 	ARGB ***argb;
-	unsigned int argbDimension0;
-	unsigned int argbDimension1;
-	unsigned int argbDimension2;
+	uint8_t argbDimension0;
+	uint8_t argbDimension1;
+	uint8_t argbDimension2;
 	char ***character;
-	unsigned int characterDimension0;
-	unsigned int characterDimension1;
-	unsigned int characterDimension2;
+	uint8_t characterDimension0;
+	uint8_t characterDimension1;
+	uint8_t characterDimension2;
 } ConfigInfo;
 
 typedef struct{
