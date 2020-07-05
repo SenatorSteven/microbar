@@ -354,7 +354,7 @@ static void setTopLevelWindowProperties(void){
 				}
 			}
 			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
-			XSelectInput(display, topLevelWindow[currentMonitor], KeyPressMask | ButtonPressMask | ExposureMask);
+			XSelectInput(display, topLevelWindow[currentMonitor], ExposureMask);
 			XRRSelectInput(display, topLevelWindow[currentMonitor], RRScreenChangeNotifyMask);
 		}
 		XRRFreeMonitors(monitorInfo);

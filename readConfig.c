@@ -103,9 +103,9 @@ bool readConfig(const ConfigMode cm, ConfigInfo ci){
 		whichMonitor = monitorAmount;
 		containerAmount = 0;
 	}else if(cm != ButtonsConfigMode){
-		unsigned int currentDimension0;
-		unsigned int currentDimension1;
-		unsigned int currentDimension2;
+		uint8_t currentDimension0;
+		uint8_t currentDimension1;
+		uint8_t currentDimension2;
 		if(ci.integer){
 			int **dimension0;
 			int *dimension1;
@@ -783,9 +783,15 @@ bool readConfig(const ConfigMode cm, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									const unsigned int length = getQuotedStringLength(&element);
-									if(length > ci.unsignedInteger[0][0][0]){
-										ci.unsignedInteger[0][0][0] = length;
+									if(isVariable("drawableCommand", &element)){
+										if(15 > ci.unsignedInteger[0][0][0]){
+											ci.unsignedInteger[0][0][0] = 15;
+										}
+									}else{
+										const unsigned int length = getQuotedStringLength(&element);
+										if(length > ci.unsignedInteger[0][0][0]){
+											ci.unsignedInteger[0][0][0] = length;
+										}
 									}
 									hasReadVariable |= TextVariable;
 								}
@@ -826,7 +832,27 @@ bool readConfig(const ConfigMode cm, ConfigInfo ci){
 								pushWhitespace(&element);
 								if(isVariable("=", &element)){
 									pushWhitespace(&element);
-									ci.character[0][counter0][getQuotedString(ci.character[0][counter0], &element)] = '\0';
+									if(isVariable("drawableCommand", &element)){
+										char *const character = ci.character[0][counter0];
+										character[0] = 'd';
+										character[1] = 'r';
+										character[2] = 'a';
+										character[3] = 'w';
+										character[4] = 'a';
+										character[5] = 'b';
+										character[6] = 'l';
+										character[7] = 'e';
+										character[8] = 'C';
+										character[9] = 'o';
+										character[10] = 'm';
+										character[11] = 'm';
+										character[12] = 'a';
+										character[13] = 'n';
+										character[14] = 'd';
+										character[15] = '\0';
+									}else{
+										ci.character[0][counter0][getQuotedString(ci.character[0][counter0], &element)] = '\0';
+									}
 									hasReadVariable |= TextVariable;
 								}
 								continue;
@@ -1428,7 +1454,7 @@ static FILE *getConfigFile(void){
 			fprintf(config, "# keycode: modifiers: AnyModifier, Shift, Lock, Control, Mod1, Mod2, Mod3, Mod4, Mod5\n");
 			fprintf(config, "# keycode: program commands: interact, hide, peek, restart, exit\n");
 			fprintf(config, "# keycode: interact: all, section n, container n\n");
-			fprintf(config, "# text: requires quotation\n");
+			fprintf(config, "# text: can take drawableCommand as text, requires quotation otherwise\n");
 			fprintf(config, "# command: requires quotation, program commands: hide, peek, restart, exit\n");
 			fprintf(config, "# drawableCommand: requires quotation\n");
 			fprintf(config, "# button: does not take \'=\'\n");
@@ -1942,11 +1968,7 @@ static Button getButton(unsigned int *const element){
 }
 static void printLineError(const unsigned int currentLine){
 	unsigned int element = 0;
-	fprintf(stderr, "%s: line %u: \"", programName, currentLine);
-	while(line[element]){
-		fprintf(stderr, "%c", line[element]);
-		++element;
-	}
-	fprintf(stderr, "\" not recognized as an internal variable\n");
+	pushWhitespace(&element);
+	fprintf(stderr, "%s: line %u: \"%s\" not recognized as an internal variable\n", programName, currentLine, &line[element]);
 	return;
 }

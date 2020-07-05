@@ -50,10 +50,10 @@ static void grabButtons(void);
 static XFontSet createFontSet(void);
 static GC createGC(void);
 static void executeCommands(const char drawableCommand, const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY, const char *const command, const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown);
-static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY);
+static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const int drawableCommandOffsetX, const int drawableCommandOffsetY);
 static bool isCommand(const char *const command, const char *const vector);
 static void hideToggle(const unsigned int *const topLevelWindowX, const unsigned int *const topLevelWindowY, bool *const topLevelWindowsMapped, bool *const topLevelWindowsShown);
-static void expose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor);
+static void expose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor, const char *const *const systemCommand, const ARGB *const drawableCommandColor, const int *const drawableCommandOffsetX, const int *const drawableCommandOffsetY);
 static void ungrabButtons(void);
 static void ungrabKeys(const unsigned int sectionShortcutAmount, const unsigned int containerShortcutAmount, const Shortcut interactAll, const Shortcut *const interactSection, const Shortcut *const interactContainer, const Shortcut hide, const Shortcut peek, const Shortcut restart, const Shortcut exit);
 
@@ -353,7 +353,7 @@ void eventLoop(void){
 				}
 			}else if(event.type == Expose){
 				if(!event.xexpose.count){
-					expose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor);
+					expose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor, systemCommand, drawableCommandColor, drawableCommandOffsetX, drawableCommandOffsetY);
 				}
 			}else if(event.type == RRScreenChangeNotify + rrEventBase){
 				mode = RestartMode;
@@ -511,7 +511,7 @@ static void executeCommands(const char drawableCommand, const char *const system
 	}
 	return;
 }
-static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const unsigned int drawableCommandOffsetX, const unsigned int drawableCommandOffsetY){
+static void drawCommand(const char *const systemCommand, const Window container, const XFontSet fontSet, const GC gc, const ARGB drawableCommandColor, const int drawableCommandOffsetX, const int drawableCommandOffsetY){
 	if(fontSet && gc){
 		system(systemCommand);
 		FILE *const file = fopen(drawableCommandPath, "r");
@@ -603,7 +603,7 @@ static void hideToggle(const unsigned int *const topLevelWindowX, const unsigned
 	}
 	return;
 }
-static void expose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor){
+static void expose(const char *const *const text, const XFontSet fontSet, const int *const textOffsetX, const int *const textOffsetY, const GC gc, const ARGB *const textColor, const char *const *const systemCommand, const ARGB *const drawableCommandColor, const int *const drawableCommandOffsetX, const int *const drawableCommandOffsetY){
 	if(containerAmount && fontSet && gc){
 		const Window *c;
 		unsigned int currentContainer;
@@ -620,25 +620,29 @@ static void expose(const char *const *const text, const XFontSet fontSet, const 
 				currentText = text[currentContainer];
 				if(currentText){
 					co = c[currentContainer];
-					length = 0;
-					while(currentText[length]){
-						++length;
+					if(isCommand("drawableCommand", currentText)){
+						drawCommand(systemCommand[currentContainer], co, fontSet, gc, drawableCommandColor[currentContainer], drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer]);
+					}else{
+						length = 0;
+						while(currentText[length]){
+							++length;
+						}
+						XmbTextExtents(fontSet, currentText, length, NULL, &overallSize);
+						XGetWindowAttributes(display, co, &windowAttributes);
+						x = windowAttributes.width;
+						x -= overallSize.width;
+						x /= 2;
+						x -= overallSize.x;
+						x += textOffsetX[currentContainer];
+						y = windowAttributes.height;
+						y -= overallSize.height;
+						y /= 2;
+						y -= overallSize.y;
+						y += textOffsetY[currentContainer];
+						XSetForeground(display, gc, textColor[currentContainer]);
+						XClearWindow(display, co);
+						XmbDrawString(display, co, fontSet, gc, x, y, currentText, length);
 					}
-					XmbTextExtents(fontSet, currentText, length, NULL, &overallSize);
-					XGetWindowAttributes(display, co, &windowAttributes);
-					x = windowAttributes.width;
-					x -= overallSize.width;
-					x /= 2;
-					x -= overallSize.x;
-					x += textOffsetX[currentContainer];
-					y = windowAttributes.height;
-					y -= overallSize.height;
-					y /= 2;
-					y -= overallSize.y;
-					y += textOffsetY[currentContainer];
-					XSetForeground(display, gc, textColor[currentContainer]);
-					XClearWindow(display, co);
-					XmbDrawString(display, co, fontSet, gc, x, y, currentText, length);
 				}
 			}
 		}
