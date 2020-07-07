@@ -275,6 +275,9 @@ void eventLoop(void){
 					}
 				}else if(event.xkey.keycode == hide.keycode && event.xkey.state == hide.masks){
 					hideToggle(topLevelWindowX, topLevelWindowY, &topLevelWindowsMapped, &topLevelWindowsShown);
+					if(topLevelWindowsMapped){
+						goto expose;
+					}
 				}else if(event.xkey.keycode == peek.keycode && event.xkey.state == peek.masks){
 					if(!topLevelWindowsMapped){
 						for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
@@ -283,6 +286,7 @@ void eventLoop(void){
 						}
 						topLevelWindowsShown = 1;
 					}
+					goto expose;
 				}else if(event.xkey.keycode == restart.keycode && event.xkey.state == restart.masks){
 					mode = RestartMode;
 					break;
