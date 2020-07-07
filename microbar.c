@@ -91,7 +91,7 @@ int main(const int argumentCount, const char *const *const argumentVector){
 }
 static void start(void){
 	drawableCommandPathLength = workplacePathLength;
-	drawableCommandPathLength += 16;
+	drawableCommandPathLength += 17;
 	char _drawableCommandPath[drawableCommandPathLength + 1];
 	{
 		unsigned int element = 0;
@@ -99,6 +99,7 @@ static void start(void){
 			_drawableCommandPath[element] = workplacePath[element];
 		}
 		_drawableCommandPath[element] = '/';
+		_drawableCommandPath[++element] = '.';
 		_drawableCommandPath[++element] = 'd';
 		_drawableCommandPath[++element] = 'r';
 		_drawableCommandPath[++element] = 'a';
