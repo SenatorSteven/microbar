@@ -256,6 +256,7 @@ void eventLoop(void){
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			XMapWindow(display, topLevelWindow[currentMonitor]);
 		}
+		goto expose;
 		for(;;){
 			XNextEvent(display, &event);
 			if(event.type == KeyPress){
@@ -353,7 +354,10 @@ void eventLoop(void){
 				}
 			}else if(event.type == Expose){
 				if(!event.xexpose.count){
-					expose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor, systemCommand, drawableCommandColor, drawableCommandOffsetX, drawableCommandOffsetY);
+					expose:{
+						XSync(display, False);
+						expose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor, systemCommand, drawableCommandColor, drawableCommandOffsetX, drawableCommandOffsetY);
+					}
 				}
 			}else if(event.type == RRScreenChangeNotify + rrEventBase){
 				mode = RestartMode;
