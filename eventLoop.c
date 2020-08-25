@@ -208,12 +208,13 @@ void eventLoop(void){
 		}
 		const GC gc = createGC();
 		unsigned int currentShortcut;
-		unsigned int startingPoint;
 		unsigned int currentSection;
+		unsigned int startingPoint;
+		unsigned int sectionAmount;
 		unsigned int endingPoint;
 		{
 			unsigned int rectangleAmount;
-			unsigned int *_uintArray[1][2] = {{&currentSection, &rectangleAmount}};
+			unsigned int *_uintArray[1][2] = {{&sectionAmount, &rectangleAmount}};
 			unsigned int **uintArray[1] = {*_uintArray};
 			ConfigInfo configInfo = {
 				.integer = NULL,
@@ -228,7 +229,7 @@ void eventLoop(void){
 				fprintf(stderr, "%s: could not read section rectangle amount\n", programName);
 			}
 		}
-		unsigned int sectionChildrenAmount[currentSection];
+		unsigned int sectionChildrenAmount[sectionAmount];
 		{
 			unsigned int *_uintArray[1][1] = {{sectionChildrenAmount}};
 			unsigned int **uintArray[1] = {*_uintArray};
@@ -237,7 +238,7 @@ void eventLoop(void){
 				.unsignedInteger = uintArray,
 				.unsignedIntegerDimension0 = 1,
 				.unsignedIntegerDimension1 = 1,
-				.unsignedIntegerDimension2 = currentSection,
+				.unsignedIntegerDimension2 = sectionAmount,
 				.argb = NULL,
 				.character = NULL
 			};
@@ -300,10 +301,8 @@ void eventLoop(void){
 							for(currentSection = 0; currentSection < sectionNumber[currentShortcut]; ++currentSection){
 								startingPoint += sectionChildrenAmount[currentSection];
 							}
-							endingPoint = containerAmount;
-							endingPoint -= startingPoint;
-							endingPoint -= sectionChildrenAmount[sectionNumber[currentShortcut]];
-							endingPoint = containerAmount - endingPoint;
+							endingPoint = startingPoint;
+							endingPoint += sectionChildrenAmount[sectionNumber[currentShortcut]];
 							for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 								for(currentContainer = startingPoint; currentContainer < endingPoint; ++currentContainer){
 									executeCommands(*drawableCommand[currentContainer], systemCommand[currentContainer], container[currentMonitor][currentContainer], fontSet, gc, drawableCommandColor[currentContainer], drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer], command[currentContainer], topLevelWindowX, topLevelWindowY, &topLevelWindowsMapped, &topLevelWindowsShown);
@@ -361,6 +360,80 @@ void eventLoop(void){
 					expose:{
 						XSync(display, False);
 						expose((const char *const *const)text, fontSet, textOffsetX, textOffsetY, gc, textColor, systemCommand, drawableCommandColor, drawableCommandOffsetX, drawableCommandOffsetY);
+					}
+				}
+			}else if(event.type == ClientMessage){
+				if(event.xclient.message_type == XInternAtom(display, "ALL", False)){
+					for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+						for(currentContainer = 0; currentContainer < containerAmount; ++currentContainer){
+							executeCommands(*drawableCommand[currentContainer], systemCommand[currentContainer], container[currentMonitor][currentContainer], fontSet, gc, drawableCommandColor[currentContainer], drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer], command[currentContainer], topLevelWindowX, topLevelWindowY, &topLevelWindowsMapped, &topLevelWindowsShown);
+							if(mode != ContinueMode){
+								currentMonitor = monitorAmount;
+								break;
+							}
+						}
+					}
+					if(mode != ContinueMode){
+						break;
+					}
+				}else if(event.xclient.message_type == XInternAtom(display, "SECTION", False)){
+					char *const name = XGetAtomName(display, event.xclient.data.l[0]);
+					if(name){
+						currentSection = 0;
+						{
+							unsigned int element = 0;
+							while(name[element]){
+								currentSection *= 10;
+								currentSection += name[element];
+								currentSection -= 48;
+								++element;
+							}
+						}
+						XFree(name);
+						if(currentSection < sectionAmount){
+							startingPoint = 0;
+							{
+								unsigned int currentChildrenAmount;
+								for(currentChildrenAmount = 0; currentChildrenAmount < currentSection; ++currentChildrenAmount){
+									startingPoint += sectionChildrenAmount[currentChildrenAmount];
+								}
+								endingPoint = startingPoint;
+								endingPoint += sectionChildrenAmount[currentChildrenAmount];
+							}
+							for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+								for(currentContainer = startingPoint; currentContainer < endingPoint; ++currentContainer){
+									executeCommands(*drawableCommand[currentContainer], systemCommand[currentContainer], container[currentMonitor][currentContainer], fontSet, gc, drawableCommandColor[currentContainer], drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer], command[currentContainer], topLevelWindowX, topLevelWindowY, &topLevelWindowsMapped, &topLevelWindowsShown);
+									if(mode != ContinueMode){
+										currentMonitor = monitorAmount;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}else if(event.xclient.message_type == XInternAtom(display, "CONTAINER", False)){
+					char *const name = XGetAtomName(display, event.xclient.data.l[0]);
+					if(name){
+						currentContainer = 0;
+						{
+							unsigned int element = 0;
+							while(name[element]){
+								currentContainer *= 10;
+								currentContainer += name[element];
+								currentContainer -= 48;
+								++element;
+							}
+						}
+						XFree(name);
+						if(currentContainer < containerAmount){
+							for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
+								executeCommands(*drawableCommand[currentContainer], systemCommand[currentContainer], container[currentMonitor][currentContainer], fontSet, gc, drawableCommandColor[currentContainer], drawableCommandOffsetX[currentContainer], drawableCommandOffsetY[currentContainer], command[currentContainer], topLevelWindowX, topLevelWindowY, &topLevelWindowsMapped, &topLevelWindowsShown);
+								if(mode != ContinueMode){
+									currentMonitor = monitorAmount;
+									break;
+								}
+							}
+						}
 					}
 				}
 			}else if(event.type == RRScreenChangeNotify + rrEventBase){

@@ -94,7 +94,7 @@ static void start(void){
 	drawableCommandPathLength += 17;
 	char _drawableCommandPath[drawableCommandPathLength + 1];
 	{
-		unsigned int element = 0;
+		unsigned int element;
 		for(element = 0; element < workplacePathLength; ++element){
 			_drawableCommandPath[element] = workplacePath[element];
 		}
@@ -242,7 +242,7 @@ static bool createTopLevelWindows(void){
 					}
 					setWindowAttributes.background_pixel = backgroundColor;
 					setWindowAttributes.border_pixel = borderColor;
-					topLevelWindow[currentMonitor] = XCreateWindow(display, rootWindow, x[currentMonitor], y[currentMonitor], width[currentMonitor], height[currentMonitor], border[currentMonitor], visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWOverrideRedirect | CWColormap, &setWindowAttributes);
+					topLevelWindow[currentMonitor] = XCreateWindow(display, rootWindow, x[currentMonitor], y[currentMonitor], width[currentMonitor], height[currentMonitor], border[currentMonitor], visualInfo.depth, InputOutput, visualInfo.visual, CWBackPixel | CWBorderPixel | CWColormap, &setWindowAttributes);
 					XSync(display, False);
 					value = 1;
 				}
@@ -295,6 +295,7 @@ static void setTopLevelWindowProperties(void){
 	unsigned int trueMonitorAmount;
 	XRRMonitorInfo *const monitorInfo = XRRGetMonitors(display, XDefaultRootWindow(display), True, (int *)&trueMonitorAmount);
 	if(monitorInfo){
+		const Atom UTF8_STRING = XInternAtom(display, "UTF8_STRING", False);
 		for(currentMonitor = 0; currentMonitor < monitorAmount; ++currentMonitor){
 			XGetWindowAttributes(display, topLevelWindow[currentMonitor], &windowAttributes);
 			sizeHints.x = windowAttributes.x;
@@ -311,8 +312,8 @@ static void setTopLevelWindowProperties(void){
 			XSetWMNormalHints(display, topLevelWindow[currentMonitor], &sizeHints);
 			XSetWMHints(display, topLevelWindow[currentMonitor], &WMHints);
 			XSetClassHint(display, topLevelWindow[currentMonitor], &classHint);
-			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
-			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), XInternAtom(display, "UTF8_STRING", False), 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_NAME", False), UTF8_STRING, 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
+			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_VISIBLE_NAME", False), UTF8_STRING, 8, PropModeReplace, (const unsigned char *)programName, programNameLength);
 			data[0] = 0xFFFFFFFF;
 			data[1] = XInternAtom(display, "_NET_WM_WINDOW_TYPE_DOCK", False);
 			data[2] = XInternAtom(display, "_NET_WM_STATE_STICKY", False);
@@ -355,7 +356,7 @@ static void setTopLevelWindowProperties(void){
 				}
 			}
 			XChangeProperty(display, topLevelWindow[currentMonitor], XInternAtom(display, "_NET_WM_STRUT_PARTIAL", False), XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&data, 12);
-			XSelectInput(display, topLevelWindow[currentMonitor], ExposureMask);
+			XSelectInput(display, topLevelWindow[currentMonitor], ExposureMask | PropertyChangeMask);
 			XRRSelectInput(display, topLevelWindow[currentMonitor], RRScreenChangeNotifyMask);
 		}
 		XRRFreeMonitors(monitorInfo);

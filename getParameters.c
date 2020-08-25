@@ -135,14 +135,18 @@ bool getParameters(const unsigned int parameterCount, const char *const *const p
 			if(isParameter("-h", currentParameterVector) || isParameter("--help", currentParameterVector)){
 				fprintf(stdout, "%s: usage: %s [parameters] or %s [parameter] [--help]\n", programName, programName, programName);
 				fprintf(stdout, "%s[-h], [--help]     %sdisplay this message\n", Tab, Tab);
-				fprintf(stdout, "%s[-c], [--config]   %sspecify path to config, necessary\n", Tab, Tab);
-				fprintf(stdout, "%s[-w], [--workplace]%sspecify path to directory used for temporary files, optional\n", Tab, Tab);
+				fprintf(stdout, "%s[-c], [--config]   %spath to config, necessary\n", Tab, Tab);
+				fprintf(stdout, "%s[-w], [--workplace]%spath to directory used for temporary files, optional\n", Tab, Tab);
 				hasReadParameter |= HelpParameter;
 				break;
 			}else if(isParameter("-c", currentParameterVector) || isParameter("--config", currentParameterVector)){
 				fprintf(stderr, "%s: the config parameter has already been specified\n", programName);
+				hasReadParameter |= ExitParameter;
+				break;
 			}else if(isParameter("-w", currentParameterVector) || isParameter("--workplace", currentParameterVector)){
 				fprintf(stderr, "%s: the workplace parameter has already been specified\n", programName);
+				hasReadParameter |= ExitParameter;
+				break;
 			}
 			fprintf(stderr, "%s: \"%s\" is not recognized as program parameter, check help? [-h]\n", programName, currentParameterVector);
 			hasReadParameter |= ExitParameter;
