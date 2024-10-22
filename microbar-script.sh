@@ -76,7 +76,6 @@
 	dateTime=$(date "+%A, %d$dayOrdinal of %B %Y$majorSeparator%H:%M:%S")
 
 # result
-
 	printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s\n" \
 		"Wi-Fi: $wifi" \
 		"Ethernet: $ethernet" \
