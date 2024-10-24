@@ -2,8 +2,13 @@
 #!/bin/bash
 
 # separators
-	majorSeparator=' | '
-	minorSeparator=' / '
+	majorSeparator=" | "
+	minorSeparator=" / "
+
+# workspace
+	root=$(xprop -root)
+	workspace=$(($(echo "$root" | grep _NET_CURRENT_DESKTOP\(CARDINAL\) | cut -d ' ' -f 3) + 3))
+	workspace=$(echo "$root" | grep _NET_DESKTOP_NAMES\(UTF8_STRING\) | awk "{match(\$$workspace, /\"[^\"]+\"/); print substr(\$$workspace, RSTART+1, RLENGTH-2)}")
 
 # wifi and ethernet
 	wifiName=''
@@ -39,7 +44,7 @@
 		wifiStatus=$(echo "$links" | grep -oP "$wifiName.*state \K[^ ]+")
 		wifiStatus=${wifiStatus,,}
 		if [ "$wifiIP" != '' ]; then
-			wifi="$wifiStatus / $wifiIP"
+			wifi="$wifiStatus$minorSeparator$wifiIP"
 		else
 			wifi=$wifiStatus
 		fi
@@ -50,11 +55,20 @@
 		ethernetStatus=$(echo "$links" | grep -oP "$ethernetName.*state \K[^ ]+")
 		ethernetStatus=${ethernetStatus,,}
 		if [ "$ethernetIP" != '' ]; then
-			ethernet="$ethernetStatus / $ethernetIP"
+			ethernet="$ethernetStatus$minorSeparator$ethernetIP"
 		else
 			ethernet=$ethernetStatus
 		fi
 	fi
+
+# bluetooth battery
+	bluetooth=$(upower -i $(upower -e | grep headphones) | grep percentage | awk '{print $2}')
+	if [ "$bluetooth" == '' ]; then
+		bluetooth=none
+	fi
+
+# sound
+	sound=$(echo $(pactl get-sink-volume $(pactl get-default-sink)) | awk "{print \$5 \"$minorSeparator\" \$12}")
 
 # load
 	load=$(cat /proc/loadavg | awk '{print $1}')
@@ -77,9 +91,12 @@
 	dateTime=$(date "+%A, %d$dayOrdinal of %B %Y$majorSeparator%H:%M:%S")
 
 # result
-	printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s\n" \
+	printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s" \
+		"Workspace: $workspace" \
 		"Wi-Fi: $wifi" \
 		"Ethernet: $ethernet" \
+		"Bluetooth: $bluetooth" \
+		"Sound: $sound" \
 		"Load: $load" \
 		"Battery: $battery" \
 		"$dateTime"
