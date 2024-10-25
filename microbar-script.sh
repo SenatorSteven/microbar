@@ -2,13 +2,16 @@
 #!/bin/bash
 
 # separators
+
+	# if the minor separator is used in awk with some \"\" trick it will not work as intented all the time. prime example: the \.
+
 	majorSeparator=" | "
 	minorSeparator=" / "
 
 # workspace
 	root=$(xprop -root)
-	workspace=$(($(echo "$root" | grep _NET_CURRENT_DESKTOP\(CARDINAL\) | cut -d ' ' -f 3) + 3))
-	workspace=$(echo "$root" | grep _NET_DESKTOP_NAMES\(UTF8_STRING\) | awk "{match(\$$workspace, /\"[^\"]+\"/); print substr(\$$workspace, RSTART+1, RLENGTH-2)}")
+	currentWorkspace=$(($(echo "$root" | grep _NET_CURRENT_DESKTOP\(CARDINAL\) | cut -d ' ' -f 3)+1))
+	workspace=$(echo "$root" | grep _NET_DESKTOP_NAMES\(UTF8_STRING\) | cut -d ' ' -f3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$currentWorkspace) printf \"[%s]%s\", \$i, (i<NF? OFS : ORS); else printf \"%s%s\", \$i, (i<NF? OFS : \"\")}")
 
 # wifi and ethernet
 	wifiName=''
@@ -61,8 +64,8 @@
 		fi
 	fi
 
-# bluetooth battery
-	bluetooth=$(upower -i $(upower -e | grep headphones) | grep percentage | awk '{print $2}')
+# bluetooth
+	bluetooth=$(upower -i $(upower -e | grep headphones | head -n 1) | grep percentage | awk '{print $2}')
 	if [ "$bluetooth" == '' ]; then
 		bluetooth=none
 	fi
@@ -74,12 +77,41 @@
 	load=$(cat /proc/loadavg | awk '{print $1}')
 
 # battery
-	battery=$(upower -i $(upower -e | grep 'battery' | head -n 1) | awk '/present|state|percentage/ {print $2}')
+
+
+
+	# add time to empty and time to full
+
+
+
+	#	battery=$(upower -i $(upower -e | grep battery | head -n 1) | awk '/present|state|time to full|time to empty|percentage/')
+	#	if [ $(echo "$battery" | grep present | awk '{print $2}') == no ]; then
+	#		battery=none
+	#	else
+	#		state=$(echo "$battery" | grep state | awk '{print $2}')
+	#		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{print $2}')
+	#		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{print $2}')
+	#		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
+	#
+	#		battery=$(echo "$battery" | awk "{gsub(/-/, \" \", \$2); print $state \"$minorSeparator\" \$2 \"$minorSeparator\"}")
+	#	fi
+
+
+
+	battery=$(upower -i $(upower -e | grep battery | head -n 1) | awk '/present|state|percentage/ {print $2}')
 	if [ $(echo $battery | awk '{print $1}') == no ]; then
 		battery=none
 	else
 		battery=$(echo $battery | awk "{gsub(/-/, \" \", \$2); print \$3 \"$minorSeparator\" \$2}")
 	fi
+
+
+
+
+
+
+
+
 
 # date and time
 	case $(date +%d) in
@@ -92,7 +124,7 @@
 
 # result
 	printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s" \
-		"Workspace: $workspace" \
+		"$workspace" \
 		"Wi-Fi: $wifi" \
 		"Ethernet: $ethernet" \
 		"Bluetooth: $bluetooth" \
