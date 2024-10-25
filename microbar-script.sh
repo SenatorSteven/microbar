@@ -92,7 +92,7 @@
 	if [ "$present" == no ]; then
 		battery=none
 	else
-		state=$(echo "$battery" | grep state | awk '{print $2}')
+		state=$(echo "$battery" | grep state | awk "{gsub(/-/, \" \", \$2); print \$2}")
 		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
