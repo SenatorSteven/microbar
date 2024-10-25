@@ -8,10 +8,13 @@
 	majorSeparator=" | "
 	minorSeparator=" / "
 
-# workspace
+# workspaces
 	root=$(xprop -root)
 	currentWorkspace=$(($(echo "$root" | grep _NET_CURRENT_DESKTOP\(CARDINAL\) | cut -d ' ' -f 3)+1))
-	workspace=$(echo "$root" | grep _NET_DESKTOP_NAMES\(UTF8_STRING\) | cut -d ' ' -f3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$currentWorkspace) printf \"[%s]%s\", \$i, (i<NF? OFS : ORS); else printf \"%s%s\", \$i, (i<NF? OFS : \"\")}")
+	workspaces=$(echo "$root" | grep _NET_DESKTOP_NAMES\(UTF8_STRING\) | cut -d ' ' -f3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$currentWorkspace) printf \"[%s]\", \$i; else printf \" %s \", \$i}")
+	if [ "$workspaces" == '' ]; then
+		workspaces=none
+	fi
 
 # wifi and ethernet
 	wifiName=''
@@ -124,7 +127,7 @@
 
 # result
 	printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s" \
-		"$workspace" \
+		"$workspaces" \
 		"Wi-Fi: $wifi" \
 		"Ethernet: $ethernet" \
 		"Bluetooth: $bluetooth" \
