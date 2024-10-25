@@ -80,8 +80,13 @@
 		bluetooth=none
 	fi
 
-# sound
-	sound=$(echo $(pactl get-sink-volume $(pactl get-default-sink)) | awk "{print \$5 \"$minorSeparator\" \$12}")
+# volume
+	volume=$(pactl get-sink-volume $(pactl get-default-sink))
+	secondVolume=''
+	if [ "$(echo $volume | awk "{print \$12}")" != '' ]; then
+		secondVolume="\"$minorSeparator\" \$12"
+	fi
+	volume=$(echo $volume | awk "{print \$5 $secondVolume}")
 
 # load
 	load=$(cat /proc/loadavg | awk '{print $1}')
@@ -119,7 +124,7 @@
 		"Wi-Fi: $wifi" \
 		"Ethernet: $ethernet" \
 		"Bluetooth: $bluetooth" \
-		"Sound: $sound" \
+		"Volume: $volume" \
 		"Load: $load" \
 		"Battery: $battery" \
 		"$dateTime"
