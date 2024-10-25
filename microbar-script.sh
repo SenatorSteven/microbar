@@ -1,10 +1,17 @@
 
+# if the minor separator is used in awk with some \"\" trick it will not work as intented all the time. prime example: the \.
+
+
+
+
+
+
+
+
+
 #!/bin/bash
 
 # separators
-
-	# if the minor separator is used in awk with some \"\" trick it will not work as intented all the time. prime example: the \.
-
 	majorSeparator=" | "
 	minorSeparator=" / "
 
@@ -80,41 +87,22 @@
 	load=$(cat /proc/loadavg | awk '{print $1}')
 
 # battery
-
-
-
-	# add time to empty and time to full
-
-
-
-	#	battery=$(upower -i $(upower -e | grep battery | head -n 1) | awk '/present|state|time to full|time to empty|percentage/')
-	#	if [ $(echo "$battery" | grep present | awk '{print $2}') == no ]; then
-	#		battery=none
-	#	else
-	#		state=$(echo "$battery" | grep state | awk '{print $2}')
-	#		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{print $2}')
-	#		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{print $2}')
-	#		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
-	#
-	#		battery=$(echo "$battery" | awk "{gsub(/-/, \" \", \$2); print $state \"$minorSeparator\" \$2 \"$minorSeparator\"}")
-	#	fi
-
-
-
-	battery=$(upower -i $(upower -e | grep battery | head -n 1) | awk '/present|state|percentage/ {print $2}')
-	if [ $(echo $battery | awk '{print $1}') == no ]; then
+	battery=$(upower -i $(upower -e | grep battery | head -n 1) | awk '/present|state|time to full|time to empty|percentage/')
+	present=$(echo "$battery" | grep present | awk '{print $2}')
+	if [ "$present" == no ]; then
 		battery=none
 	else
-		battery=$(echo $battery | awk "{gsub(/-/, \" \", \$2); print \$3 \"$minorSeparator\" \$2}")
+		state=$(echo "$battery" | grep state | awk '{print $2}')
+		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
+		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
+		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
+		battery=$percentage$minorSeparator$state
+		if [ "$timeToFull" != '' ]; then
+			battery="$battery$minorSeparator$timeToFull"
+		elif [ "$timeToEmpty" != '' ]; then
+			battery="$battery$minorSeparator$timeToEmpty"
+		fi
 	fi
-
-
-
-
-
-
-
-
 
 # date and time
 	case $(date +%d) in
