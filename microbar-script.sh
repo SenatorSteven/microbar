@@ -120,24 +120,22 @@
 
 # result 1
 	section1=$(printf "%s" "$workspaces")
-	section2=$(printf "%s" "$dateTime")
+	section2=$(printf " %s " "$dateTime")
 	section3=$(printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s" "Wi-Fi: $wifi" "Ethernet: $ethernet" "Bluetooth: $bluetooth" "Volume: $volume" "Load: $load" "Battery: $battery")
 
-	section1Width=$(echo "$section1" | wc -c)
-	section2Width=$(echo "$section2" | wc -c)
-	section3Width=$(echo "$section3" | wc -c)
+	section1Width=$(echo "$section1" | wc -m)
+	section2Width=$(echo "$section2" | wc -m)
+	section3Width=$(echo "$section3" | wc -m)
 
-	barCharacterWidth=323
+	barCharacterWidth=322
 	spacing1Width=$((($barCharacterWidth - $section2Width) / 2 - $section1Width))
 	spacing2Width=$(($barCharacterWidth - $section3Width - $section1Width - $section2Width - $spacing1Width))
 	extraWidth=$(($barCharacterWidth - $section1Width - $spacing1Width - $section2Width - $spacing2Width - $section3Width))
 	if (( spacing1Width < 0 )); then spacing1Width=0; fi
 	if (( spacing2Width < 0 )); then spacing2Width=0; fi
 	if ((    extraWidth < 0 )); then    extraWidth=0; fi
-	spacing1=$(printf "%*s" $(($spacing1Width - $extraWidth)) ' ')
-	spacing2=$(printf "%*s" $spacing2Width ' ')
 
-	printf "%s%s%s%s%s" "$section1" "$spacing1" "$section2" "$spacing2" "$section3"
+	printf "%s%*s%s%*s%s" "$section1" $(($spacing1Width - $extraWidth)) ' ' "$section2" $spacing2Width ' ' "$section3"
 
 # result 2
 	#printf "%s [%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s]" \
