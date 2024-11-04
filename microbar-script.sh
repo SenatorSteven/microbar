@@ -1,19 +1,41 @@
+# use xrandr to get the smallest active monitor size and use the size to calculate the amount of characters possible on screen in a line. width of current font is 6 per char.
+
+
+
+
+
+
+
+
 
 #!/bin/bash
 
 # separators
-	majorSeparator="  "
+	majorSeparator="▕ "
 	minorSeparator=" / "
 
 # globals
+	useIcons=false
 	upower=$(upower -e)
+	root=$(xprop -root)
 
 # workspaces
-	r=$(xprop -root)
-	currentWorkspace=$(echo "$r" | grep _NET_CURRENT_DESKTOP\(CARDINAL\) | cut -d ' ' -f 3)
-	workspaces=$(echo "$r" | grep _NET_DESKTOP_NAMES\(UTF8_STRING\) | cut -d ' ' -f 3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$((currentWorkspace+1))) printf \"[%s]\", \$i; else printf \" %s \", \$i}")
+	currentWorkspace=$(echo "$root" | grep _NET_CURRENT_DESKTOP\( | cut -d ' ' -f 3)
+	workspaces=$(echo "$root" | grep _NET_DESKTOP_NAMES\( | cut -d ' ' -f 3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$((currentWorkspace+1))) printf \"[%s]\", \$i; else printf \" %s \", \$i}")
 	if [ "$workspaces" == '' ]; then
 		workspaces=none
+	fi
+
+# active winow
+	activeWindow=$(echo "$root" | grep _NET_ACTIVE_WINDOW\( | cut -d ' ' -f 5)
+	if [ "$activeWindow" == '0x0' ]; then
+		activeWindow=''
+	fi
+	if [ "$activeWindow" != '' ]; then
+		activeWindow=$(xprop -id $activeWindow | grep _NET_WM_NAME\( | cut -d ' ' -f 3-)
+		activeWindow=${activeWindow#\"}
+		activeWindow=${activeWindow%\"}
+		activeWindow=$majorSeparator$activeWindow
 	fi
 
 # wifi and ethernet
@@ -50,6 +72,14 @@
 		wifiIP=$(echo $addresses | grep -oP "$wifiName.*inet \K[^ ]+")
 		wifiStatus=$(echo "$links" | grep -oP "$wifiName.*state \K[^ ]+")
 		wifi=${wifiStatus,,}
+
+
+
+		# consider this later
+		# wifi="$((($(iw dev $wifiName link | grep signal | cut -d ' ' -f 2)+90)*5/3))%$minorSeparator$wifi"
+
+
+
 		if [ "$wifiIP" != '' ]; then
 			wifi="$wifi$minorSeparator$wifiIP"
 		fi
@@ -94,10 +124,12 @@
 	fi
 
 # load
-	load=$(cat /proc/loadavg | cut -d ' ' -f 1)
+	load=$(awk "BEGIN {printf \"%.2f\", $(cat /proc/loadavg | cut -d ' ' -f 1)/$(grep -c ^processor /proc/cpuinfo)}")
+	load=$((10#${load//./}))%
 
 # battery
 	battery=$(upower -i $(echo "$upower" | grep battery | head -n 1) | awk '/present|state|time to full|time to empty|percentage/')
+	batteryIcon=' '
 	present=$(echo "$battery" | grep present | awk '{print $2}')
 	if [ "$present" == no ]; then
 		battery=none
@@ -106,7 +138,13 @@
 		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
-		battery=$percentage$minorSeparator$state
+		percentage=${percentage%\%}
+		percentage="$percentage"0
+		if [ "$useIcons" == true ]; then
+			batteryIcons=(╳ ▁ ▂ ▃ ▄ ▅ ▆ ▇ █)
+			batteryIcon=▕${batteryIcons[$(((percentage + 124) / 125))]}▏
+		fi
+		battery=${percentage%0}%$minorSeparator$state
 		if [ "$timeToFull" != '' ]; then
 			battery="$battery$minorSeparator$timeToFull"
 		elif [ "$timeToEmpty" != '' ]; then
@@ -119,23 +157,20 @@
 	dateTime=$(date "+%A, %-d$o of %B %Y, %H:%M:%S")
 
 # result 1
-	section1=$(printf "%s" "$workspaces")
-	section2=$(printf " %s " "$dateTime")
-	section3=$(printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s" "Wi-Fi: $wifi" "Ethernet: $ethernet" "Bluetooth: $bluetooth" "Volume: $volume" "Load: $load" "Battery: $battery")
-
-	section1Width=$(echo "$section1" | wc -m)
-	section2Width=$(echo "$section2" | wc -m)
-	section3Width=$(echo "$section3" | wc -m)
-
+	island1=$(printf "%s%s" "$workspaces" "$activeWindow")
+	island2=$(printf " %s " "$dateTime")
+	island3=$(printf "%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s" "Wi-Fi: $wifi" "Ethernet: $ethernet" "Bluetooth: $bluetooth" "Volume: $volume" "CPU: $load" "Battery:$batteryIcon$battery")
+	island1Width=$(echo "$island1" | wc -m)
+	island2Width=$(echo "$island2" | wc -m)
+	island3Width=$(echo "$island3" | wc -m)
 	barCharacterWidth=322
-	spacing1Width=$((($barCharacterWidth - $section2Width) / 2 - $section1Width))
-	spacing2Width=$(($barCharacterWidth - $section3Width - $section1Width - $section2Width - $spacing1Width))
-	extraWidth=$(($barCharacterWidth - $section1Width - $spacing1Width - $section2Width - $spacing2Width - $section3Width))
+	spacing1Width=$((($barCharacterWidth - $island2Width) / 2 - $island1Width))
+	spacing2Width=$(($barCharacterWidth - $island3Width - $island1Width - $island2Width - $spacing1Width))
+	extraWidth=$(($barCharacterWidth - $island1Width - $spacing1Width - $island2Width - $spacing2Width - $island3Width))
 	if (( spacing1Width < 0 )); then spacing1Width=0; fi
 	if (( spacing2Width < 0 )); then spacing2Width=0; fi
 	if ((    extraWidth < 0 )); then    extraWidth=0; fi
-
-	printf "%s%*s%s%*s%s" "$section1" $(($spacing1Width - $extraWidth)) ' ' "$section2" $spacing2Width ' ' "$section3"
+	printf "%s%*s%s%*s%s" "$island1" $(($spacing1Width - $extraWidth)) ' ' "$island2" $spacing2Width ' ' "$island3"
 
 # result 2
 	#printf "%s [%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s]" \
