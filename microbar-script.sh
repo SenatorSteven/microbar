@@ -32,7 +32,7 @@
 		activeWindow=''
 	fi
 	if [ "$activeWindow" != '' ]; then
-		activeWindow=$(xprop -id $activeWindow | grep _NET_WM_NAME\( | cut -d ' ' -f 3-)
+		activeWindow=$(xprop -id $activeWindow | grep _NET_WM_NAME\( | cut -d ' ' -f 3- | grep -oPz '[\x{0000}-\x{FFFF}]+')
 		activeWindow=${activeWindow#\"}
 		activeWindow=${activeWindow%\"}
 		activeWindow=$majorSeparator$activeWindow
@@ -99,18 +99,6 @@
 		bluetooth=none
 	fi
 
-# input
-	input=$(pactl get-source-volume @DEFAULT_SOURCE@)
-	mute=$(pactl get-source-mute @DEFAULT_SOURCE@ | cut -d ' ' -f 2)
-	whichInputs='5'
-	if [ "$(echo $input | cut -d ' ' -f 12)" != '' ]; then
-		whichInputs='5,12'
-	fi
-	input=$(echo $input | cut -d ' ' -f $whichInputs --output-delimiter="$minorSeparator")
-	if [ "$mute" != no ]; then
-		input="$input (muted)"
-	fi
-
 # volume
 	volume=$(pactl get-sink-volume @DEFAULT_SINK@)
 	mute=$(pactl get-sink-mute @DEFAULT_SINK@ | cut -d ' ' -f 2)
@@ -173,14 +161,13 @@
 	printf "%s%*s%s%*s%s" "$island1" $(($spacing1Width - $extraWidth)) ' ' "$island2" $spacing2Width ' ' "$island3"
 
 # result 2
-	#printf "%s [%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s]" \
+	#printf "%s [%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s]" \
 	#	"$workspaces" \
 	#	"Wi-Fi: $wifi" \
 	#	"Ethernet: $ethernet" \
 	#	"Bluetooth: $bluetooth" \
-	#	"Input: $input" \
 	#	"Volume: $volume" \
-	#	"Load: $load" \
+	#	"CPU: $load" \
 	#	"Battery: $battery" \
 	#	"$dateTime"
 
