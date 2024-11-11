@@ -19,10 +19,10 @@
 	exec 2> /dev/null
 
 #! ansi color
-	# $escape=$(echo -e '\x1b')
+	ESC=$(printf '\e')
 
 # separators
-	majorSeparator="[90m▕[m "
+	majorSeparator="$ESC[90m▕$ESC[m "
 	minorSeparator=" / "
 
 # globals
@@ -32,9 +32,9 @@
 
 #! workspaces
 	currentWorkspace=$(echo "$root" | grep _NET_CURRENT_DESKTOP\( | cut -d ' ' -f 3)
-	workspaces=$(echo "$root" | grep _NET_DESKTOP_NAMES\( | cut -d ' ' -f 3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$((currentWorkspace+1))) printf \"[36m[[37m%s[36m]\", \$i; else printf \" [90m%s \", \$i}")
+	workspaces=$(echo "$root" | grep _NET_DESKTOP_NAMES\( | cut -d ' ' -f 3- | awk "{gsub(/[,\"]/, \"\"); for(i=1; i<=NF; ++i) if(i==$((currentWorkspace+1))) printf \"$ESC[36m[$ESC[37m%s$ESC[36m]\", \$i; else printf \" $ESC[90m%s \", \$i}")
 	if [ "$workspaces" == '' ]; then
-		workspaces=[37mnone
+		workspaces=$ESC[90mnone
 	fi
 
 #! active winow
@@ -44,10 +44,10 @@
 		activeWindow=''
 	fi
 	if [ "$activeWindow" != '' ]; then
-		activeWindow=$(xprop -id $activeWindow | grep _NET_WM_NAME\( | cut -d ' ' -f 3- | grep -oP '[\x{0000}-\x{FFFF}]+')
+		activeWindow=$(xprop -id $activeWindow | grep _NET_WM_NAME\( | cut -d ' ' -f 3- | grep -oPz '[\x{0000}-\x{FFFF}]+')
 		activeWindow=${activeWindow#\"}
 		activeWindow=${activeWindow%\"}
-		activeWindow=$majorSeparator[37m$activeWindow
+		activeWindow=$majorSeparator$ESC[37m$activeWindow
 		temp=$(echo "$activeWindow" | cut -c1-100)
 		if (( ${#temp} < ${#activeWindow} )); then
 			activeWindow="$temp..."
@@ -82,55 +82,52 @@
 			fi
 		fi
 	done
-
-
-
-	color='[31m'
+	color="$ESC[31m"
 	wifi=$color'Wi-Fi: none'
 	if [ "$wifiName" != '' ]; then
 		wifiIP=$(echo $addresses | grep -oP "$wifiName.*inet \K[^ ]+")
 		wifiStatus=$(echo "$links" | grep -oP "$wifiName.*state \K[^ ]+")
 		wifi=${wifiStatus,,}
 		if [ "$wifiIP" != '' ]; then
-			color='[32m'
+			color="$ESC[32m"
 			wifi="$wifi$minorSeparator$wifiIP"
 		elif [ "$wifi" == 'up' ]; then
-			color='[32m'
+			color="$ESC[32m"
 		elif [ "$wifi" == 'dormant' ]; then
-			color='[33m'
+			color="$ESC[33m"
 		else
-			color='[31m'
+			color="$ESC[31m"
 		fi
 		wifi=$color"Wi-Fi: $wifi"
 	fi
-	color='[31m'
+	color="$ESC[31m"
 	ethernet=$color'Ethernet: none'
 	if [ "$ethernetName" != '' ]; then
 		ethernetIP=$(echo $addresses | grep -oP "$ethernetName.*inet \K[^ ]+")
 		ethernetStatus=$(echo "$links" | grep -oP "$ethernetName.*state \K[^ ]+")
 		ethernet=${ethernetStatus,,}
 		if [ "$ethernetIP" != '' ]; then
-			ethernet="[32mEthernet: $ethernet$minorSeparator$ethernetIP"
+			ethernet="$ESC[32mEthernet: $ethernet$minorSeparator$ethernetIP"
 		elif [ "$ethernet" == 'up' ]; then
-			ethernet="[32mEthernet: $ethernet"
+			ethernet="$ESC[32mEthernet: $ethernet"
 		else
-			ethernet="[31mEthernet: $ethernet"
+			ethernet="$ESC[31mEthernet: $ethernet"
 		fi
 	fi
 
 # bluetooth
 	bluetooth=$(upower -i $(echo "$upower" | grep headphones | head -n 1) | grep percentage | awk '{print $2}')
 	if [ "$bluetooth" == '' ]; then
-		bluetooth="[31mBluetooth: none"
+		bluetooth="$ESC[31mBluetooth: none"
 	else
-		color='[32m'
+		color="$ESC[32m"
 		bluetooth=${bluetooth%\%}
 		if (( bluetooth < 50 )); then
-			color='[33m'
+			color="$ESC[33m"
 		elif (( bluetooth <= 10 )); then
-			color='[31m'
+			color="$ESC[31m"
 		fi
-		bluetooth=$color"Bluetooth: $bluetooth%[m"
+		bluetooth=$color"Bluetooth: $bluetooth%$ESC[m"
 	fi
 
 #! volume
@@ -146,36 +143,36 @@
 	if [ "$mute" != no ]; then
 		volume="$volume (muted)"
 	fi
-	volume="[37mVolume: $volume"
+	volume="$ESC[37mVolume: $volume"
 
 #! load
 	load=$(awk "BEGIN {printf \"%.2f\", $(cat /proc/loadavg | cut -d ' ' -f 1)/$(grep -c ^processor /proc/cpuinfo)}")
 	load=$((10#${load//./}))
-	color='[37m'
+	color="$ESC[37m"
 	if (( load > 50 )); then
-		color='[33m'
+		color="$ESC[33m"
 	elif (( load > 75 )); then
-		color='[31m'
+		color="$ESC[31m"
 	fi
 	load=$color"CPU: $load%"
 
-#! battery
-	color='[31m'
+# battery
+	color="$ESC[31m"
 	battery=$(upower -i $(echo "$upower" | grep battery | head -n 1) | awk '/present|state|time to full|time to empty|percentage/')
-	icon=' '
 	present=$(echo "$battery" | grep present | awk '{print $2}')
 	if [ "$present" == no ]; then
 		battery=$color'Battery: none'
 	else
+		icon=' '
 		state=$(echo "$battery" | grep state | awk "{gsub(/-/, \" \", \$2); print \$2}")
-		# timeToFull=$(echo "$battery" | grep 'time to full' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
-		# timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
+		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
+		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
 		percentage=${percentage%\%}
-		if (( percentage >= 50 )); then
-			color='[32m'
+		if [ "$state" == 'charging' ] || (( percentage >= 50 )); then
+			color="$ESC[32m"
 		elif (( percentage > 10 )); then
-			color='[33m'
+			color="$ESC[33m"
 		fi
 		percentage="$percentage"0
 		if [ "$useIcons" == true ]; then
@@ -183,18 +180,17 @@
 			icon=▕${icons[$(((percentage + 124) / 125))]}▏
 		fi
 		battery=${percentage%0}%
-		# battery=${percentage%0}%$minorSeparator$state
-		# if [ "$timeToFull" != '' ]; then
-		# 	battery="$battery$minorSeparator$timeToFull"
-		# elif [ "$timeToEmpty" != '' ]; then
-		# 	battery="$battery$minorSeparator$timeToEmpty"
-		# fi
+		if [ "$timeToFull" != '' ]; then
+			battery="$battery$minorSeparator$timeToFull"
+		elif [ "$timeToEmpty" != '' ]; then
+			battery="$battery$minorSeparator$timeToEmpty"
+		fi
 		battery=$color"Battery:$icon$battery"
 	fi
 
 # date and time
 	case $(date +%-d) in 1|21|31)o=st;;2|22)o=nd;;3|23)o=rd;;*)o=th;;esac
-	dateTime=[37m$(date "+%A, %-d$o of %B %Y, %H:%M:%S")
+	dateTime=$ESC[37m$(date "+%A, %-d$o of %B %Y, %H:%M:%S")
 
 # result 1
 	island1=$(printf "%s%s" "$workspaces" "$activeWindow")
