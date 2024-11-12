@@ -164,13 +164,13 @@
 		battery=$color'Battery: none'
 	else
 		icon=' '
-		state=$(echo "$battery" | grep state | awk "{gsub(/-/, \" \", \$2); print \$2}")
+		# state=$(echo "$battery" | grep state | awk "{gsub(/-/, \" \", \$2); print \$2}")
 		timeToFull=$(echo "$battery" | grep 'time to full' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		timeToEmpty=$(echo "$battery" | grep 'time to empty' | awk '{for (i=4; i<NF; ++i) printf $i " "; printf $i}')
 		percentage=$(echo "$battery" | grep percentage | awk '{print $2}')
 		percentage=${percentage%\%}
-		if [ "$state" == 'charging' ] || (( percentage >= 50 )); then
-			color="$ESC[32m"
+		if (( percentage > 50 )); then
+			color="$ESC[37m"
 		elif (( percentage > 10 )); then
 			color="$ESC[33m"
 		fi
@@ -202,11 +202,14 @@
 	barCharacterWidth=322
 	spacing1Width=$((($barCharacterWidth - $island2Width) / 2 - $island1Width))
 	spacing2Width=$(($barCharacterWidth - $island3Width - $island1Width - $island2Width - $spacing1Width))
-	extraWidth=$(($barCharacterWidth - $island1Width - $spacing1Width - $island2Width - $spacing2Width - $island3Width))
-	if (( spacing1Width < 0 )); then spacing1Width=0; fi
-	if (( spacing2Width < 0 )); then spacing2Width=0; fi
-	if ((    extraWidth < 0 )); then    extraWidth=0; fi
-	printf "%s%*s%s%*s%s" "$island1" $(($spacing1Width - $extraWidth)) ' ' "$island2" $spacing2Width ' ' "$island3"
+	if (( spacing2Width < 0 )); then
+		spacing1Width=$((spacing1Width + spacing2Width))
+		spacing2Width=0
+	fi
+	if (( spacing1Width < 0 )); then
+		spacing1Width=0
+	fi
+	printf "%s%*s%s%*s%s" "$island1" $spacing1Width ' ' "$island2" $spacing2Width ' ' "$island3"
 
 # result 2
 	# printf "%s [%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s$majorSeparator%s]" \
