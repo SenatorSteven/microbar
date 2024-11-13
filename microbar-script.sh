@@ -90,13 +90,11 @@
 		wifi=${wifiStatus,,}
 		if [ "$wifiIP" != '' ]; then
 			color="$ESC[32m"
-			wifi="$wifi$minorSeparator$wifiIP"
+			wifi="$wifiIP"
 		elif [ "$wifi" == 'up' ]; then
 			color="$ESC[32m"
 		elif [ "$wifi" == 'dormant' ]; then
 			color="$ESC[33m"
-		else
-			color="$ESC[31m"
 		fi
 		wifi=$color"Wi-Fi: $wifi"
 	fi
@@ -107,12 +105,15 @@
 		ethernetStatus=$(echo "$links" | grep -oP "$ethernetName.*state \K[^ ]+")
 		ethernet=${ethernetStatus,,}
 		if [ "$ethernetIP" != '' ]; then
-			ethernet="$ESC[32mEthernet: $ethernet$minorSeparator$ethernetIP"
+			color="$ESC[32m"
+			ethernet="$ethernetIP"
 		elif [ "$ethernet" == 'up' ]; then
-			ethernet="$ESC[32mEthernet: $ethernet"
+			color="$ESC[32m"
+			ethernet="$ethernet"
 		else
-			ethernet="$ESC[31mEthernet: $ethernet"
+			ethernet="$ethernet"
 		fi
+		ethernet=$color"Ethernet: $ethernet"
 	fi
 
 # bluetooth
@@ -124,8 +125,6 @@
 		bluetooth=${bluetooth%\%}
 		if (( bluetooth < 50 )); then
 			color="$ESC[33m"
-		elif (( bluetooth <= 10 )); then
-			color="$ESC[31m"
 		fi
 		bluetooth=$color"Bluetooth: $bluetooth%$ESC[m"
 	fi
