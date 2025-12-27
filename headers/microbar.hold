@@ -1,4 +1,5 @@
-/* getParameters.h
+
+/*! microbar.hold
 
 MIT License
 
@@ -22,9 +23,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
-#ifndef GETPARAMETERS_H
-#define GETPARAMETERS_H
+#ifndef MICROBAR_HOLD
+#define MICROBAR_HOLD
 
-bool getParameters(const unsigned int parameterCount, const char *const *const parameterVector);
+/*!*/
 
 #endif
+
