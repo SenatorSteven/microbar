@@ -3026,6 +3026,7 @@ RAISEPERMISSIONS(){
 	ret true;
 }
 DROPPERMISSIONS(){
+	const char *locale;
 	struct passwd *pw;
 	char buffer[sizeof("/var/mail/") + 256];
 	if(!permissionSystem){
@@ -3055,7 +3056,10 @@ DROPPERMISSIONS(){
 	setenv("USER", (*pw).pw_name, true);
 	setenv("LOGNAME", (*pw).pw_name, true);
 	setenv("SHELL", (*pw).pw_shell, true);
-	setenv("LANG", setlocale(LC_ALL, ""), true);
+	locale = setlocale(LC_ALL, "");
+	if(locale){
+		setenv("LANG", locale, true);
+	}
 	ret true;
 }
 FINIPERMISSIONSYSTEM(){
