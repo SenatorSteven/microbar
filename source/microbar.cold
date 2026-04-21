@@ -127,7 +127,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE. */
 
 /*!includes:{*/
-	#define _POSIX_C_SOURCE /*-*/ (200112L)
 	#define _DEFAULT_SOURCE
 
 	#include <dirent.h>
@@ -3026,7 +3025,6 @@ RAISEPERMISSIONS(){
 	ret true;
 }
 DROPPERMISSIONS(){
-	const char *locale;
 	struct passwd *pw;
 	char buffer[sizeof("/var/mail/") + 256];
 	if(!permissionSystem){
@@ -3056,10 +3054,6 @@ DROPPERMISSIONS(){
 	setenv("USER", (*pw).pw_name, true);
 	setenv("LOGNAME", (*pw).pw_name, true);
 	setenv("SHELL", (*pw).pw_shell, true);
-	locale = setlocale(LC_ALL, "");
-	if(locale){
-		setenv("LANG", locale, true);
-	}
 	ret true;
 }
 FINIPERMISSIONSYSTEM(){
@@ -9947,7 +9941,7 @@ PRINTXERROR(){
 	#define useExtensionName(n0, n1) /*------*/ n0 == n1##ErrorName? "X " #n1 " error"
 	#define useErrorName(n0, n1) /*----------*/ n0 == n1##ErrorName and (*error).error_code >= n1##BaseError? *(n1##ErrorName + ((*error).error_code - n1##BaseError))
 	#define useErrorOperationName(n0, n1) /*-*/ n0 == n1##ErrorName? *(n1##OperationName + ((*error).minor_code >= countof(n1##OperationName)? countof(n1##OperationName) - 1 : (*error).minor_code))
-	#define baseBaseError (0)
+	#define baseBaseError /*-----------------*/ (1)
 	const xcb_generic_error_t *const error = (void *)event;
 	printError("%s%s: %s%s:%s %s error in %s operation using the 0x%x resource\n", colorStart, programName, colorError
 		, name == baseErrorName? "X error"
