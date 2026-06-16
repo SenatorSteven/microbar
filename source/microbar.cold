@@ -3983,7 +3983,7 @@ GETRECTANGLE(){
 		parentY = (*monitor).topY;
 		parentWidth = (*monitor).width;
 		parentHeight = (*monitor).height;
-	}elif(parentRectangle){
+	}else if(parentRectangle){
 		monitor = (*parentRectangle).monitor;
 		parentX = 0;
 		parentY = 0;
@@ -4015,16 +4015,16 @@ GETRECTANGLE(){
 	}
 	if((*preferences).position == LEFT_POSITION){
 		x = parentX + 0 * (parentWidth - width) / 2;
-	}elif((*preferences).position == RIGHT_POSITION){
+	}else if((*preferences).position == RIGHT_POSITION){
 		x = parentX + 2 * (parentWidth - width) / 2;
-	}elif((*preferences).horizontalAlignment){
+	}else if((*preferences).horizontalAlignment){
 		x = parentX + ((*preferences).horizontalAlignment - 1) * (parentWidth - width) / 2;
 	}
 	if((*preferences).position == TOP_POSITION){
 		y = parentY + 0 * (parentHeight - height) / 2;
-	}elif((*preferences).position == BOTTOM_POSITION){
+	}else if((*preferences).position == BOTTOM_POSITION){
 		y = parentY + 2 * (parentHeight - height) / 2;
-	}elif((*preferences).verticalAlignment){
+	}else if((*preferences).verticalAlignment){
 		y = parentY + ((*preferences).verticalAlignment - 1) * (parentHeight - height) / 2;
 	}
 	(*rectangle).monitor = monitor;
@@ -5951,7 +5951,7 @@ REMOVESHORTCUT(){
 					if(dec modifierAllocated < modifierNotInUseOffset){
 						dec modifierNotInUseOffset;
 					}
-				}elif(node - modifierStart < modifierNotInUseOffset){
+				}else if(node - modifierStart < modifierNotInUseOffset){
 					modifierNotInUseOffset = node - modifierStart;
 				}
 				hasRemovedShortcut = true;
@@ -6187,9 +6187,9 @@ READCONFIG(){
 		}
 		if(getNextConfigChar == &ifgetc){
 			system = configFile;
-		}elif(getNextConfigChar == &getNextSTDINCharacter){
+		}else if(getNextConfigChar == &getNextSTDINCharacter){
 			system = &stdinSystem;
-		}elif(getNextConfigChar == &getNextSharedMemoryCharacter){
+		}else if(getNextConfigChar == &getNextSharedMemoryCharacter){
 			system = &sharedMemorySystem;
 		}
 		jmp getStatementStart;
@@ -6658,13 +6658,13 @@ READCONFIG(){
 		if(!name0Instruction){
 			namePointer = &name0Return;
 			name0Instruction = instructionCurrent;
-		}elif(!name1Instruction){
+		}else if(!name1Instruction){
 			namePointer = &name1Return;
 			name1Instruction = instructionCurrent;
-		}elif(!name2Instruction){
+		}else if(!name2Instruction){
 			namePointer = &name2Return;
 			name2Instruction = instructionCurrent;
-		}elif(!name3Instruction){
+		}else if(!name3Instruction){
 			namePointer = &name3Return;
 			name3Instruction = instructionCurrent;
 		}else{
@@ -6689,13 +6689,13 @@ READCONFIG(){
 		if(!nameList0Instruction){
 			nameListPointer = &nameList0Return;
 			nameList0Instruction = instructionCurrent;
-		}elif(!nameList1Instruction){
+		}else if(!nameList1Instruction){
 			nameListPointer = &nameList1Return;
 			nameList1Instruction = instructionCurrent;
-		}elif(!nameList2Instruction){
+		}else if(!nameList2Instruction){
 			nameListPointer = &nameList2Return;
 			nameList2Instruction = instructionCurrent;
-		}elif(!nameList3Instruction){
+		}else if(!nameList3Instruction){
 			nameListPointer = &nameList3Return;
 			nameList3Instruction = instructionCurrent;
 		}else{
@@ -6724,13 +6724,13 @@ READCONFIG(){
 		if(!integer0Instruction){
 			integerPointer = &integer0Return;
 			integer0Instruction = instructionCurrent;
-		}elif(!integer1Instruction){
+		}else if(!integer1Instruction){
 			integerPointer = &integer1Return;
 			integer1Instruction = instructionCurrent;
-		}elif(!integer2Instruction){
+		}else if(!integer2Instruction){
 			integerPointer = &integer2Return;
 			integer2Instruction = instructionCurrent;
-		}elif(!integer3Instruction){
+		}else if(!integer3Instruction){
 			integerPointer = &integer3Return;
 			integer3Instruction = instructionCurrent;
 		}else{
@@ -6766,15 +6766,15 @@ READCONFIG(){
 			stringPointer = &string0Return;
 			stringTokenPointer = &string0Token;
 			string0Instruction = instructionCurrent;
-		}elif(!string1Instruction){
+		}else if(!string1Instruction){
 			stringPointer = &string1Return;
 			stringTokenPointer = &string1Token;
 			string1Instruction = instructionCurrent;
-		}elif(!string2Instruction){
+		}else if(!string2Instruction){
 			stringPointer = &string2Return;
 			stringTokenPointer = &string2Token;
 			string2Instruction = instructionCurrent;
-		}elif(!string3Instruction){
+		}else if(!string3Instruction){
 			stringPointer = &string3Return;
 			stringTokenPointer = &string3Token;
 			string3Instruction = instructionCurrent;
@@ -6800,13 +6800,13 @@ READCONFIG(){
 		if(!image0Instruction){
 			imagePointer = &image0Return;
 			image0Instruction = instructionCurrent;
-		}elif(!image1Instruction){
+		}else if(!image1Instruction){
 			imagePointer = &image1Return;
 			image1Instruction = instructionCurrent;
-		}elif(!image2Instruction){
+		}else if(!image2Instruction){
 			imagePointer = &image2Return;
 			image2Instruction = instructionCurrent;
-		}elif(!image3Instruction){
+		}else if(!image3Instruction){
 			imagePointer = &image3Return;
 			image3Instruction = instructionCurrent;
 		}else{
@@ -7821,13 +7821,13 @@ MATCHINTEGER(){
 		if(macroStringTreeSystem.returnedCounter < 5){
 			number = macroStringTreeSystem.returnedCounter;
 			inc number;
-		}elif(macroStringTreeSystem.returnedCounter < 9){
+		}else if(macroStringTreeSystem.returnedCounter < 9){
 			number = macroStringTreeSystem.returnedCounter - 5;
-		}elif(macroStringTreeSystem.returnedCounter < 11){
+		}else if(macroStringTreeSystem.returnedCounter < 11){
 			number = macroStringTreeSystem.returnedCounter - 9;
-		}elif(macroStringTreeSystem.returnedCounter < 15){
+		}else if(macroStringTreeSystem.returnedCounter < 15){
 			number = macroStringTreeSystem.returnedCounter - 11;
-		}elif(macroStringTreeSystem.returnedCounter < 17){
+		}else if(macroStringTreeSystem.returnedCounter < 17){
 			number = macroStringTreeSystem.returnedCounter - 15;
 		}else{
 			number = 0;
@@ -8930,7 +8930,7 @@ UTF8TOUCS2(){
 				newUCS2 = byte1;
 				byte1 = '\0';
 				inc utf8Current;
-			}elif((byte1 & b(11100000)) == b(11000000)){
+			}else if((byte1 & b(11100000)) == b(11000000)){
 				const uint8 byte2 = *(utf8Current + 1);
 				if((byte2 & b(11000000)) == b(10000000)){
 					newUCS2 = ((byte1 & b(00011111)) << 6) | (byte2 & b(00111111));
@@ -8939,7 +8939,7 @@ UTF8TOUCS2(){
 				}else{
 					inc utf8Current;
 				}
-			}elif((byte1 & b(11110000)) == b(11100000)){
+			}else if((byte1 & b(11110000)) == b(11100000)){
 				const uint8 byte2 = *(utf8Current + 1);
 				const uint8 byte3 = *(utf8Current + 2);
 				if((byte2 & b(11000000)) == b(10000000) and (byte3 & b(11000000)) == b(10000000)){
@@ -8949,7 +8949,7 @@ UTF8TOUCS2(){
 				}else{
 					inc utf8Current;
 				}
-			}elif((byte1 & b(11111000)) == b(11110000)){
+			}else if((byte1 & b(11111000)) == b(11110000)){
 				const uint8 byte2 = *(utf8Current + 1);
 				const uint8 byte3 = *(utf8Current + 2);
 				const uint8 byte4 = *(utf8Current + 3);
@@ -9333,7 +9333,7 @@ TWOPASSBOXBLUR(){
 				int usedX = x + kx;
 				if(usedX < 0){
 					usedX = 0;
-				}elif(usedX >= width){
+				}else if(usedX >= width){
 					usedX = widthMinusOne;
 				}
 				r -= *kernelColumnRCurrentCopy;
@@ -9355,7 +9355,7 @@ TWOPASSBOXBLUR(){
 						uint32 color;
 						if(usedY < 0){
 							usedY = 0;
-						}elif(usedY >= height){
+						}else if(usedY >= height){
 							usedY = heightMinusOne;
 						}
 						color = *(tx + usedY * width);
@@ -9396,7 +9396,7 @@ TWOPASSBOXBLUR(){
 				int usedY = y + ky;
 				if(usedY < 0){
 					usedY = 0;
-				}elif(usedY >= height){
+				}else if(usedY >= height){
 					usedY = heightMinusOne;
 				}
 				x = 0;
@@ -9423,7 +9423,7 @@ TWOPASSBOXBLUR(){
 						uint32 color;
 						if(usedX < 0){
 							usedX = 0;
-						}elif(usedX >= width){
+						}else if(usedX >= width){
 							usedX = widthMinusOne;
 						}
 						color = *(tx + usedX);
